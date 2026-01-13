@@ -13,6 +13,7 @@ const navigation = [
   { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
   { name: 'Produkter', icon: Package, page: 'Products' },
   { name: 'Produktion', icon: Factory, page: 'Production' },
+  { name: 'Färdigvaror', icon: Package, page: 'FinishedGoods' },
   { name: 'Batcher', icon: Boxes, page: 'Batches' },
   { name: 'Lager', icon: Warehouse, page: 'Inventory' },
   { name: 'Ordrar', icon: ShoppingCart, page: 'Orders' },
