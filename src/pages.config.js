@@ -1,21 +1,23 @@
-import Dashboard from './pages/Dashboard';
-import Products from './pages/Products';
-import Production from './pages/Production';
 import Batches from './pages/Batches';
+import Dashboard from './pages/Dashboard';
 import Inventory from './pages/Inventory';
-import Planning from './pages/Planning';
 import Orders from './pages/Orders';
+import Planning from './pages/Planning';
+import Production from './pages/Production';
+import Products from './pages/Products';
+import FinishedGoods from './pages/FinishedGoods';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Dashboard": Dashboard,
-    "Products": Products,
-    "Production": Production,
     "Batches": Batches,
+    "Dashboard": Dashboard,
     "Inventory": Inventory,
-    "Planning": Planning,
     "Orders": Orders,
+    "Planning": Planning,
+    "Production": Production,
+    "Products": Products,
+    "FinishedGoods": FinishedGoods,
 }
 
 export const pagesConfig = {
