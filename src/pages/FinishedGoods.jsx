@@ -8,10 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
-import { Package, Search, ChevronRight } from 'lucide-react';
+import { Package, Search, ChevronRight, Plus, ShoppingBag } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import AddBatchDialog from '@/components/finishedgoods/AddBatchDialog';
+import ShopifyMappingDialog from '@/components/finishedgoods/ShopifyMappingDialog';
 
 const statusColors = {
   available: 'bg-emerald-100 text-emerald-700',
@@ -30,6 +32,8 @@ const statusLabels = {
 export default function FinishedGoods() {
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedProduct, setExpandedProduct] = useState(null);
+  const [addBatchProduct, setAddBatchProduct] = useState(null);
+  const [shopifyMappingProduct, setShopifyMappingProduct] = useState(null);
 
   const { data: products = [] } = useQuery({
     queryKey: ['products'],
@@ -128,6 +132,30 @@ export default function FinishedGoods() {
                         </div>
                       </div>
                     </div>
+                    <div className="flex gap-2 mr-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShopifyMappingProduct(product);
+                        }}
+                      >
+                        <ShoppingBag className="w-4 h-4 mr-2" />
+                        Shopify
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setAddBatchProduct(product);
+                        }}
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Lägg till batch
+                      </Button>
+                    </div>
                     <ChevronRight 
                       className={cn(
                         "w-5 h-5 text-slate-400 transition-transform",
@@ -202,6 +230,22 @@ export default function FinishedGoods() {
           )}
         </div>
       </div>
+
+      {addBatchProduct && (
+        <AddBatchDialog
+          product={addBatchProduct}
+          open={!!addBatchProduct}
+          onOpenChange={(open) => !open && setAddBatchProduct(null)}
+        />
+      )}
+
+      {shopifyMappingProduct && (
+        <ShopifyMappingDialog
+          product={shopifyMappingProduct}
+          open={!!shopifyMappingProduct}
+          onOpenChange={(open) => !open && setShopifyMappingProduct(null)}
+        />
+      )}
     </div>
   );
 }
