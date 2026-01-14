@@ -5,9 +5,11 @@ import { cn } from "@/lib/utils";
 import { 
   LayoutDashboard, Package, Factory, Boxes, 
   Warehouse, ShoppingCart, Calculator, Menu, X,
-  ChevronRight, Bell
+  ChevronRight, Bell, Shield, LogOut
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { base44 } from '@/api/base44Client';
 
 const navigation = [
   { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
@@ -23,6 +25,19 @@ const navigation = [
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [user, setUser] = useState(null);
+
+  React.useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+      } catch (error) {
+        console.error('Failed to load user:', error);
+      }
+    };
+    loadUser();
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -84,7 +99,47 @@ export default function Layout({ children, currentPageName }) {
           })}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-200">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-200 space-y-3">
+          {user?.role === 'admin' && (
+            <Link
+              to={createPageUrl('Admin')}
+              onClick={() => setSidebarOpen(false)}
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
+                currentPageName === 'Admin'
+                  ? "bg-[#80b49c]/10 text-[#4f5945]"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              )}
+            >
+              <Shield className={cn(
+                "w-5 h-5",
+                currentPageName === 'Admin' ? "text-[#80b49c]" : "text-slate-400"
+              )} />
+              Admin
+            </Link>
+          )}
+          {user && (
+            <div className="px-4 py-2 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-500">Inloggad som:</span>
+                <Badge variant="outline" className="text-xs">
+                  {user.role || 'user'}
+                </Badge>
+              </div>
+              <p className="text-sm font-medium text-slate-700 truncate">
+                {user.email}
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() => base44.auth.logout()}
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logga ut
+              </Button>
+            </div>
+          )}
           <div className="text-xs text-slate-500 text-center">
             Lagermaster v1.0
           </div>
