@@ -1,3 +1,4 @@
+import Alerts from './pages/Alerts';
 import Batches from './pages/Batches';
 import Dashboard from './pages/Dashboard';
 import FinishedGoods from './pages/FinishedGoods';
@@ -6,11 +7,11 @@ import Orders from './pages/Orders';
 import Planning from './pages/Planning';
 import Production from './pages/Production';
 import Products from './pages/Products';
-import Alerts from './pages/Alerts';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "Alerts": Alerts,
     "Batches": Batches,
     "Dashboard": Dashboard,
     "FinishedGoods": FinishedGoods,
@@ -19,7 +20,6 @@ export const PAGES = {
     "Planning": Planning,
     "Production": Production,
     "Products": Products,
-    "Alerts": Alerts,
 }
 
 export const pagesConfig = {
