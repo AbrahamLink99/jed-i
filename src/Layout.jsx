@@ -5,12 +5,13 @@ import { cn } from "@/lib/utils";
 import { 
   LayoutDashboard, Package, Factory, Boxes, 
   Warehouse, ShoppingCart, Calculator, Menu, X,
-  ChevronRight
+  ChevronRight, Bell
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
 const navigation = [
   { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
+  { name: 'Notiser', icon: Bell, page: 'Alerts' },
   { name: 'Produkter', icon: Package, page: 'Products' },
   { name: 'Produktion', icon: Factory, page: 'Production' },
   { name: 'Färdigvaror', icon: Package, page: 'FinishedGoods' },

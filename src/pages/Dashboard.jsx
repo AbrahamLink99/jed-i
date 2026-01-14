@@ -3,12 +3,12 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Package, Factory, ShoppingCart, AlertTriangle, TrendingDown, ArrowRight } from 'lucide-react';
+import { Package, Factory, ShoppingCart, AlertTriangle, TrendingDown, ArrowRight, Bell } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import StatCard from '@/components/dashboard/StatCard';
-import AlertList from '@/components/dashboard/AlertList';
 import RecentBatches from '@/components/dashboard/RecentBatches';
 import PurchaseSuggestions from '@/components/dashboard/PurchaseSuggestions';
+import InventoryAlertList from '@/components/alerts/AlertList';
 import { getStockSummary, calculatePurchaseSuggestion } from '@/components/inventory/StockCalculations';
 
 export default function Dashboard() {
@@ -30,6 +30,11 @@ export default function Dashboard() {
   const { data: orders = [] } = useQuery({
     queryKey: ['shopify-orders'],
     queryFn: () => base44.entities.ShopifyOrder.filter({ status: 'reserved' })
+  });
+
+  const { data: inventoryAlerts = [] } = useQuery({
+    queryKey: ['inventory_alerts'],
+    queryFn: () => base44.entities.InventoryAlert.filter({ status: 'OPEN' })
   });
 
   const stats = useMemo(() => {
@@ -112,12 +117,15 @@ export default function Dashboard() {
             value={stats.pendingOrders}
             icon={ShoppingCart}
           />
-          <StatCard
-            title="Varningar"
-            value={stats.alerts.length}
-            icon={AlertTriangle}
-            variant={stats.alerts.length > 0 ? 'warning' : 'default'}
-          />
+          <Link to={createPageUrl('Alerts')}>
+            <StatCard
+              title="Lagernotiser"
+              value={inventoryAlerts.length}
+              icon={Bell}
+              variant={inventoryAlerts.length > 0 ? 'warning' : 'default'}
+              clickable
+            />
+          </Link>
         </div>
 
         {/* Quick Actions */}
@@ -150,9 +158,9 @@ export default function Dashboard() {
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Alerts */}
+          {/* Inventory Alerts */}
           <div className="lg:col-span-1">
-            <AlertList alerts={stats.alerts} maxItems={5} />
+            <InventoryAlertList compact />
           </div>
 
           {/* Recent Batches */}
