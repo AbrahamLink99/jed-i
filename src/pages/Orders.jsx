@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
-import { ShoppingCart, Plus, Search, Truck, Package, Store } from 'lucide-react';
+import { ShoppingCart, Plus, Search, Truck, Package, Store, X } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { toast } from 'sonner';
 
@@ -94,34 +94,37 @@ export default function Orders() {
 
   const shipOrderMutation = useMutation({
     mutationFn: async (order) => {
-      // Update order status
+      // Update order status to shipped
+      // NOTE: Inventory was already reduced when order was created (via reservation)
+      // Fulfillment is ONLY a logistics status, not an inventory event
       await base44.entities.ShopifyOrder.update(order.id, { status: 'shipped' });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shopify-orders'] });
+      toast.success('Order markerad som levererad');
+    }
+  });
 
-      // Convert reservations to shipments
+  const cancelOrderMutation = useMutation({
+    mutationFn: async (order) => {
+      // Update order status
+      await base44.entities.ShopifyOrder.update(order.id, { status: 'cancelled' });
+
+      // Release all reservations
       for (const item of order.line_items || []) {
-        // Release reservation
         await base44.entities.InventoryLedger.create({
           product_id: item.product_id,
           product_sku: item.product_sku,
           transaction_type: 'release_reservation',
           quantity: item.quantity,
-          reference: `Order levererad: ${order.shopify_order_number}`
-        });
-
-        // Create shipment (actual reduction)
-        await base44.entities.InventoryLedger.create({
-          product_id: item.product_id,
-          product_sku: item.product_sku,
-          transaction_type: 'shipment',
-          quantity: -item.quantity,
-          reference: `Leverans: ${order.shopify_order_number}`
+          reference: `Order avbruten: ${order.shopify_order_number}`
         });
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shopify-orders'] });
       queryClient.invalidateQueries({ queryKey: ['ledger'] });
-      toast.success('Order markerad som levererad');
+      toast.success('Order avbruten och lager återställt');
     }
   });
 
@@ -370,17 +373,30 @@ export default function Orders() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    {order.status === 'reserved' && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => shipOrderMutation.mutate(order)}
-                        disabled={shipOrderMutation.isPending}
-                      >
-                        <Truck className="w-4 h-4 mr-1" />
-                        Leverera
-                      </Button>
-                    )}
+                    <div className="flex justify-end gap-2">
+                      {order.status === 'reserved' && (
+                        <>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => shipOrderMutation.mutate(order)}
+                            disabled={shipOrderMutation.isPending}
+                          >
+                            <Truck className="w-4 h-4 mr-1" />
+                            Leverera
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => cancelOrderMutation.mutate(order)}
+                            disabled={cancelOrderMutation.isPending}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            Avbryt
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
