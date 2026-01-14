@@ -1,5 +1,5 @@
 import { base44 } from '@/api/base44Client';
-import { calculateStockSummary } from '@/components/inventory/StockCalculations';
+import { getStockSummary } from '@/components/inventory/StockCalculations';
 
 /**
  * Evaluates inventory alerts for all products
@@ -23,7 +23,7 @@ export async function evaluateInventoryAlerts() {
     const productLedger = ledgerEntries.filter(e => e.product_id === product.id);
     const productBatches = batches.filter(b => b.product_id === product.id);
     
-    const stockSummary = calculateStockSummary(product, productLedger, productBatches);
+    const stockSummary = getStockSummary(product, productLedger, productBatches);
     
     const {
       onHand,
