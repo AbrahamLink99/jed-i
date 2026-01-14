@@ -41,7 +41,7 @@ export default function Layout({ children, currentPageName }) {
       )}>
         <div className="flex items-center justify-between h-16 px-6 border-b border-slate-200">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[#80b49c] flex items-center justify-center">
               <Factory className="w-5 h-5 text-white" />
             </div>
             <span className="font-bold text-slate-900">Lagermaster</span>
@@ -67,17 +67,17 @@ export default function Layout({ children, currentPageName }) {
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
                   isActive 
-                    ? "bg-indigo-50 text-indigo-700" 
+                    ? "bg-[#80b49c]/10 text-[#4f5945]" 
                     : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                 )}
               >
                 <item.icon className={cn(
                   "w-5 h-5",
-                  isActive ? "text-indigo-600" : "text-slate-400"
+                  isActive ? "text-[#80b49c]" : "text-slate-400"
                 )} />
                 {item.name}
                 {isActive && (
-                  <ChevronRight className="w-4 h-4 ml-auto text-indigo-400" />
+                  <ChevronRight className="w-4 h-4 ml-auto text-[#80b49c]" />
                 )}
               </Link>
             );

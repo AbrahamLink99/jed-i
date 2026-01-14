@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Primary - Sage Green */
+    --primary: 143 57% 60%; /* #80b49c */
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary - Dusty Teal */
+    --secondary: 172 30% 68%; /* #9dc4bc */
+    --secondary-foreground: 0 0% 0%;
+
+    /* Accent - Soft Beige */
+    --accent: 47 25% 77%; /* #d5ccb4 */
+    --accent-foreground: 0 0% 0%;
+
+    /* Muted - Olive Green */
+    --muted: 77 10% 32%; /* #4f5945 */
+    --muted-foreground: 0 0% 90%;
+
+    /* Background colors */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+
+    /* Card colors */
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    /* Popover colors */
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Border and input */
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 143 57% 60%;
+
+    /* Destructive - Keep red for errors */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Chart colors using palette */
+    --chart-1: 143 57% 60%;
+    --chart-2: 172 30% 68%;
+    --chart-3: 47 25% 77%;
+    --chart-4: 77 10% 32%;
+    --chart-5: 220 13% 25%;
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 220 13% 25%; /* #3d3e42 */
+    --foreground: 0 0% 95%;
+
+    --card: 220 13% 20%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 220 13% 20%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 143 57% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 77 10% 32%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 77 10% 32%;
+    --muted-foreground: 0 0% 70%;
+
+    --accent: 172 30% 68%;
+    --accent-foreground: 0 0% 10%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 77 10% 32%;
+    --input: 77 10% 32%;
+    --ring: 143 57% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
