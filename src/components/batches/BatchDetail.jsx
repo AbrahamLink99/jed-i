@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
-import { X, Package, Calendar, Hash, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { X, Package, Calendar, Hash, ArrowDownLeft, ArrowUpRight, Link as LinkIcon } from 'lucide-react';
+import BatchOrderLinkDialog from './BatchOrderLinkDialog';
+import BatchLinksTable from './BatchLinksTable';
 
 const statusColors = {
   available: 'bg-emerald-100 text-emerald-700',
@@ -30,7 +32,8 @@ const transactionLabels = {
   reservation: 'Reservation',
   release_reservation: 'Släpp reservation',
   shipment: 'Leverans',
-  inbound: 'Inleverans'
+  inbound: 'Inleverans',
+  pick: 'Plockning'
 };
 
 export default function BatchDetail({ 
@@ -40,10 +43,12 @@ export default function BatchDetail({
   onStatusChange,
   isUpdating 
 }) {
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+
   if (!batch) return null;
 
   const batchLedger = ledgerEntries
-    .filter(e => e.batch_id === batch.id)
+    .filter(e => e.batch_lot_id === batch.id)
     .sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
 
   return (
@@ -111,6 +116,15 @@ export default function BatchDetail({
             <SelectItem value="depleted">Slut</SelectItem>
           </SelectContent>
         </Select>
+        <Button onClick={() => setLinkDialogOpen(true)}>
+          <LinkIcon className="w-4 h-4 mr-2" />
+          Länka till Shopify-order
+        </Button>
+      </div>
+
+      <div className="mb-6">
+        <h3 className="font-medium text-slate-900 mb-3">Shopify-orderlänkar</h3>
+        <BatchLinksTable batchLotId={batch.id} />
       </div>
 
       <div>
@@ -159,6 +173,12 @@ export default function BatchDetail({
           </Table>
         )}
       </div>
+
+      <BatchOrderLinkDialog 
+        batch={batch}
+        open={linkDialogOpen}
+        onClose={() => setLinkDialogOpen(false)}
+      />
     </Card>
   );
 }
