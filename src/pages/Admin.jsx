@@ -16,10 +16,11 @@ import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import { 
   Shield, Users, FileText, AlertCircle, CheckCircle, 
-  UserPlus, Search, Calendar, Hash, Activity 
+  UserPlus, Search, Calendar, Hash, Activity, Database 
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from "@/lib/utils";
+import DataImport from '@/components/admin/DataImport';
 
 const roleColors = {
   admin: 'bg-purple-100 text-purple-700',
@@ -179,6 +180,12 @@ export default function AdminPage() {
                 Användare
               </TabsTrigger>
             </PermissionGate>
+            <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
+              <TabsTrigger value="import">
+                <Database className="w-4 h-4 mr-2" />
+                Import
+              </TabsTrigger>
+            </PermissionGate>
             <PermissionGate permission={PERMISSIONS.AUDITLOG_READ}>
               <TabsTrigger value="audit">
                 <FileText className="w-4 h-4 mr-2" />
@@ -297,6 +304,13 @@ export default function AdminPage() {
                   </Table>
                 </CardContent>
               </Card>
+            </TabsContent>
+          </PermissionGate>
+
+          {/* Import Tab */}
+          <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
+            <TabsContent value="import">
+              <DataImport />
             </TabsContent>
           </PermissionGate>
 

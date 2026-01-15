@@ -1,3 +1,4 @@
+import Admin from './pages/Admin';
 import Alerts from './pages/Alerts';
 import Batches from './pages/Batches';
 import Dashboard from './pages/Dashboard';
@@ -7,11 +8,11 @@ import Orders from './pages/Orders';
 import Planning from './pages/Planning';
 import Production from './pages/Production';
 import Products from './pages/Products';
-import Admin from './pages/Admin';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "Admin": Admin,
     "Alerts": Alerts,
     "Batches": Batches,
     "Dashboard": Dashboard,
@@ -21,7 +22,6 @@ export const PAGES = {
     "Planning": Planning,
     "Production": Production,
     "Products": Products,
-    "Admin": Admin,
 }
 
 export const pagesConfig = {
