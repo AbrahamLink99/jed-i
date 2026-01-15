@@ -2,91 +2,165 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    /* Primary - Sage Green */
-    --primary: 143 57% 60%; /* #80b49c */
-    --primary-foreground: 0 0% 100%;
+/* =========================================
+   SVENSKA DAGBLADET – INSPIRED DARK THEME
+   ========================================= */
 
-    /* Secondary - Dusty Teal */
-    --secondary: 172 30% 68%; /* #9dc4bc */
-    --secondary-foreground: 0 0% 0%;
+/* ROOT DESIGN TOKENS */
+:root {
+  /* Backgrounds */
+  --color-bg-primary: #1A1F29;      /* Main app background */
+  --color-bg-secondary: #283040;    /* Cards, panels, sections */
+  --color-bg-tertiary: #202634;     /* Top nav / footer */
 
-    /* Accent - Soft Beige */
-    --accent: 47 25% 77%; /* #d5ccb4 */
-    --accent-foreground: 0 0% 0%;
+  /* Text */
+  --color-text-primary: #E4E8EF;    /* Primary text */
+  --color-text-secondary: #9BA3AF;  /* Secondary / helper text */
+  --color-text-disabled: #6B7280;
 
-    /* Muted - Olive Green */
-    --muted: 77 10% 32%; /* #4f5945 */
-    --muted-foreground: 0 0% 90%;
+  /* Accent (SvD blue) */
+  --color-accent-blue: #4A6FA5;     /* Headlines, active states, links */
+  --color-accent-blue-hover: #5C82BA;
 
-    /* Background colors */
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+  /* UI Elements */
+  --color-divider: #3A4252;
+  --color-border: #2F3747;
 
-    /* Card colors */
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+  /* Tables */
+  --color-table-header: #242B3A;
+  --color-table-row: #283040;
+  --color-table-row-hover: #2F384A;
 
-    /* Popover colors */
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+  /* Buttons (neutral – not warnings) */
+  --color-button-primary-bg: #4A6FA5;
+  --color-button-primary-text: #FFFFFF;
+  --color-button-primary-hover: #5C82BA;
 
-    /* Border and input */
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 143 57% 60%;
+  --color-button-secondary-bg: #2C3446;
+  --color-button-secondary-text: #E4E8EF;
+  --color-button-secondary-hover: #353F55;
 
-    /* Destructive - Keep red for errors */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    /* Chart colors using palette */
-    --chart-1: 143 57% 60%;
-    --chart-2: 172 30% 68%;
-    --chart-3: 47 25% 77%;
-    --chart-4: 77 10% 32%;
-    --chart-5: 220 13% 25%;
-
-    --radius: 0.75rem;
-  }
-
-  .dark {
-    --background: 220 13% 25%; /* #3d3e42 */
-    --foreground: 0 0% 95%;
-
-    --card: 220 13% 20%;
-    --card-foreground: 0 0% 95%;
-
-    --popover: 220 13% 20%;
-    --popover-foreground: 0 0% 95%;
-
-    --primary: 143 57% 60%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 77 10% 32%;
-    --secondary-foreground: 0 0% 100%;
-
-    --muted: 77 10% 32%;
-    --muted-foreground: 0 0% 70%;
-
-    --accent: 172 30% 68%;
-    --accent-foreground: 0 0% 10%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 77 10% 32%;
-    --input: 77 10% 32%;
-    --ring: 143 57% 60%;
-  }
+  /* Shadcn/UI compatibility */
+  --background: 220 18% 13%;
+  --foreground: 216 17% 93%;
+  --card: 220 16% 16%;
+  --card-foreground: 216 17% 93%;
+  --popover: 220 16% 16%;
+  --popover-foreground: 216 17% 93%;
+  --primary: 215 38% 48%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 12% 23%;
+  --secondary-foreground: 216 17% 93%;
+  --muted: 220 12% 23%;
+  --muted-foreground: 220 9% 62%;
+  --accent: 220 12% 23%;
+  --accent-foreground: 216 17% 93%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 220 13% 24%;
+  --input: 220 13% 24%;
+  --ring: 215 38% 48%;
+  --radius: 0.75rem;
+  --chart-1: 215 38% 48%;
+  --chart-2: 197 37% 58%;
+  --chart-3: 173 58% 39%;
+  --chart-4: 43 74% 66%;
+  --chart-5: 27 87% 67%;
 }
+
+/* =========================================
+   GLOBAL APPLICATION STYLES
+   ========================================= */
 
 @layer base {
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    @apply text-foreground;
+  }
+
+  /* Headings */
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--color-accent-blue);
+    font-weight: 600;
+  }
+
+  /* Secondary text */
+  .text-secondary {
+    color: var(--color-text-secondary);
+  }
+
+  /* Links */
+  a {
+    color: var(--color-accent-blue);
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--color-accent-blue-hover);
+  }
+
+  /* Dividers */
+  hr {
+    border-color: var(--color-divider);
+  }
+}
+
+@layer components {
+  /* Panels / Cards */
+  .card,
+  .panel,
+  .section {
+    background-color: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+  }
+
+  /* Navigation */
+  .navbar,
+  .topbar {
+    background-color: var(--color-bg-tertiary);
+    border-bottom: 1px solid var(--color-divider);
+  }
+
+  /* Tables */
+  table {
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+  }
+
+  thead {
+    background-color: var(--color-table-header);
+  }
+
+  tbody tr {
+    background-color: var(--color-table-row);
+  }
+
+  tbody tr:hover {
+    background-color: var(--color-table-row-hover);
+  }
+
+  /* Buttons */
+  .button-primary {
+    background-color: var(--color-button-primary-bg);
+    color: var(--color-button-primary-text);
+  }
+
+  .button-primary:hover {
+    background-color: var(--color-button-primary-hover);
+  }
+
+  .button-secondary {
+    background-color: var(--color-button-secondary-bg);
+    color: var(--color-button-secondary-text);
+  }
+
+  .button-secondary:hover {
+    background-color: var(--color-button-secondary-hover);
   }
 }
