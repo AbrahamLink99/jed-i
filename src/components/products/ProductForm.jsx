@@ -129,8 +129,8 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }) {
                 type="number"
                 min="0"
                 step="0.1"
-                value={formData.safety_stock}
-                onChange={(e) => handleChange('safety_stock', parseFloat(e.target.value) || 0)}
+                value={formData.safety_stock || ''}
+                onChange={(e) => handleChange('safety_stock', e.target.value === '' ? 0 : parseFloat(e.target.value))}
               />
             </div>
 
@@ -140,8 +140,8 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }) {
                 id="lead_time_days"
                 type="number"
                 min="0"
-                value={formData.lead_time_days}
-                onChange={(e) => handleChange('lead_time_days', parseInt(e.target.value) || 0)}
+                value={formData.lead_time_days || ''}
+                onChange={(e) => handleChange('lead_time_days', e.target.value === '' ? 0 : parseInt(e.target.value))}
               />
             </div>
 
@@ -151,8 +151,8 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }) {
                 id="moq"
                 type="number"
                 min="1"
-                value={formData.moq}
-                onChange={(e) => handleChange('moq', parseInt(e.target.value) || 1)}
+                value={formData.moq || ''}
+                onChange={(e) => handleChange('moq', e.target.value === '' ? 1 : parseInt(e.target.value))}
               />
             </div>
 
@@ -162,8 +162,8 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }) {
                 id="order_multiple"
                 type="number"
                 min="1"
-                value={formData.order_multiple}
-                onChange={(e) => handleChange('order_multiple', parseInt(e.target.value) || 1)}
+                value={formData.order_multiple || ''}
+                onChange={(e) => handleChange('order_multiple', e.target.value === '' ? 1 : parseInt(e.target.value))}
               />
             </div>
 
@@ -184,8 +184,8 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }) {
                 type="number"
                 min="0"
                 step="0.01"
-                value={formData.cost_per_unit}
-                onChange={(e) => handleChange('cost_per_unit', parseFloat(e.target.value) || 0)}
+                value={formData.cost_per_unit || ''}
+                onChange={(e) => handleChange('cost_per_unit', e.target.value === '' ? 0 : parseFloat(e.target.value))}
               />
             </div>
           </div>
@@ -200,8 +200,8 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }) {
                 id="shopify_buffer"
                 type="number"
                 min="0"
-                value={formData.shopify_buffer}
-                onChange={(e) => handleChange('shopify_buffer', parseFloat(e.target.value) || 0)}
+                value={formData.shopify_buffer || ''}
+                onChange={(e) => handleChange('shopify_buffer', e.target.value === '' ? 0 : parseFloat(e.target.value))}
               />
               <p className="text-sm text-slate-500">
                 Antal enheter som alltid hålls tillbaka från "Available to sell"
