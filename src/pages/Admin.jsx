@@ -16,7 +16,7 @@ import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import { 
   Shield, Users, FileText, AlertCircle, CheckCircle, 
-  UserPlus, Search, Calendar, Hash, Database 
+  UserPlus, Search, Calendar, Hash, Database, Activity 
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from "@/lib/utils";
