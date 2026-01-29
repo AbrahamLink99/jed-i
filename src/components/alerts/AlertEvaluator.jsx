@@ -92,8 +92,8 @@ export async function evaluateInventoryAlerts() {
           last_evaluated_at: now
         });
       }
-    } else if (existingLowStock && existingLowStock.status === 'ORDERED_ACKNOWLEDGED' && available > reorderPoint) {
-      // Auto-close if stock is back above reorder point
+    } else if (existingLowStock) {
+      // Auto-close if stock is back above reorder point (for any status)
       await base44.entities.InventoryAlert.update(existingLowStock.id, {
         status: 'CLOSED',
         resolved_at: now,
@@ -133,7 +133,8 @@ export async function evaluateInventoryAlerts() {
           last_evaluated_at: now
         });
       }
-    } else if (existingBelowSafety && existingBelowSafety.status === 'ORDERED_ACKNOWLEDGED' && available >= safetyStock) {
+    } else if (existingBelowSafety) {
+      // Auto-close if stock is back above safety level (for any status)
       await base44.entities.InventoryAlert.update(existingBelowSafety.id, {
         status: 'CLOSED',
         resolved_at: now,
