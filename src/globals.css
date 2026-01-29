@@ -3,69 +3,70 @@
 @tailwind utilities;
 
 /* =========================================
-   SVENSKA DAGBLADET – INSPIRED DARK THEME
+   DEEP SPACE – DARK BLUE THEME
    ========================================= */
 
 /* ROOT DESIGN TOKENS */
 :root {
   /* Backgrounds */
-  --color-bg-primary: #1A1F29;      /* Main app background */
-  --color-bg-secondary: #283040;    /* Cards, panels, sections */
-  --color-bg-tertiary: #202634;     /* Top nav / footer */
+  --color-bg-primary: #102a43;      /* Deep blue-gray */
+  --color-bg-secondary: #243b53;    /* Dark navy cards/panels */
+  --color-bg-tertiary: #144272;     /* Top nav / footer */
 
   /* Text */
-  --color-text-primary: #E4E8EF;    /* Primary text */
-  --color-text-secondary: #9BA3AF;  /* Secondary / helper text */
+  --color-text-primary: #f0f4f8;    /* Light gray-white */
+  --color-text-secondary: #b3e5fc;  /* Light sky blue */
   --color-text-disabled: #6B7280;
 
-  /* Accent (SvD blue) */
-  --color-accent-blue: #4A6FA5;     /* Headlines, active states, links */
-  --color-accent-blue-hover: #5C82BA;
+  /* Accent */
+  --color-accent-blue: #03a9f4;     /* Bright blue */
+  --color-accent-blue-hover: #39ace7;
+  --color-accent-cyan: #48bb78;     /* Cyan accent */
 
   /* UI Elements */
-  --color-divider: #3A4252;
-  --color-border: #2F3747;
+  --color-divider: #243b53;
+  --color-border: #243b53;
 
   /* Tables */
-  --color-table-header: #242B3A;
-  --color-table-row: #283040;
-  --color-table-row-hover: #2F384A;
+  --color-table-header: #0a2647;
+  --color-table-row: #243b53;
+  --color-table-row-hover: #2c4a64;
 
-  /* Buttons (neutral – not warnings) */
-  --color-button-primary-bg: #4A6FA5;
+  /* Buttons */
+  --color-button-primary-bg: #03a9f4;
   --color-button-primary-text: #FFFFFF;
-  --color-button-primary-hover: #5C82BA;
+  --color-button-primary-hover: #39ace7;
 
-  --color-button-secondary-bg: #2C3446;
-  --color-button-secondary-text: #E4E8EF;
-  --color-button-secondary-hover: #353F55;
+  --color-button-secondary-bg: #243b53;
+  --color-button-secondary-text: #f0f4f8;
+  --color-button-secondary-hover: #2c4a64;
 
   /* Shadcn/UI compatibility */
-  --background: 220 18% 13%;
-  --foreground: 216 17% 93%;
-  --card: 220 16% 16%;
-  --card-foreground: 216 17% 93%;
-  --popover: 220 16% 16%;
-  --popover-foreground: 216 17% 93%;
-  --primary: 215 38% 48%;
+  --background: 210 45% 16%;
+  --foreground: 210 17% 95%;
+  --card: 210 35% 22%;
+  --card-foreground: 210 17% 95%;
+  --popover: 210 35% 22%;
+  --popover-foreground: 210 17% 95%;
+  --primary: 199 89% 48%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 220 12% 23%;
-  --secondary-foreground: 216 17% 93%;
-  --muted: 220 12% 23%;
-  --muted-foreground: 220 9% 62%;
-  --accent: 220 12% 23%;
-  --accent-foreground: 216 17% 93%;
+  --secondary: 210 35% 22%;
+  --secondary-foreground: 210 17% 95%;
+  --muted: 210 35% 22%;
+  --muted-foreground: 199 71% 73%;
+  --accent: 210 35% 22%;
+  --accent-foreground: 210 17% 95%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
-  --border: 220 13% 24%;
-  --input: 220 13% 24%;
-  --ring: 215 38% 48%;
+  --border: 210 35% 22%;
+  --input: 210 35% 22%;
+  --ring: 199 89% 48%;
   --radius: 0.75rem;
-  --chart-1: 215 38% 48%;
-  --chart-2: 197 37% 58%;
+  --chart-1: 199 89% 48%;
+  --chart-2: 152 48% 60%;
   --chart-3: 173 58% 39%;
-  --chart-4: 43 74% 66%;
-  --chart-5: 27 87% 67%;
+  --chart-4: 199 71% 73%;
+  --chart-5: 210 67% 85%;
 }
 
 /* =========================================
@@ -85,7 +86,7 @@
 
   /* Headings */
   h1, h2, h3, h4, h5, h6 {
-    color: var(--color-accent-blue);
+    color: var(--color-text-primary);
     font-weight: 600;
   }
 
