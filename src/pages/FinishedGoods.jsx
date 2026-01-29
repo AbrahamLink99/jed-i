@@ -8,12 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
-import { Package, Search, ChevronRight, Plus, ShoppingBag } from 'lucide-react';
+import { Package, Search, ChevronRight, Plus } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import AddBatchDialog from '@/components/finishedgoods/AddBatchDialog';
-import ShopifyMappingDialog from '@/components/finishedgoods/ShopifyMappingDialog';
 
 const statusColors = {
   available: 'bg-emerald-100 text-emerald-700',
@@ -33,7 +32,6 @@ export default function FinishedGoods() {
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedProduct, setExpandedProduct] = useState(null);
   const [addBatchProduct, setAddBatchProduct] = useState(null);
-  const [shopifyMappingProduct, setShopifyMappingProduct] = useState(null);
 
   const { data: products = [] } = useQuery({
     queryKey: ['products'],
@@ -138,17 +136,6 @@ export default function FinishedGoods() {
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setShopifyMappingProduct(product);
-                        }}
-                      >
-                        <ShoppingBag className="w-4 h-4 mr-2" />
-                        Shopify
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
                           setAddBatchProduct(product);
                         }}
                       >
@@ -236,14 +223,6 @@ export default function FinishedGoods() {
           product={addBatchProduct}
           open={!!addBatchProduct}
           onOpenChange={(open) => !open && setAddBatchProduct(null)}
-        />
-      )}
-
-      {shopifyMappingProduct && (
-        <ShopifyMappingDialog
-          product={shopifyMappingProduct}
-          open={!!shopifyMappingProduct}
-          onOpenChange={(open) => !open && setShopifyMappingProduct(null)}
         />
       )}
     </div>
