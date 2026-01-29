@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { 
   LayoutDashboard, Package, Factory, Boxes, 
   Warehouse, Calculator, Menu, X,
-  ChevronRight, Bell, Shield, LogOut
+  ChevronRight, Bell, Shield, LogOut, ChefHat
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,7 @@ const navigation = [
   { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
   { name: 'Notiser', icon: Bell, page: 'Alerts' },
   { name: 'Produkter', icon: Package, page: 'Products' },
+  { name: 'Recept', icon: ChefHat, page: 'Recipes' },
   { name: 'Produktion', icon: Factory, page: 'Production' },
   { name: 'Färdigvaror', icon: Package, page: 'FinishedGoods' },
   { name: 'Batcher', icon: Boxes, page: 'Batches' },
