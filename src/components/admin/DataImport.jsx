@@ -42,7 +42,9 @@ export default function DataImport() {
 
   // Import raw materials
   const importRawMaterials = async (data) => {
-    const results = { success: 0, failed: 0, errors: [] };
+    const results = { success: 0, failed: 0, skipped: 0, errors: [] };
+    const existingProducts = await base44.entities.Product.list();
+    const existingSKUs = new Set(existingProducts.map(p => p.sku));
     
     for (const row of data) {
       try {
@@ -63,6 +65,11 @@ export default function DataImport() {
           continue;
         }
 
+        if (existingSKUs.has(product.sku)) {
+          results.skipped++;
+          continue;
+        }
+
         await base44.entities.Product.create(product);
         await auditLog.createEntity('Product', product.sku, product, 'DataImport');
         results.success++;
@@ -70,7 +77,7 @@ export default function DataImport() {
         results.errors.push(`${row.SKU}: ${error.message}`);
         results.failed++;
       }
-      setProgress((results.success + results.failed) / data.length * 100);
+      setProgress((results.success + results.failed + results.skipped) / data.length * 100);
     }
     
     return results;
@@ -78,7 +85,9 @@ export default function DataImport() {
 
   // Import bottles/packaging
   const importPackaging = async (data) => {
-    const results = { success: 0, failed: 0, errors: [] };
+    const results = { success: 0, failed: 0, skipped: 0, errors: [] };
+    const existingProducts = await base44.entities.Product.list();
+    const existingSKUs = new Set(existingProducts.map(p => p.sku));
     
     for (const row of data) {
       try {
@@ -99,6 +108,11 @@ export default function DataImport() {
           continue;
         }
 
+        if (existingSKUs.has(product.sku)) {
+          results.skipped++;
+          continue;
+        }
+
         await base44.entities.Product.create(product);
         await auditLog.createEntity('Product', product.sku, product, 'DataImport');
         results.success++;
@@ -106,7 +120,7 @@ export default function DataImport() {
         results.errors.push(`${row.SKU}: ${error.message}`);
         results.failed++;
       }
-      setProgress((results.success + results.failed) / data.length * 100);
+      setProgress((results.success + results.failed + results.skipped) / data.length * 100);
     }
     
     return results;
@@ -114,7 +128,9 @@ export default function DataImport() {
 
   // Import labels
   const importLabels = async (data) => {
-    const results = { success: 0, failed: 0, errors: [] };
+    const results = { success: 0, failed: 0, skipped: 0, errors: [] };
+    const existingProducts = await base44.entities.Product.list();
+    const existingSKUs = new Set(existingProducts.map(p => p.sku));
     
     for (const row of data) {
       try {
@@ -135,6 +151,11 @@ export default function DataImport() {
           continue;
         }
 
+        if (existingSKUs.has(product.sku)) {
+          results.skipped++;
+          continue;
+        }
+
         await base44.entities.Product.create(product);
         await auditLog.createEntity('Product', product.sku, product, 'DataImport');
         results.success++;
@@ -142,7 +163,7 @@ export default function DataImport() {
         results.errors.push(`${row.SKU}: ${error.message}`);
         results.failed++;
       }
-      setProgress((results.success + results.failed) / data.length * 100);
+      setProgress((results.success + results.failed + results.skipped) / data.length * 100);
     }
     
     return results;
@@ -150,7 +171,9 @@ export default function DataImport() {
 
   // Import finished products
   const importFinishedProducts = async (data) => {
-    const results = { success: 0, failed: 0, errors: [] };
+    const results = { success: 0, failed: 0, skipped: 0, errors: [] };
+    const existingProducts = await base44.entities.Product.list();
+    const existingSKUs = new Set(existingProducts.map(p => p.sku));
     
     for (const row of data) {
       try {
@@ -169,6 +192,11 @@ export default function DataImport() {
           continue;
         }
 
+        if (existingSKUs.has(product.sku)) {
+          results.skipped++;
+          continue;
+        }
+
         await base44.entities.Product.create(product);
         await auditLog.createEntity('Product', product.sku, product, 'DataImport');
         results.success++;
@@ -176,7 +204,7 @@ export default function DataImport() {
         results.errors.push(`${row.SKU}: ${error.message}`);
         results.failed++;
       }
-      setProgress((results.success + results.failed) / data.length * 100);
+      setProgress((results.success + results.failed + results.skipped) / data.length * 100);
     }
     
     return results;
@@ -550,6 +578,9 @@ export default function DataImport() {
               <AlertDescription>
                 <div className="space-y-1">
                   <p><strong>Lyckade:</strong> {importResults.success}</p>
+                  {importResults.skipped > 0 && (
+                    <p><strong>Överhoppade (finns redan):</strong> {importResults.skipped}</p>
+                  )}
                   <p><strong>Misslyckade:</strong> {importResults.failed}</p>
                   {importResults.errors.length > 0 && (
                     <details className="mt-2">
