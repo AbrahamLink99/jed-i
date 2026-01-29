@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload, FileSpreadsheet, AlertCircle, CheckCircle, Trash2, Database } from 'lucide-react';
+import { Upload, FileSpreadsheet, AlertCircle, CheckCircle, Trash2, Database, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { normalizeName, matchIngredient } from '../metics/NameNormalizer';
 import { auditLog } from '../auth/AuditLogger';
@@ -308,6 +308,54 @@ export default function DataImport() {
     }
   };
 
+  const downloadTemplate = (type) => {
+    let headers = '';
+    let exampleRow = '';
+    let filename = '';
+
+    switch (type) {
+      case 'raw_materials':
+        headers = 'SKU,Namn,Enhet,Leverantör,Kostnad,Anteckningar';
+        exampleRow = 'RAW001,Olivolja Extra Virgin,kg,Supplier AB,150.50,Ekologisk';
+        filename = 'mall_ravaror.csv';
+        break;
+      case 'packaging':
+        headers = 'SKU,Namn,Leverantör,Kostnad,Anteckningar';
+        exampleRow = 'PKG001,Glasflaska 500ml,Packaging AB,12.50,Standard flaska';
+        filename = 'mall_forpackningar.csv';
+        break;
+      case 'labels':
+        headers = 'SKU,Namn,Leverantör,Kostnad,Anteckningar';
+        exampleRow = 'LBL001,Etikett Premium,Label AB,2.50,Vattentålig';
+        filename = 'mall_etiketter.csv';
+        break;
+      case 'finished_products':
+        headers = 'SKU,Namn,Anteckningar';
+        exampleRow = 'FG001,Premium Olivolja 500ml,Färdig produkt';
+        filename = 'mall_fardigvaror.csv';
+        break;
+      case 'recipes':
+        headers = 'FärdigvaraSKU,FärdigvaraNamn,IngrediensSKU,IngrediensNamn,Mängd';
+        exampleRow = 'FG001,Premium Olivolja,RAW001,Olivolja,0.480';
+        filename = 'mall_recept.csv';
+        break;
+    }
+
+    const csvContent = `${headers}\n${exampleRow}`;
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success(`Mall nedladdad: ${filename}`);
+  };
+
   const clearAllData = async () => {
     if (!confirm('Är du säker på att du vill radera ALL data? Detta går inte att ångra!')) {
       return;
@@ -400,10 +448,16 @@ export default function DataImport() {
                   <strong>Format:</strong> SKU, Namn, Enhet, Leverantör, Kostnad, Anteckningar
                 </AlertDescription>
               </Alert>
-              <Button onClick={() => handleImport('raw_materials')} disabled={!file || importing}>
-                <Upload className="w-4 h-4 mr-2" />
-                Importera råvaror
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={() => downloadTemplate('raw_materials')} variant="outline">
+                  <Download className="w-4 h-4 mr-2" />
+                  Ladda ner mall
+                </Button>
+                <Button onClick={() => handleImport('raw_materials')} disabled={!file || importing}>
+                  <Upload className="w-4 h-4 mr-2" />
+                  Importera råvaror
+                </Button>
+              </div>
             </TabsContent>
 
             <TabsContent value="packaging" className="space-y-3">
@@ -413,10 +467,16 @@ export default function DataImport() {
                   <strong>Format:</strong> SKU, Namn, Leverantör, Kostnad, Anteckningar
                 </AlertDescription>
               </Alert>
-              <Button onClick={() => handleImport('packaging')} disabled={!file || importing}>
-                <Upload className="w-4 h-4 mr-2" />
-                Importera flaskor/förpackningar
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={() => downloadTemplate('packaging')} variant="outline">
+                  <Download className="w-4 h-4 mr-2" />
+                  Ladda ner mall
+                </Button>
+                <Button onClick={() => handleImport('packaging')} disabled={!file || importing}>
+                  <Upload className="w-4 h-4 mr-2" />
+                  Importera flaskor/förpackningar
+                </Button>
+              </div>
             </TabsContent>
 
             <TabsContent value="labels" className="space-y-3">
@@ -426,10 +486,16 @@ export default function DataImport() {
                   <strong>Format:</strong> SKU, Namn, Leverantör, Kostnad, Anteckningar
                 </AlertDescription>
               </Alert>
-              <Button onClick={() => handleImport('labels')} disabled={!file || importing}>
-                <Upload className="w-4 h-4 mr-2" />
-                Importera etiketter
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={() => downloadTemplate('labels')} variant="outline">
+                  <Download className="w-4 h-4 mr-2" />
+                  Ladda ner mall
+                </Button>
+                <Button onClick={() => handleImport('labels')} disabled={!file || importing}>
+                  <Upload className="w-4 h-4 mr-2" />
+                  Importera etiketter
+                </Button>
+              </div>
             </TabsContent>
 
             <TabsContent value="finished_products" className="space-y-3">
@@ -439,10 +505,16 @@ export default function DataImport() {
                   <strong>Format:</strong> SKU, Namn, Anteckningar
                 </AlertDescription>
               </Alert>
-              <Button onClick={() => handleImport('finished_products')} disabled={!file || importing}>
-                <Upload className="w-4 h-4 mr-2" />
-                Importera färdiga produkter
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={() => downloadTemplate('finished_products')} variant="outline">
+                  <Download className="w-4 h-4 mr-2" />
+                  Ladda ner mall
+                </Button>
+                <Button onClick={() => handleImport('finished_products')} disabled={!file || importing}>
+                  <Upload className="w-4 h-4 mr-2" />
+                  Importera färdiga produkter
+                </Button>
+              </div>
             </TabsContent>
 
             <TabsContent value="recipes" className="space-y-3">
@@ -452,10 +524,16 @@ export default function DataImport() {
                   <strong>Format:</strong> FärdigvaraSKU, FärdigvaraNamn, IngrediensSKU/Handelsnamn, Mängd
                 </AlertDescription>
               </Alert>
-              <Button onClick={() => handleImport('recipes')} disabled={!file || importing}>
-                <Upload className="w-4 h-4 mr-2" />
-                Importera recept (BOM)
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={() => downloadTemplate('recipes')} variant="outline">
+                  <Download className="w-4 h-4 mr-2" />
+                  Ladda ner mall
+                </Button>
+                <Button onClick={() => handleImport('recipes')} disabled={!file || importing}>
+                  <Upload className="w-4 h-4 mr-2" />
+                  Importera recept (BOM)
+                </Button>
+              </div>
             </TabsContent>
           </Tabs>
 
