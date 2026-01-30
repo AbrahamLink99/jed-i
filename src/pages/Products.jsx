@@ -11,6 +11,7 @@ import { Plus, Search, Package, Edit2, Trash2 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import ProductForm from '@/components/products/ProductForm';
 import BOMEditor from '@/components/products/BOMEditor';
+import AddBatchDialog from '@/components/finishedgoods/AddBatchDialog';
 import { getStockSummary } from '@/components/inventory/StockCalculations';
 
 const typeLabels = {
@@ -33,6 +34,7 @@ export default function Products() {
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [showBOM, setShowBOM] = useState(null);
+  const [showAddBatch, setShowAddBatch] = useState(null);
 
   const queryClient = useQueryClient();
 
@@ -285,6 +287,16 @@ export default function Products() {
                             BOM
                           </Button>
                         )}
+                        {(product.type === 'raw_material' || product.type === 'packaging' || product.type === 'label') && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => setShowAddBatch(product)}
+                            className="text-cyan-600"
+                          >
+                            + Batch
+                          </Button>
+                        )}
                         <Button 
                           variant="ghost" 
                           size="icon"
@@ -320,6 +332,15 @@ export default function Products() {
             </TableBody>
           </Table>
         </Card>
+
+        {/* Add Batch Dialog */}
+        {showAddBatch && (
+          <AddBatchDialog
+            product={showAddBatch}
+            open={!!showAddBatch}
+            onOpenChange={(open) => !open && setShowAddBatch(null)}
+          />
+        )}
       </div>
     </div>
   );

@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Search, Plus, FileText } from 'lucide-react';
 import InventoryTable from '@/components/inventory/InventoryTable';
 import LedgerTable from '@/components/inventory/LedgerTable';
+import AddBatchDialog from '@/components/finishedgoods/AddBatchDialog';
 import { getStockSummary } from '@/components/inventory/StockCalculations';
 import { toast } from 'sonner';
 
@@ -20,6 +21,7 @@ export default function Inventory() {
   const [typeFilter, setTypeFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('stock');
   const [showAdjustment, setShowAdjustment] = useState(false);
+  const [showAddBatch, setShowAddBatch] = useState(null);
   const [adjustmentData, setAdjustmentData] = useState({
     product_id: '',
     quantity: '',
@@ -97,7 +99,12 @@ export default function Inventory() {
             <h1 className="text-3xl font-bold text-slate-900">Lager</h1>
             <p className="text-slate-500 mt-1">Aktuella saldon och lagerhistorik</p>
           </div>
-          <Dialog open={showAdjustment} onOpenChange={setShowAdjustment}>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setShowAddBatch({})}>
+              <Plus className="w-4 h-4 mr-2" />
+              Ny batch
+            </Button>
+            <Dialog open={showAdjustment} onOpenChange={setShowAdjustment}>
             <DialogTrigger asChild>
               <Button variant="outline">
                 <Plus className="w-4 h-4 mr-2" />
@@ -178,6 +185,7 @@ export default function Inventory() {
               </div>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
 
         {/* Tabs */}
@@ -236,6 +244,46 @@ export default function Inventory() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Add Batch Dialog */}
+        {showAddBatch && (
+          <Dialog open={!!showAddBatch} onOpenChange={(open) => !open && setShowAddBatch(null)}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Lägg till batch</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label>Artikel</Label>
+                  <Select 
+                    value={showAddBatch.id || ''} 
+                    onValueChange={(v) => setShowAddBatch(products.find(p => p.id === v))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Välj artikel..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {products
+                        .filter(p => p.type === 'raw_material' || p.type === 'packaging' || p.type === 'label')
+                        .map(p => (
+                          <SelectItem key={p.id} value={p.id}>
+                            {p.sku} - {p.name}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {showAddBatch.id && (
+                  <AddBatchDialog
+                    product={showAddBatch}
+                    open={!!showAddBatch.id}
+                    onOpenChange={(open) => !open && setShowAddBatch(null)}
+                  />
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     </div>
   );
