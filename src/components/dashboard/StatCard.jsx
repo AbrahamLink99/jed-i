@@ -2,15 +2,15 @@ import React from 'react';
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-export default function StatCard({ 
-  title, 
-  value, 
-  subtitle, 
-  icon: Icon, 
-  trend, 
+export default function StatCard({
+  title,
+  value,
+  subtitle,
+  icon: Icon,
+  trend,
   trendLabel,
   variant = 'default',
-  onClick 
+  onClick
 }) {
   const variants = {
     default: 'bg-white border-slate-200',
@@ -27,37 +27,37 @@ export default function StatCard({
   };
 
   return (
-    <Card 
-      className={cn(
-        "p-5 border transition-all",
-        variants[variant],
-        onClick && "cursor-pointer hover:shadow-md"
-      )}
-      onClick={onClick}
-    >
+    <Card className="bg-gray-50 text-card-foreground p-5 rounded-xl shadow border transition-all border-slate-200"
+
+
+
+
+
+    onClick={onClick}>
+
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <p className="text-sm font-medium text-slate-500">{title}</p>
           <p className="text-3xl font-semibold tracking-tight text-slate-900">{value}</p>
-          {subtitle && (
-            <p className="text-sm text-slate-500">{subtitle}</p>
-          )}
-          {trend !== undefined && (
-            <div className={cn(
-              "flex items-center gap-1 text-sm",
-              trend >= 0 ? "text-emerald-600" : "text-red-600"
-            )}>
+          {subtitle &&
+          <p className="text-sm text-slate-500">{subtitle}</p>
+          }
+          {trend !== undefined &&
+          <div className={cn(
+            "flex items-center gap-1 text-sm",
+            trend >= 0 ? "text-emerald-600" : "text-red-600"
+          )}>
               <span>{trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}%</span>
               {trendLabel && <span className="text-slate-500">{trendLabel}</span>}
             </div>
-          )}
+          }
         </div>
-        {Icon && (
-          <div className={cn("p-3 rounded-xl", iconVariants[variant])}>
+        {Icon &&
+        <div className={cn("p-3 rounded-xl", iconVariants[variant])}>
             <Icon className="w-5 h-5" />
           </div>
-        )}
+        }
       </div>
-    </Card>
-  );
+    </Card>);
+
 }
