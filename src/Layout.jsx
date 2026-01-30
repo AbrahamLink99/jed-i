@@ -82,8 +82,8 @@ export default function Layout({ children, currentPageName }) {
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
                   isActive ?
-                  "bg-[#03a9f4]/20 text-[#03a9f4]" :
-                  "text-[#b3e5fc] hover:bg-[#144272] hover:text-[#f0f4f8]"
+                  "bg-sky-700/20 text-amber-50" :
+                  "text-sky-100 hover:bg-sky-800 hover:text-amber-50"
                 )}>
 
                 <item.icon className={cn(
@@ -107,8 +107,8 @@ export default function Layout({ children, currentPageName }) {
             className={cn(
               "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
               currentPageName === 'Admin' ?
-              "bg-[#03a9f4]/20 text-[#03a9f4]" :
-              "text-[#b3e5fc] hover:bg-[#144272] hover:text-[#f0f4f8]"
+              "bg-sky-700/20 text-amber-50" :
+              "text-sky-100 hover:bg-sky-800 hover:text-amber-50"
             )}>
 
               <Shield className={cn(
