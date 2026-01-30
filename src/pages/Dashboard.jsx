@@ -38,13 +38,13 @@ export default function Dashboard() {
   });
 
   const stats = useMemo(() => {
-    const finishedGoods = products.filter(p => p.type === 'finished_good');
-    const activeBatches = batches.filter(b => b.status === 'available' || b.status === 'quarantined');
+    const finishedGoods = products.filter((p) => p.type === 'finished_good');
+    const activeBatches = batches.filter((b) => b.status === 'available' || b.status === 'quarantined');
     const pendingOrders = orders.length;
 
     // Calculate low stock alerts
     const alerts = [];
-    products.forEach(product => {
+    products.forEach((product) => {
       const stock = getStockSummary(product, ledger, batches);
       if (stock.belowSafety) {
         alerts.push({
@@ -57,7 +57,7 @@ export default function Dashboard() {
     });
 
     // Add blocked batch alerts
-    batches.filter(b => b.status === 'blocked' || b.status === 'quarantined').forEach(batch => {
+    batches.filter((b) => b.status === 'blocked' || b.status === 'quarantined').forEach((batch) => {
       alerts.push({
         type: 'blocked_batch',
         severity: batch.status === 'blocked' ? 'critical' : 'warning',
@@ -68,7 +68,7 @@ export default function Dashboard() {
 
     // Calculate purchase suggestions
     const suggestions = [];
-    products.filter(p => p.type !== 'finished_good').forEach(product => {
+    products.filter((p) => p.type !== 'finished_good').forEach((product) => {
       const stock = getStockSummary(product, ledger, batches);
       // Simple avg daily usage estimation
       const avgDailyUsage = product.safety_stock ? product.safety_stock / 30 : 1;
@@ -92,11 +92,11 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="bg-sky-900 mx-auto px-4 py-8 max-w-7xl sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
-          <p className="text-slate-500 mt-1">Översikt över lager och produktion</p>
+          <h1 className="text-amber-50 text-3xl font-bold">Dashboard</h1>
+          <p className="text-amber-50 mt-1">Översikt över lager och produktion</p>
         </div>
 
         {/* Stats Grid */}
@@ -105,26 +105,26 @@ export default function Dashboard() {
             title="Produkter"
             value={stats.totalProducts}
             subtitle={`${stats.finishedGoods} färdigvaror`}
-            icon={Package}
-          />
+            icon={Package} />
+
           <StatCard
             title="Aktiva batcher"
             value={stats.activeBatches}
-            icon={Factory}
-          />
+            icon={Factory} />
+
           <StatCard
             title="Väntande ordrar"
             value={stats.pendingOrders}
-            icon={ShoppingCart}
-          />
+            icon={ShoppingCart} />
+
           <Link to={createPageUrl('Alerts')}>
             <StatCard
               title="Lagernotiser"
               value={inventoryAlerts.length}
               icon={Bell}
               variant={inventoryAlerts.length > 0 ? 'warning' : 'default'}
-              clickable
-            />
+              clickable />
+
           </Link>
         </div>
 
@@ -165,25 +165,25 @@ export default function Dashboard() {
 
           {/* Recent Batches */}
           <div className="lg:col-span-1">
-            <RecentBatches 
+            <RecentBatches
               batches={recentBatches}
               onBatchClick={(batch) => {
                 window.location.href = createPageUrl('Batches') + `?batch=${batch.id}`;
-              }}
-            />
+              }} />
+
           </div>
 
           {/* Purchase Suggestions */}
           <div className="lg:col-span-1">
-            <PurchaseSuggestions 
+            <PurchaseSuggestions
               suggestions={stats.suggestions}
               onViewAll={() => {
                 window.location.href = createPageUrl('Planning');
-              }}
-            />
+              }} />
+
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }
