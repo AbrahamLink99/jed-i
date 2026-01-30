@@ -6,17 +6,41 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, ChefHat, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Search, ChefHat, Edit2, Trash2, Shield } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import RecipeForm from '@/components/recipes/RecipeForm';
 import { toast } from 'sonner';
+import { usePermissions } from '@/components/auth/PermissionGate';
 
 export default function Recipes() {
+  const { hasPermission, isLoading: permissionsLoading } = usePermissions();
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState(null);
 
   const queryClient = useQueryClient();
+
+  if (permissionsLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-slate-600">Laddar...</div>
+      </div>
+    );
+  }
+
+  if (!hasPermission('MANAGE_RECIPES')) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full p-8 text-center">
+          <Shield className="w-16 h-16 mx-auto mb-4 text-red-500" />
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Ingen åtkomst</h2>
+          <p className="text-slate-600">
+            Du har inte behörighet att visa recept. Endast administratörer kan se och hantera recept.
+          </p>
+        </Card>
+      </div>
+    );
+  }
 
   const { data: products = [] } = useQuery({
     queryKey: ['products'],
