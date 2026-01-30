@@ -2,26 +2,26 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { cn } from "@/lib/utils";
-import { 
-  LayoutDashboard, Package, Factory, Boxes, 
+import {
+  LayoutDashboard, Package, Factory, Boxes,
   Warehouse, Calculator, Menu, X,
-  ChevronRight, Bell, Shield, LogOut, ChefHat
-} from 'lucide-react';
+  ChevronRight, Bell, Shield, LogOut, ChefHat } from
+'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from '@/api/base44Client';
 
 const navigation = [
-  { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
-  { name: 'Notiser', icon: Bell, page: 'Alerts' },
-  { name: 'Artiklar', icon: Package, page: 'Products' },
-  { name: 'Recept', icon: ChefHat, page: 'Recipes' },
-  { name: 'Produktion', icon: Factory, page: 'Production' },
-  { name: 'Färdigvaror', icon: Package, page: 'FinishedGoods' },
-  { name: 'Batcher', icon: Boxes, page: 'Batches' },
-  { name: 'Lager', icon: Warehouse, page: 'Inventory' },
-  { name: 'Planering', icon: Calculator, page: 'Planning' },
-];
+{ name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
+{ name: 'Notiser', icon: Bell, page: 'Alerts' },
+{ name: 'Artiklar', icon: Package, page: 'Products' },
+{ name: 'Recept', icon: ChefHat, page: 'Recipes' },
+{ name: 'Produktion', icon: Factory, page: 'Production' },
+{ name: 'Färdigvaror', icon: Package, page: 'FinishedGoods' },
+{ name: 'Batcher', icon: Boxes, page: 'Batches' },
+{ name: 'Lager', icon: Warehouse, page: 'Inventory' },
+{ name: 'Planering', icon: Calculator, page: 'Planning' }];
+
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -42,12 +42,12 @@ export default function Layout({ children, currentPageName }) {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Mobile sidebar backdrop */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      {sidebarOpen &&
+      <div
+        className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+        onClick={() => setSidebarOpen(false)} />
+
+      }
 
       {/* Sidebar */}
       <aside className={cn(
@@ -61,12 +61,12 @@ export default function Layout({ children, currentPageName }) {
             </div>
             <span className="font-bold text-[#f0f4f8]">Lagermaster</span>
           </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          >
+            onClick={() => setSidebarOpen(false)}>
+
             <X className="w-5 h-5" />
           </Button>
         </div>
@@ -81,45 +81,45 @@ export default function Layout({ children, currentPageName }) {
                 onClick={() => setSidebarOpen(false)}
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
-                  isActive 
-                    ? "bg-[#03a9f4]/20 text-[#03a9f4]" 
-                    : "text-[#b3e5fc] hover:bg-[#144272] hover:text-[#f0f4f8]"
-                )}
-                >
+                  isActive ?
+                  "bg-[#03a9f4]/20 text-[#03a9f4]" :
+                  "text-[#b3e5fc] hover:bg-[#144272] hover:text-[#f0f4f8]"
+                )}>
+
                 <item.icon className={cn(
                   "w-5 h-5",
                   isActive ? "text-[#03a9f4]" : "text-[#b3e5fc]"
                 )} />
                 {item.name}
-                {isActive && (
-                  <ChevronRight className="w-4 h-4 ml-auto text-[#03a9f4]" />
-                )}
-              </Link>
-            );
+                {isActive &&
+                <ChevronRight className="w-4 h-4 ml-auto text-[#03a9f4]" />
+                }
+              </Link>);
+
           })}
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[#102a43] space-y-3">
-          {user?.role === 'admin' && (
-            <Link
-              to={createPageUrl('Admin')}
-              onClick={() => setSidebarOpen(false)}
-              className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
-                currentPageName === 'Admin'
-                  ? "bg-[#03a9f4]/20 text-[#03a9f4]"
-                  : "text-[#b3e5fc] hover:bg-[#144272] hover:text-[#f0f4f8]"
-              )}
-            >
+          {user?.role === 'admin' &&
+          <Link
+            to={createPageUrl('Admin')}
+            onClick={() => setSidebarOpen(false)}
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
+              currentPageName === 'Admin' ?
+              "bg-[#03a9f4]/20 text-[#03a9f4]" :
+              "text-[#b3e5fc] hover:bg-[#144272] hover:text-[#f0f4f8]"
+            )}>
+
               <Shield className={cn(
-                "w-5 h-5",
-                currentPageName === 'Admin' ? "text-[#03a9f4]" : "text-[#b3e5fc]"
-              )} />
+              "w-5 h-5",
+              currentPageName === 'Admin' ? "text-[#03a9f4]" : "text-[#b3e5fc]"
+            )} />
               Admin
             </Link>
-          )}
-          {user && (
-            <div className="px-4 py-2 space-y-2">
+          }
+          {user &&
+          <div className="px-4 py-2 space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-[#b3e5fc]">Inloggad som:</span>
                 <Badge variant="outline" className="text-xs border-[#03a9f4] text-[#03a9f4]">
@@ -130,16 +130,16 @@ export default function Layout({ children, currentPageName }) {
                 {user.email}
               </p>
               <Button
-                variant="outline"
-                size="sm"
-                className="w-full"
-                onClick={() => base44.auth.logout()}
-              >
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => base44.auth.logout()}>
+
                 <LogOut className="w-4 h-4 mr-2" />
                 Logga ut
               </Button>
             </div>
-          )}
+          }
           <div className="text-xs text-[#b3e5fc]/60 text-center">
             Lagermaster v1.0
           </div>
@@ -149,27 +149,27 @@ export default function Layout({ children, currentPageName }) {
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Top bar */}
-        <header className="sticky top-0 z-30 h-16 bg-[#144272] border-b border-[#243b53] flex items-center px-4 lg:px-6">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+        <header className="bg-sky-900 px-4 sticky top-0 z-30 h-16 border-b border-[#243b53] flex items-center lg:px-6">
+          <Button
+            variant="ghost"
+            size="icon"
             className="lg:hidden mr-2"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <Menu className="w-5 h-5 text-[#f0f4f8]" />
+            onClick={() => setSidebarOpen(true)}>
+
+            <Menu className="w-5 h-5" />
           </Button>
           
           <div className="flex items-center gap-2">
-            {navigation.find(n => n.page === currentPageName)?.icon && (
-              <div className="p-2 rounded-lg bg-[#243b53]">
+            {navigation.find((n) => n.page === currentPageName)?.icon &&
+            <div className="p-2 rounded-lg bg-[#243b53]">
                 {React.createElement(
-                  navigation.find(n => n.page === currentPageName)?.icon || LayoutDashboard,
-                  { className: "w-4 h-4 text-[#03a9f4]" }
-                )}
+                navigation.find((n) => n.page === currentPageName)?.icon || LayoutDashboard,
+                { className: "w-4 h-4 text-[#03a9f4]" }
+              )}
               </div>
-            )}
+            }
             <h1 className="font-semibold text-[#f0f4f8]">
-              {navigation.find(n => n.page === currentPageName)?.name || currentPageName}
+              {navigation.find((n) => n.page === currentPageName)?.name || currentPageName}
             </h1>
           </div>
         </header>
@@ -179,6 +179,6 @@ export default function Layout({ children, currentPageName }) {
           {children}
         </main>
       </div>
-    </div>
-  );
+    </div>);
+
 }
