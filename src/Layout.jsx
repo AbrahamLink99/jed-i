@@ -14,7 +14,7 @@ import { base44 } from '@/api/base44Client';
 const navigation = [
   { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
   { name: 'Notiser', icon: Bell, page: 'Alerts' },
-  { name: 'Produkter', icon: Package, page: 'Products' },
+  { name: 'Artiklar', icon: Package, page: 'Products' },
   { name: 'Recept', icon: ChefHat, page: 'Recipes' },
   { name: 'Produktion', icon: Factory, page: 'Production' },
   { name: 'Färdigvaror', icon: Package, page: 'FinishedGoods' },
