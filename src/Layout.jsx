@@ -156,7 +156,7 @@ export default function Layout({ children, currentPageName }) {
             className="lg:hidden mr-2"
             onClick={() => setSidebarOpen(true)}
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="w-5 h-5 text-[#f0f4f8]" />
           </Button>
           
           <div className="flex items-center gap-2">
