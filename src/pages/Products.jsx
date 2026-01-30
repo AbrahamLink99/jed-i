@@ -200,12 +200,12 @@ export default function Products() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Produkter</h1>
-            <p className="text-slate-500 mt-1">Hantera produkter, råvaror och förpackningar</p>
+            <h1 className="text-3xl font-bold text-slate-900">Artiklar</h1>
+            <p className="text-slate-500 mt-1">Hantera artiklar, råvaror och förpackningar</p>
           </div>
           <Button onClick={() => setShowForm(true)} className="bg-indigo-600 hover:bg-indigo-700">
             <Plus className="w-4 h-4 mr-2" />
-            Ny produkt
+            Ny artikel
           </Button>
         </div>
 
@@ -296,7 +296,7 @@ export default function Products() {
                           variant="ghost" 
                           size="icon"
                           onClick={() => {
-                            if (confirm('Är du säker på att du vill ta bort denna produkt?')) {
+                            if (confirm('Är du säker på att du vill ta bort denna artikel?')) {
                               deleteMutation.mutate(product.id);
                             }
                           }}
@@ -313,7 +313,7 @@ export default function Products() {
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-12 text-slate-500">
                     <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                    <p>Inga produkter hittades</p>
+                    <p>Inga artiklar hittades</p>
                   </TableCell>
                 </TableRow>
               )}
