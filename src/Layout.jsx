@@ -51,15 +51,15 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-[#243b53] border-r border-[#243b53] transform transition-transform duration-200 ease-in-out lg:translate-x-0",
+        "fixed inset-y-0 left-0 z-50 w-64 bg-sky-900 border-r border-sky-900 transform transition-transform duration-200 ease-in-out lg:translate-x-0",
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        <div className="flex items-center justify-between h-16 px-6 border-b border-[#102a43]">
+        <div className="flex items-center justify-between h-16 px-6 border-b border-sky-800">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-[#03a9f4] flex items-center justify-center">
               <Factory className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-[#f0f4f8]">Lagermaster</span>
+            <span className="font-bold text-amber-50">Lagermaster</span>
           </div>
           <Button
             variant="ghost"
@@ -88,18 +88,18 @@ export default function Layout({ children, currentPageName }) {
 
                 <item.icon className={cn(
                   "w-5 h-5",
-                  isActive ? "text-[#03a9f4]" : "text-[#b3e5fc]"
+                  isActive ? "text-amber-50" : "text-sky-100"
                 )} />
                 {item.name}
                 {isActive &&
-                <ChevronRight className="w-4 h-4 ml-auto text-[#03a9f4]" />
+                <ChevronRight className="w-4 h-4 ml-auto text-amber-50" />
                 }
               </Link>);
 
           })}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[#102a43] space-y-3">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-sky-800 space-y-3">
           {user?.role === 'admin' &&
           <Link
             to={createPageUrl('Admin')}
@@ -113,20 +113,20 @@ export default function Layout({ children, currentPageName }) {
 
               <Shield className={cn(
               "w-5 h-5",
-              currentPageName === 'Admin' ? "text-[#03a9f4]" : "text-[#b3e5fc]"
-            )} />
+              currentPageName === 'Admin' ? "text-amber-50" : "text-sky-100"
+              )} />
               Admin
             </Link>
           }
           {user &&
           <div className="px-4 py-2 space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-[#b3e5fc]">Inloggad som:</span>
-                <Badge variant="outline" className="text-xs border-[#03a9f4] text-[#03a9f4]">
+                <span className="text-sky-100">Inloggad som:</span>
+                <Badge variant="outline" className="text-xs border-amber-50 text-amber-50">
                   {user.role || 'user'}
                 </Badge>
               </div>
-              <p className="text-sm font-medium text-[#f0f4f8] truncate">
+              <p className="text-sm font-medium text-amber-50 truncate">
                 {user.email}
               </p>
               <Button
@@ -140,7 +140,7 @@ export default function Layout({ children, currentPageName }) {
               </Button>
             </div>
           }
-          <div className="text-xs text-[#b3e5fc]/60 text-center">
+          <div className="text-xs text-sky-100/60 text-center">
             Lagermaster v1.0
           </div>
         </div>
@@ -149,7 +149,7 @@ export default function Layout({ children, currentPageName }) {
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Top bar */}
-        <header className="sticky top-0 z-30 h-16 bg-[#144272] border-b border-[#243b53] flex items-center px-4 lg:px-6">
+        <header className="sticky top-0 z-30 h-16 bg-sky-900 border-b border-sky-900 flex items-center px-4 lg:px-6">
           <Button
             variant="ghost"
             size="icon" className="text-amber-50 mr-2 text-sm font-medium rounded-md inline-flex items-center justify-center gap-2 whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-9 w-9 lg:hidden"
@@ -161,10 +161,10 @@ export default function Layout({ children, currentPageName }) {
           
           <div className="flex items-center gap-2">
             {navigation.find((n) => n.page === currentPageName)?.icon &&
-            <div className="p-2 rounded-lg bg-[#243b53]">
+            <div className="p-2 rounded-lg bg-sky-800">
                 {React.createElement(
                 navigation.find((n) => n.page === currentPageName)?.icon || LayoutDashboard,
-                { className: "w-4 h-4 text-[#03a9f4]" }
+                { className: "w-4 h-4 text-amber-50" }
               )}
               </div>
             }
