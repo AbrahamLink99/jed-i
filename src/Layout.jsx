@@ -149,11 +149,11 @@ export default function Layout({ children, currentPageName }) {
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Top bar */}
-        <header className="bg-sky-900 px-4 sticky top-0 z-30 h-16 border-b border-[#243b53] flex items-center lg:px-6">
+        <header className="sticky top-0 z-30 h-16 bg-[#144272] border-b border-[#243b53] flex items-center px-4 lg:px-6">
           <Button
             variant="ghost"
-            size="icon"
-            className="lg:hidden mr-2"
+            size="icon" className="text-amber-50 mr-2 text-sm font-medium rounded-md inline-flex items-center justify-center gap-2 whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-9 w-9 lg:hidden"
+
             onClick={() => setSidebarOpen(true)}>
 
             <Menu className="w-5 h-5" />
@@ -168,7 +168,7 @@ export default function Layout({ children, currentPageName }) {
               )}
               </div>
             }
-            <h1 className="font-semibold text-[#f0f4f8]">
+            <h1 className="text-amber-50 font-semibold">
               {navigation.find((n) => n.page === currentPageName)?.name || currentPageName}
             </h1>
           </div>
