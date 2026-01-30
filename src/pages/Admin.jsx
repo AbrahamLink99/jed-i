@@ -16,11 +16,12 @@ import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import { 
   Shield, Users, FileText, AlertCircle, CheckCircle, 
-  UserPlus, Search, Calendar, Hash, Database, Activity 
+  UserPlus, Search, Calendar, Hash, Database, Activity, ClipboardList 
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from "@/lib/utils";
 import DataImport from '@/components/admin/DataImport';
+import InventoryCount from '@/components/admin/InventoryCount';
 
 const roleColors = {
   admin: 'bg-purple-100 text-purple-700',
@@ -186,6 +187,12 @@ export default function AdminPage() {
                 Import
               </TabsTrigger>
             </PermissionGate>
+            <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
+              <TabsTrigger value="inventory">
+                <ClipboardList className="w-4 h-4 mr-2" />
+                Inventering
+              </TabsTrigger>
+            </PermissionGate>
             <PermissionGate permission={PERMISSIONS.AUDITLOG_READ}>
               <TabsTrigger value="audit">
                 <FileText className="w-4 h-4 mr-2" />
@@ -311,6 +318,13 @@ export default function AdminPage() {
           <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
             <TabsContent value="import">
               <DataImport />
+            </TabsContent>
+          </PermissionGate>
+
+          {/* Inventory Count Tab */}
+          <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
+            <TabsContent value="inventory">
+              <InventoryCount />
             </TabsContent>
           </PermissionGate>
 
