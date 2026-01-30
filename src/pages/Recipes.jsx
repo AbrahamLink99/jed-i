@@ -20,36 +20,16 @@ export default function Recipes() {
 
   const queryClient = useQueryClient();
 
-  if (permissionsLoading) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-slate-600">Laddar...</div>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full p-8 text-center">
-          <Shield className="w-16 h-16 mx-auto mb-4 text-red-500" />
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">Ingen åtkomst</h2>
-          <p className="text-slate-600">
-            Du har inte behörighet att visa recept. Endast administratörer kan se och hantera recept.
-          </p>
-        </Card>
-      </div>
-    );
-  }
-
   const { data: products = [] } = useQuery({
     queryKey: ['products'],
-    queryFn: () => base44.entities.Product.list()
+    queryFn: () => base44.entities.Product.list(),
+    enabled: !permissionsLoading && isAdmin
   });
 
   const { data: bomItems = [] } = useQuery({
     queryKey: ['bom-items'],
-    queryFn: () => base44.entities.BOMItem.list()
+    queryFn: () => base44.entities.BOMItem.list(),
+    enabled: !permissionsLoading && isAdmin
   });
 
   // Group BOM items by finished product
@@ -115,6 +95,28 @@ export default function Recipes() {
   const availableComponents = products.filter(p => 
     p.type === 'raw_material' || p.type === 'packaging' || p.type === 'label'
   );
+
+  if (permissionsLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-slate-600">Laddar...</div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full p-8 text-center">
+          <Shield className="w-16 h-16 mx-auto mb-4 text-red-500" />
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Ingen åtkomst</h2>
+          <p className="text-slate-600">
+            Du har inte behörighet att visa recept. Endast administratörer kan se och hantera recept.
+          </p>
+        </Card>
+      </div>
+    );
+  }
 
   if (showForm) {
     return (
