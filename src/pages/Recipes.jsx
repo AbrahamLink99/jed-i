@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 import { usePermissions } from '@/components/auth/PermissionGate';
 
 export default function Recipes() {
-  const { hasPermission, isLoading: permissionsLoading } = usePermissions();
+  const { isAdmin, loading: permissionsLoading } = usePermissions();
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState(null);
@@ -28,7 +28,7 @@ export default function Recipes() {
     );
   }
 
-  if (!hasPermission('MANAGE_RECIPES')) {
+  if (!isAdmin) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <Card className="max-w-md w-full p-8 text-center">

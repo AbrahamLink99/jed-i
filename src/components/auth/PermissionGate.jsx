@@ -147,9 +147,10 @@ export const PERMISSIONS = {
   PRODUCTS_READ: 'products.read',
   PRODUCTS_WRITE: 'products.write',
   
-  // BOM
+  // BOM / Recipes
   BOM_READ: 'bom.read',
   BOM_WRITE: 'bom.write',
+  MANAGE_RECIPES: 'bom.write',
   
   // Batches
   BATCHES_READ: 'batches.read',
