@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Search, Package, Edit2, Trash2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import ProductForm from '@/components/products/ProductForm';
 import BOMEditor from '@/components/products/BOMEditor';
@@ -26,6 +27,20 @@ const typeColors = {
   raw_material: 'bg-amber-100 text-amber-700',
   packaging: 'bg-cyan-100 text-cyan-700',
   label: 'bg-pink-100 text-pink-700'
+};
+
+const brandLabels = {
+  own: 'Eget',
+  client_a: 'Kund A',
+  client_b: 'Kund B',
+  other: 'Övrigt'
+};
+
+const brandColors = {
+  own: 'bg-blue-100 text-blue-800 border-blue-300',
+  client_a: 'bg-green-100 text-green-800 border-green-300',
+  client_b: 'bg-purple-100 text-purple-800 border-purple-300',
+  other: 'bg-gray-100 text-gray-800 border-gray-300'
 };
 
 export default function Products() {
@@ -110,6 +125,7 @@ export default function Products() {
     return products
       .filter(p => {
         if (activeTab !== 'all' && p.type !== activeTab) return false;
+        if (brandFilter !== 'all' && (p.brand || 'own') !== brandFilter) return false;
         if (searchTerm) {
           const search = searchTerm.toLowerCase();
           return p.sku?.toLowerCase().includes(search) || 
@@ -118,7 +134,7 @@ export default function Products() {
         return true;
       })
       .sort((a, b) => a.sku?.localeCompare(b.sku));
-  }, [products, activeTab, searchTerm]);
+  }, [products, activeTab, brandFilter, searchTerm]);
 
   const stockData = useMemo(() => {
     const data = {};
@@ -214,15 +230,29 @@ export default function Products() {
 
         {/* Filters */}
         <Card className="p-4 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Sök SKU eller namn..."
-                className="pl-10"
-              />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Sök SKU eller namn..."
+                  className="pl-10"
+                />
+              </div>
+              <Select value={brandFilter} onValueChange={setBrandFilter}>
+                <SelectTrigger className="w-full sm:w-[200px]">
+                  <SelectValue placeholder="Varumärke" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Alla varumärken</SelectItem>
+                  <SelectItem value="own">Eget varumärke</SelectItem>
+                  <SelectItem value="client_a">Kund A</SelectItem>
+                  <SelectItem value="client_b">Kund B</SelectItem>
+                  <SelectItem value="other">Övrigt</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList>
@@ -258,7 +288,14 @@ export default function Products() {
                 return (
                   <TableRow key={product.id}>
                     <TableCell className="font-mono font-medium">{product.sku}</TableCell>
-                    <TableCell>{product.name}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {product.name}
+                        <Badge variant="outline" className={`text-xs ${brandColors[product.brand || 'own']}`}>
+                          {brandLabels[product.brand || 'own']}
+                        </Badge>
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <Badge className={cn(typeColors[product.type], "font-normal")}>
                         {typeLabels[product.type]}

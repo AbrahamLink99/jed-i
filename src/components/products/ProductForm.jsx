@@ -15,6 +15,13 @@ const productTypes = [
   { value: 'label', label: 'Etikett' }
 ];
 
+const brandOptions = [
+  { value: 'own', label: 'Eget varumärke' },
+  { value: 'client_a', label: 'Kund A' },
+  { value: 'client_b', label: 'Kund B' },
+  { value: 'other', label: 'Övrigt' }
+];
+
 const units = [
   { value: 'kg', label: 'Kilogram (kg)' },
   { value: 'liter', label: 'Liter (l)' },
@@ -27,6 +34,7 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }) {
     sku: '',
     name: '',
     type: 'finished_good',
+    brand: 'own',
     unit: 'kg',
     safety_stock: 0,
     lead_time_days: 7,
@@ -99,6 +107,20 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }) {
               <SelectContent>
                 {productTypes.map(t => (
                   <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Varumärke *</Label>
+            <Select value={formData.brand || 'own'} onValueChange={(v) => handleChange('brand', v)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {brandOptions.map(b => (
+                  <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
