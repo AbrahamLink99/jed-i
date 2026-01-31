@@ -6,13 +6,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Download, Upload, FileSpreadsheet, CheckCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { getStockSummary } from '@/components/inventory/StockCalculations';
 
+const PRODUCT_CATEGORIES = [
+  { value: 'raw_material', label: 'Råvaror' },
+  { value: 'finished_good', label: 'Färdigvaror' },
+  { value: 'packaging', label: 'Förpackningar' },
+  { value: 'label', label: 'Etiketter' }
+];
+
 export default function InventoryCount() {
   const [file, setFile] = useState(null);
   const [importResult, setImportResult] = useState(null);
+  const [activeCategory, setActiveCategory] = useState('raw_material');
   const queryClient = useQueryClient();
 
   const { data: products = [] } = useQuery({
@@ -61,9 +70,10 @@ export default function InventoryCount() {
     }
   });
 
-  // Export current inventory to CSV
-  const handleExport = () => {
-    const stockData = products.map(product => {
+  // Export current inventory to CSV for specific category
+  const handleExport = (category) => {
+    const filteredProducts = products.filter(p => p.type === category);
+    const stockData = filteredProducts.map(product => {
       const stock = getStockSummary(product, ledger, batches);
       return {
         SKU: product.sku,
@@ -93,16 +103,17 @@ export default function InventoryCount() {
     ].join('\n');
 
     // Add BOM for Excel to recognize UTF-8
+    const categoryLabel = PRODUCT_CATEGORIES.find(c => c.value === category)?.label || category;
     const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `inventering_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `inventering_${categoryLabel}_${new Date().toISOString().split('T')[0]}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    toast.success('Inventeringslista exporterad');
+    toast.success(`Inventeringslista för ${categoryLabel} exporterad`);
   };
 
   // Parse CSV file
@@ -190,97 +201,111 @@ export default function InventoryCount() {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Exportera inventeringslista</CardTitle>
-          <CardDescription>
-            Ladda ner en CSV-fil med alla artiklar och nuvarande lagerstatus
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button onClick={handleExport} className="w-full sm:w-auto">
-            <Download className="w-4 h-4 mr-2" />
-            Ladda ner inventeringslista (CSV)
-          </Button>
-          <p className="text-sm text-slate-500 mt-3">
-            Fyll i kolumnen "Räknat" med faktiskt antal efter fysisk inventering
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Importera inventeringsdata</CardTitle>
-          <CardDescription>
-            Ladda upp ifylld CSV-fil för att justera lagersaldo automatiskt
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="file">Välj CSV-fil</Label>
-            <Input
-              id="file"
-              type="file"
-              accept=".csv"
-              onChange={(e) => setFile(e.target.files[0])}
-            />
-            <p className="text-xs text-slate-500">
-              Format: CSV med kolumner SKU, Räknat (obligatoriska)
-            </p>
-          </div>
-
-          <Button 
-            onClick={handleImport}
-            disabled={!file || importMutation.isPending}
-            className="w-full sm:w-auto"
-          >
-            <Upload className="w-4 h-4 mr-2" />
-            {importMutation.isPending ? 'Importerar...' : 'Importera och justera lager'}
-          </Button>
-
-          {importResult && (
-            <Alert className={importResult.failed > 0 ? 'border-amber-200 bg-amber-50' : 'border-green-200 bg-green-50'}>
-              <AlertDescription>
-                <div className="flex items-start gap-2">
-                  {importResult.failed === 0 ? (
-                    <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
-                  ) : (
-                    <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
-                  )}
-                  <div>
-                    <p className="font-medium">Import slutförd</p>
-                    <p className="text-sm mt-1">
-                      {importResult.success} artiklar justerade, {importResult.failed} fel
-                    </p>
-                    {importResult.failed > 0 && (
-                      <div className="mt-2 space-y-1">
-                        {importResult.details.filter(d => !d.success).map((d, i) => (
-                          <p key={i} className="text-xs text-red-600">
-                            {d.sku}: {d.error}
-                          </p>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
-
       <Alert>
         <FileSpreadsheet className="w-4 h-4" />
         <AlertDescription>
           <p className="font-medium mb-2">Så här fungerar det:</p>
           <ol className="list-decimal list-inside space-y-1 text-sm">
-            <li>Exportera inventeringslista (CSV-fil med alla artiklar)</li>
+            <li>Välj kategori och exportera inventeringslista (CSV-fil)</li>
             <li>Öppna filen i Excel och fyll i kolumnen "Räknat" med faktiskt antal</li>
-            <li>Spara filen och importera den här</li>
+            <li>Spara filen och importera den i samma kategori</li>
             <li>Systemet skapar automatiskt justeringstransaktioner för differenser</li>
           </ol>
         </AlertDescription>
       </Alert>
+
+      <Tabs value={activeCategory} onValueChange={setActiveCategory}>
+        <TabsList className="grid w-full grid-cols-4">
+          {PRODUCT_CATEGORIES.map(cat => (
+            <TabsTrigger key={cat.value} value={cat.value}>
+              {cat.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        {PRODUCT_CATEGORIES.map(cat => (
+          <TabsContent key={cat.value} value={cat.value} className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Exportera inventeringslista - {cat.label}</CardTitle>
+                <CardDescription>
+                  Ladda ner en CSV-fil med alla {cat.label.toLowerCase()} och nuvarande lagerstatus
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={() => handleExport(cat.value)} className="w-full sm:w-auto">
+                  <Download className="w-4 h-4 mr-2" />
+                  Ladda ner {cat.label} (CSV)
+                </Button>
+                <p className="text-sm text-slate-500 mt-3">
+                  {products.filter(p => p.type === cat.value).length} artiklar i denna kategori
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Importera inventeringsdata - {cat.label}</CardTitle>
+                <CardDescription>
+                  Ladda upp ifylld CSV-fil för att justera lagersaldo automatiskt
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor={`file-${cat.value}`}>Välj CSV-fil</Label>
+                  <Input
+                    id={`file-${cat.value}`}
+                    type="file"
+                    accept=".csv"
+                    onChange={(e) => setFile(e.target.files[0])}
+                  />
+                  <p className="text-xs text-slate-500">
+                    Format: CSV med kolumner SKU, Räknat (obligatoriska)
+                  </p>
+                </div>
+
+                <Button 
+                  onClick={handleImport}
+                  disabled={!file || importMutation.isPending}
+                  className="w-full sm:w-auto"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  {importMutation.isPending ? 'Importerar...' : 'Importera och justera lager'}
+                </Button>
+
+                {importResult && (
+                  <Alert className={importResult.failed > 0 ? 'border-amber-200 bg-amber-50' : 'border-green-200 bg-green-50'}>
+                    <AlertDescription>
+                      <div className="flex items-start gap-2">
+                        {importResult.failed === 0 ? (
+                          <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
+                        ) : (
+                          <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
+                        )}
+                        <div>
+                          <p className="font-medium">Import slutförd</p>
+                          <p className="text-sm mt-1">
+                            {importResult.success} artiklar justerade, {importResult.failed} fel
+                          </p>
+                          {importResult.failed > 0 && (
+                            <div className="mt-2 space-y-1">
+                              {importResult.details.filter(d => !d.success).map((d, i) => (
+                                <p key={i} className="text-xs text-red-600">
+                                  {d.sku}: {d.error}
+                                </p>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        ))}
+      </Tabs>
     </div>
   );
 }
