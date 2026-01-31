@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 import { cn } from "@/lib/utils";
 import DataImport from '@/components/admin/DataImport';
 import InventoryCount from '@/components/admin/InventoryCount';
+import SandboxSeeder from '@/components/admin/SandboxSeeder';
 
 const roleColors = {
   admin: 'bg-purple-100 text-purple-700',
@@ -193,6 +194,12 @@ export default function AdminPage() {
                 Inventering
               </TabsTrigger>
             </PermissionGate>
+            <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
+              <TabsTrigger value="sandbox">
+                <Database className="w-4 h-4 mr-2" />
+                Sandbox
+              </TabsTrigger>
+            </PermissionGate>
             <PermissionGate permission={PERMISSIONS.AUDITLOG_READ}>
               <TabsTrigger value="audit">
                 <FileText className="w-4 h-4 mr-2" />
@@ -325,6 +332,13 @@ export default function AdminPage() {
           <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
             <TabsContent value="inventory">
               <InventoryCount />
+            </TabsContent>
+          </PermissionGate>
+
+          {/* Sandbox Tab */}
+          <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
+            <TabsContent value="sandbox">
+              <SandboxSeeder />
             </TabsContent>
           </PermissionGate>
 
