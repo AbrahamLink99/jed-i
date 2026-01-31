@@ -10,31 +10,34 @@ import RecentBatches from '@/components/dashboard/RecentBatches';
 import PurchaseSuggestions from '@/components/dashboard/PurchaseSuggestions';
 import InventoryAlertList from '@/components/alerts/AlertList';
 import { getStockSummary, calculatePurchaseSuggestion } from '@/components/inventory/StockCalculations';
+import { useEnvironmentFilter } from '@/components/environment/useEnvironmentFilter';
 
 export default function Dashboard() {
+  const envFilter = useEnvironmentFilter();
+
   const { data: products = [] } = useQuery({
-    queryKey: ['products'],
-    queryFn: () => base44.entities.Product.list()
+    queryKey: ['products', envFilter.environment],
+    queryFn: () => base44.entities.Product.filter(envFilter)
   });
 
   const { data: batches = [] } = useQuery({
-    queryKey: ['batches'],
-    queryFn: () => base44.entities.Batch.list('-created_date', 50)
+    queryKey: ['batches', envFilter.environment],
+    queryFn: () => base44.entities.Batch.filter({ ...envFilter }, '-created_date', 50)
   });
 
   const { data: ledger = [] } = useQuery({
-    queryKey: ['ledger'],
-    queryFn: () => base44.entities.InventoryLedger.list('-created_date', 500)
+    queryKey: ['ledger', envFilter.environment],
+    queryFn: () => base44.entities.InventoryLedger.filter({ ...envFilter }, '-created_date', 500)
   });
 
   const { data: orders = [] } = useQuery({
-    queryKey: ['shopify-orders'],
+    queryKey: ['shopify-orders', envFilter.environment],
     queryFn: () => base44.entities.ShopifyOrder.filter({ status: 'reserved' })
   });
 
   const { data: inventoryAlerts = [] } = useQuery({
-    queryKey: ['inventory_alerts'],
-    queryFn: () => base44.entities.InventoryAlert.filter({ status: 'OPEN' })
+    queryKey: ['inventory_alerts', envFilter.environment],
+    queryFn: () => base44.entities.InventoryAlert.filter({ ...envFilter, status: 'OPEN' })
   });
 
   const stats = useMemo(() => {

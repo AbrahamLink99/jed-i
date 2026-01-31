@@ -10,6 +10,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from '@/api/base44Client';
+import { EnvironmentProvider } from '@/components/environment/EnvironmentContext';
+import EnvironmentSwitcher from '@/components/environment/EnvironmentSwitcher';
+import EnvironmentBanner from '@/components/environment/EnvironmentBanner';
 
 const navigation = [
 { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
@@ -40,7 +43,8 @@ export default function Layout({ children, currentPageName }) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <EnvironmentProvider>
+      <div className="min-h-screen bg-slate-50">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen &&
       <div
@@ -149,33 +153,38 @@ export default function Layout({ children, currentPageName }) {
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Top bar */}
-        <header className="sticky top-0 z-30 h-16 bg-sky-900 border-b border-sky-900 flex items-center px-4 lg:px-6">
-          <Button
-            variant="ghost"
-            size="icon" className="text-amber-50 mr-2 text-sm font-medium rounded-md inline-flex items-center justify-center gap-2 whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-9 w-9 lg:hidden"
-
-            onClick={() => setSidebarOpen(true)}>
-
-            <Menu className="w-5 h-5" />
-          </Button>
-          
+        <header className="sticky top-0 z-30 h-16 bg-sky-900 border-b border-sky-900 flex items-center justify-between px-4 lg:px-6">
           <div className="flex items-center gap-2">
-            {navigation.find((n) => n.page === currentPageName)?.icon &&
-            <div className="p-2 rounded-lg bg-sky-800">
-                {React.createElement(
-                navigation.find((n) => n.page === currentPageName)?.icon || LayoutDashboard,
-                { className: "w-4 h-4 text-amber-50" }
-              )}
-              </div>
-            }
-            <h1 className="text-amber-50 font-semibold">
-              {navigation.find((n) => n.page === currentPageName)?.name || currentPageName}
-            </h1>
+            <Button
+              variant="ghost"
+              size="icon" className="text-amber-50 mr-2 text-sm font-medium rounded-md inline-flex items-center justify-center gap-2 whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-9 w-9 lg:hidden"
+
+              onClick={() => setSidebarOpen(true)}>
+
+              <Menu className="w-5 h-5" />
+            </Button>
+
+            <div className="flex items-center gap-2">
+              {navigation.find((n) => n.page === currentPageName)?.icon &&
+              <div className="p-2 rounded-lg bg-sky-800">
+                  {React.createElement(
+                  navigation.find((n) => n.page === currentPageName)?.icon || LayoutDashboard,
+                  { className: "w-4 h-4 text-amber-50" }
+                )}
+                </div>
+              }
+              <h1 className="text-amber-50 font-semibold">
+                {navigation.find((n) => n.page === currentPageName)?.name || currentPageName}
+              </h1>
+            </div>
           </div>
+
+          <EnvironmentSwitcher />
         </header>
 
         {/* Page content */}
         <main>
+          <EnvironmentBanner />
           {children}
         </main>
       </div>
