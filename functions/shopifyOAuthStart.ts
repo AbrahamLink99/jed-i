@@ -50,6 +50,20 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('OAuth start error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    // Return HTML error page for better user experience
+    return new Response(`
+      <!DOCTYPE html>
+      <html>
+      <head><title>OAuth Error</title></head>
+      <body style="font-family: sans-serif; padding: 50px; text-align: center;">
+        <h1>OAuth Error</h1>
+        <p style="color: red;">${error.message}</p>
+        <a href="https://jed-i.base44.app/Admin">Return to Admin</a>
+      </body>
+      </html>
+    `, { 
+      status: 500,
+      headers: { 'Content-Type': 'text/html' }
+    });
   }
 });
