@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import DataImport from '@/components/admin/DataImport';
 import InventoryCount from '@/components/admin/InventoryCount';
 import SandboxSeeder from '@/components/admin/SandboxSeeder';
+import ShopifyHistoricalImport from '@/components/admin/ShopifyHistoricalImport';
 
 const roleColors = {
   admin: 'bg-purple-100 text-purple-700',
