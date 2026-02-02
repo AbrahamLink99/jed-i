@@ -1,192 +1,172 @@
-import React, { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
-import { Package, Factory, ShoppingCart, AlertTriangle, TrendingDown, ArrowRight, Bell } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import StatCard from '@/components/dashboard/StatCard';
-import RecentBatches from '@/components/dashboard/RecentBatches';
-import PurchaseSuggestions from '@/components/dashboard/PurchaseSuggestions';
-import InventoryAlertList from '@/components/alerts/AlertList';
-import { getStockSummary, calculatePurchaseSuggestion } from '@/components/inventory/StockCalculations';
+import React, { useState } from 'react';
 import { useEnvironmentFilter } from '@/components/environment/useEnvironmentFilter';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getDashboardMetrics } from '@/utils/dashboardMetrics';
+import KpiCard from '@/components/dashboard/KpiCard';
+import TrendChart from '@/components/dashboard/TrendChart';
+import HistogramChart from '@/components/dashboard/HistogramChart';
+import RootCauseTable from '@/components/dashboard/RootCauseTable';
+import { AlertCircle, Info } from 'lucide-react';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
-export default function Dashboard() {
+export default function DashboardPage() {
+  const [period, setPeriod] = useState('30');
   const envFilter = useEnvironmentFilter();
-
-  const { data: products = [] } = useQuery({
-    queryKey: ['products', envFilter.environment],
-    queryFn: () => base44.entities.Product.filter(envFilter)
-  });
-
-  const { data: batches = [] } = useQuery({
-    queryKey: ['batches', envFilter.environment],
-    queryFn: () => base44.entities.Batch.filter({ ...envFilter }, '-created_date', 50)
-  });
-
-  const { data: ledger = [] } = useQuery({
-    queryKey: ['ledger', envFilter.environment],
-    queryFn: () => base44.entities.InventoryLedger.filter({ ...envFilter }, '-created_date', 500)
-  });
-
-  const { data: orders = [] } = useQuery({
-    queryKey: ['shopify-orders', envFilter.environment],
-    queryFn: () => base44.entities.ShopifyOrder.filter({ status: 'reserved' })
-  });
-
-  const { data: inventoryAlerts = [] } = useQuery({
-    queryKey: ['inventory_alerts', envFilter.environment],
-    queryFn: () => base44.entities.InventoryAlert.filter({ ...envFilter, status: 'OPEN' })
-  });
-
-  const stats = useMemo(() => {
-    const finishedGoods = products.filter((p) => p.type === 'finished_good');
-    const activeBatches = batches.filter((b) => b.status === 'available' || b.status === 'quarantined');
-    const pendingOrders = orders.length;
-
-    // Calculate low stock alerts
-    const alerts = [];
-    products.forEach((product) => {
-      const stock = getStockSummary(product, ledger, batches);
-      if (stock.belowSafety) {
-        alerts.push({
-          type: 'low_stock',
-          severity: stock.onHand <= 0 ? 'critical' : 'warning',
-          title: product.sku,
-          message: `Lager: ${stock.onHand?.toLocaleString('sv-SE')} ${product.unit} (säkerhet: ${product.safety_stock})`
-        });
-      }
-    });
-
-    // Add blocked batch alerts
-    batches.filter((b) => b.status === 'blocked' || b.status === 'quarantined').forEach((batch) => {
-      alerts.push({
-        type: 'blocked_batch',
-        severity: batch.status === 'blocked' ? 'critical' : 'warning',
-        title: `Batch ${batch.batch_number}`,
-        message: `${batch.product_sku} - ${batch.status === 'blocked' ? 'Spärrad' : 'Karantän'}`
-      });
-    });
-
-    // Calculate purchase suggestions
-    const suggestions = [];
-    products.filter((p) => p.type !== 'finished_good').forEach((product) => {
-      const stock = getStockSummary(product, ledger, batches);
-      // Simple avg daily usage estimation
-      const avgDailyUsage = product.safety_stock ? product.safety_stock / 30 : 1;
-      const suggestion = calculatePurchaseSuggestion(product, stock.onHand, stock.reserved, avgDailyUsage);
-      if (suggestion) {
-        suggestions.push(suggestion);
-      }
-    });
-
-    return {
-      totalProducts: products.length,
-      finishedGoods: finishedGoods.length,
-      activeBatches: activeBatches.length,
-      pendingOrders,
-      alerts,
-      suggestions
-    };
-  }, [products, batches, ledger, orders]);
-
-  const recentBatches = batches.slice(0, 5);
+  
+  // Get dashboard metrics based on selected period and environment
+  const metrics = getDashboardMetrics(parseInt(period), envFilter.environment);
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="bg-sky-900 mx-auto px-4 py-8 max-w-7xl sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
         {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">Performance Dashboard</h1>
+            <p className="text-slate-600 mt-1">
+              Översikt av planering, lager, inköp och leveransflöde
+            </p>
+          </div>
+          
+          {/* Period Filter */}
+          <Select value={period} onValueChange={setPeriod}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7">7 dagar</SelectItem>
+              <SelectItem value="30">30 dagar</SelectItem>
+              <SelectItem value="90">90 dagar</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Mock Data Notice */}
+        <Alert className="mb-6 bg-blue-50 border-blue-200">
+          <Info className="h-4 w-4 text-blue-600" />
+          <AlertDescription className="text-blue-900">
+            <strong>Demo-läge:</strong> Dashboardens data är för närvarande simulerad. 
+            Integration med riktiga mätvärden kommer implementeras baserat på InventoryLedger, 
+            Batch, PlanningScenario och InventoryAlert.
+          </AlertDescription>
+        </Alert>
+
+        {/* BLOCK A: KPI Scoreboard */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <KpiCard
+            title="Planeringsprecision"
+            value={metrics.kpis.planningPrecision.value}
+            trend={metrics.kpis.planningPrecision.trend}
+            delta={metrics.kpis.planningPrecision.delta}
+            description={metrics.kpis.planningPrecision.description}
+          />
+          <KpiCard
+            title="Lagerstabilitet"
+            value={metrics.kpis.inventoryStability.value}
+            trend={metrics.kpis.inventoryStability.trend}
+            delta={metrics.kpis.inventoryStability.delta}
+            description={metrics.kpis.inventoryStability.description}
+          />
+          <KpiCard
+            title="Inköpsträffsäkerhet"
+            value={metrics.kpis.purchasePrecision.value}
+            trend={metrics.kpis.purchasePrecision.trend}
+            delta={metrics.kpis.purchasePrecision.delta}
+            description={metrics.kpis.purchasePrecision.description}
+          />
+          <KpiCard
+            title="Leveransflöde"
+            value={metrics.kpis.deliveryFlow.value}
+            trend={metrics.kpis.deliveryFlow.trend}
+            delta={metrics.kpis.deliveryFlow.delta}
+            description={metrics.kpis.deliveryFlow.description}
+          />
+        </div>
+
+        {/* BLOCK B: Trender */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <TrendChart
+            data={metrics.trends.inventoryStability}
+            dataKeys={['value']}
+            title="Lagerstabilitet över tid"
+            yAxisLabel="Stabilitet (%)"
+          />
+          <TrendChart
+            data={metrics.trends.planVsActual}
+            dataKeys={['plan', 'actual']}
+            title="Plan vs Utfall (Produktion)"
+            yAxisLabel="Kvantitet (kg)"
+          />
+        </div>
+
+        {/* BLOCK C: Precision & Avvikelser */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <HistogramChart
+            data={metrics.distributions.planDeviation}
+            title="Planavvikelse (fördelning)"
+            subtitle="Antal produktioner per avvikelse från plan"
+          />
+          
+          <div className="analytics-card p-6">
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">Lageravvikelser</h3>
+            
+            <div className="space-y-6">
+              <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200">
+                <div>
+                  <div className="text-sm font-medium text-red-900">Under säkerhetslager</div>
+                  <div className="text-xs text-red-700 mt-1">
+                    {metrics.distributions.inventoryIssues.productsAtRisk} av {metrics.distributions.inventoryIssues.totalProducts} produkter
+                  </div>
+                </div>
+                <div className="text-3xl font-bold text-red-900">
+                  {metrics.distributions.inventoryIssues.belowSafety}%
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-amber-50 rounded-lg border border-amber-200">
+                <div>
+                  <div className="text-sm font-medium text-amber-900">Över maxnivå</div>
+                  <div className="text-xs text-amber-700 mt-1">Kapitalbindning</div>
+                </div>
+                <div className="text-3xl font-bold text-amber-900">
+                  {metrics.distributions.inventoryIssues.aboveMax}%
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <div>
+                  <div className="text-sm font-medium text-slate-900">Snittid i riskzon</div>
+                  <div className="text-xs text-slate-600 mt-1">Per produkt som riskerar stockout</div>
+                </div>
+                <div className="text-3xl font-bold text-slate-900">
+                  {metrics.distributions.inventoryIssues.avgTimeInRisk}
+                  <span className="text-base text-slate-600 ml-2">dagar</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* BLOCK D: Rotsaker */}
         <div className="mb-8">
-          <h1 className="text-amber-50 text-3xl font-bold">Dashboard</h1>
-          <p className="text-amber-50 mt-1">Översikt över lager och produktion</p>
+          <RootCauseTable
+            data={metrics.rootCauses}
+            title="Rotsaker – Senaste 30 dagarna"
+          />
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard
-            title="Produkter"
-            value={stats.totalProducts}
-            subtitle={`${stats.finishedGoods} färdigvaror`}
-            icon={Package} />
-
-          <StatCard
-            title="Aktiva batcher"
-            value={stats.activeBatches}
-            icon={Factory} />
-
-          <StatCard
-            title="Väntande ordrar"
-            value={stats.pendingOrders}
-            icon={ShoppingCart} />
-
-          <Link to={createPageUrl('Alerts')}>
-            <StatCard
-              title="Lagernotiser"
-              value={inventoryAlerts.length}
-              icon={Bell}
-              variant={inventoryAlerts.length > 0 ? 'warning' : 'default'}
-              clickable />
-
-          </Link>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-          <Link to={createPageUrl('Production')}>
-            <Button variant="outline" className="w-full h-auto py-4 flex flex-col gap-2">
-              <Factory className="w-5 h-5 text-indigo-600" />
-              <span>Registrera produktion</span>
-            </Button>
-          </Link>
-          <Link to={createPageUrl('Inventory')}>
-            <Button variant="outline" className="w-full h-auto py-4 flex flex-col gap-2">
-              <Package className="w-5 h-5 text-emerald-600" />
-              <span>Visa lager</span>
-            </Button>
-          </Link>
-          <Link to={createPageUrl('Batches')}>
-            <Button variant="outline" className="w-full h-auto py-4 flex flex-col gap-2">
-              <TrendingDown className="w-5 h-5 text-amber-600" />
-              <span>Batcher</span>
-            </Button>
-          </Link>
-          <Link to={createPageUrl('Planning')}>
-            <Button variant="outline" className="w-full h-auto py-4 flex flex-col gap-2">
-              <ShoppingCart className="w-5 h-5 text-purple-600" />
-              <span>Planering</span>
-            </Button>
-          </Link>
-        </div>
-
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Inventory Alerts */}
-          <div className="lg:col-span-1">
-            <InventoryAlertList compact />
-          </div>
-
-          {/* Recent Batches */}
-          <div className="lg:col-span-1">
-            <RecentBatches
-              batches={recentBatches}
-              onBatchClick={(batch) => {
-                window.location.href = createPageUrl('Batches') + `?batch=${batch.id}`;
-              }} />
-
-          </div>
-
-          {/* Purchase Suggestions */}
-          <div className="lg:col-span-1">
-            <PurchaseSuggestions
-              suggestions={stats.suggestions}
-              onViewAll={() => {
-                window.location.href = createPageUrl('Planning');
-              }} />
-
-          </div>
+        {/* Footer Note */}
+        <div className="text-center text-sm text-slate-500 mt-12 pb-8">
+          <p>
+            Dashboard uppdaterad: {new Date(metrics.metadata.generatedAt).toLocaleString('sv-SE')}
+          </p>
+          <p className="mt-1">
+            Miljö: <span className="font-medium">{metrics.metadata.environment}</span> • 
+            Period: <span className="font-medium">{metrics.metadata.period} dagar</span>
+          </p>
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 }

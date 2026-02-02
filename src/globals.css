@@ -3,75 +3,69 @@
 @tailwind utilities;
 
 /* =========================================
-   DEEP SPACE – DARK BLUE THEME
+   MODERN ANALYTICS THEME - Light & Clean
+   Primary: JED-I Blue/Cyan (#0891b2, #06b6d4)
+   Neutrals: Slate grays
+   Status: Green/Yellow/Red sparingly
    ========================================= */
 
-/* ROOT DESIGN TOKENS */
 :root {
   /* Backgrounds */
-  --color-bg-primary: #102a43;      /* Deep blue-gray */
-  --color-bg-secondary: #243b53;    /* Dark navy cards/panels */
-  --color-bg-tertiary: #144272;     /* Top nav / footer */
-
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f8fafc;
+  --color-bg-tertiary: #f1f5f9;
+  
   /* Text */
-  --color-text-primary: #f0f4f8;    /* Light gray-white */
-  --color-text-secondary: #b3e5fc;  /* Light sky blue */
-  --color-text-disabled: #6B7280;
-
-  /* Accent */
-  --color-accent-blue: #03a9f4;     /* Bright blue */
-  --color-accent-blue-hover: #39ace7;
-  --color-accent-cyan: #48bb78;     /* Cyan accent */
-
-  /* UI Elements */
-  --color-divider: #243b53;
-  --color-border: #243b53;
-
-  /* Tables */
-  --color-table-header: #0a2647;
-  --color-table-row: #243b53;
-  --color-table-row-hover: #2c4a64;
-
-  /* Buttons */
-  --color-button-primary-bg: #03a9f4;
-  --color-button-primary-text: #FFFFFF;
-  --color-button-primary-hover: #39ace7;
-
-  --color-button-secondary-bg: #243b53;
-  --color-button-secondary-text: #f0f4f8;
-  --color-button-secondary-hover: #2c4a64;
-
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-tertiary: #94a3b8;
+  
+  /* Accent - JED-I Cyan/Blue */
+  --color-accent-primary: #0891b2;
+  --color-accent-primary-hover: #06b6d4;
+  --color-accent-light: #e0f2fe;
+  
+  /* Status */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  
+  /* Borders */
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  
   /* Shadcn/UI compatibility */
-  --background: 210 45% 16%;
-  --foreground: 210 17% 95%;
-  --card: 210 35% 22%;
-  --card-foreground: 210 17% 95%;
-  --popover: 210 35% 22%;
-  --popover-foreground: 210 17% 95%;
-  --primary: 199 89% 48%;
+  --background: 0 0% 100%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --primary: 189 94% 43%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 210 35% 22%;
-  --secondary-foreground: 210 17% 95%;
-  --muted: 210 35% 22%;
-  --muted-foreground: 199 71% 73%;
-  --accent: 210 35% 22%;
-  --accent-foreground: 210 17% 95%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  --accent: 210 40% 96%;
+  --accent-foreground: 222 47% 11%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
-  --border: 210 35% 22%;
-  --input: 210 35% 22%;
-  --ring: 199 89% 48%;
-  --radius: 0.75rem;
-  --chart-1: 199 89% 48%;
-  --chart-2: 152 48% 60%;
-  --chart-3: 173 58% 39%;
-  --chart-4: 199 71% 73%;
-  --chart-5: 210 67% 85%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 189 94% 43%;
+  --radius: 0.5rem;
+  --chart-1: 189 94% 43%;
+  --chart-2: 160 60% 45%;
+  --chart-3: 30 80% 55%;
+  --chart-4: 280 65% 60%;
+  --chart-5: 340 75% 55%;
 }
-
-/* =========================================
-   GLOBAL APPLICATION STYLES
-   ========================================= */
 
 @layer base {
   * {
@@ -79,89 +73,100 @@
   }
 
   body {
-    background-color: var(--color-bg-primary);
-    color: var(--color-text-primary);
-    @apply text-foreground;
+    @apply bg-slate-50 text-slate-900 antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
   }
 
-  /* Headings */
   h1, h2, h3, h4, h5, h6 {
-    color: var(--color-text-primary);
-    font-weight: 600;
+    @apply text-slate-900 font-semibold tracking-tight;
   }
 
-  /* Secondary text */
-  .text-secondary {
-    color: var(--color-text-secondary);
-  }
-
-  /* Links */
-  a {
-    color: var(--color-accent-blue);
-    text-decoration: none;
-  }
-
-  a:hover {
-    color: var(--color-accent-blue-hover);
-  }
-
-  /* Dividers */
-  hr {
-    border-color: var(--color-divider);
-  }
+  h1 { @apply text-3xl; }
+  h2 { @apply text-2xl; }
+  h3 { @apply text-xl; }
+  h4 { @apply text-lg; }
 }
 
 @layer components {
-  /* Panels / Cards */
-  .card,
-  .panel,
-  .section {
-    background-color: var(--color-bg-secondary);
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
+  /* Modern card style */
+  .analytics-card {
+    @apply bg-white border border-slate-200 rounded-lg shadow-sm;
   }
 
-  /* Navigation */
-  .navbar,
-  .topbar {
-    background-color: var(--color-bg-tertiary);
-    border-bottom: 1px solid var(--color-divider);
+  /* KPI Card */
+  .kpi-card {
+    @apply bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow;
   }
 
-  /* Tables */
+  /* Section header */
+  .section-header {
+    @apply text-sm font-semibold text-slate-700 uppercase tracking-wider mb-4;
+  }
+
+  /* Metric value */
+  .metric-value {
+    @apply text-4xl font-bold text-slate-900 tracking-tight;
+  }
+
+  /* Trend indicator */
+  .trend-up {
+    @apply text-green-600 flex items-center gap-1 text-sm font-medium;
+  }
+  
+  .trend-down {
+    @apply text-red-600 flex items-center gap-1 text-sm font-medium;
+  }
+  
+  .trend-neutral {
+    @apply text-slate-500 flex items-center gap-1 text-sm font-medium;
+  }
+
+  /* Table improvements */
   table {
-    background-color: var(--color-bg-secondary);
-    color: var(--color-text-primary);
+    @apply w-full border-collapse;
   }
 
   thead {
-    background-color: var(--color-table-header);
+    @apply bg-slate-50 border-b border-slate-200;
   }
 
   tbody tr {
-    background-color: var(--color-table-row);
+    @apply border-b border-slate-100 hover:bg-slate-50 transition-colors;
   }
 
-  tbody tr:hover {
-    background-color: var(--color-table-row-hover);
+  th {
+    @apply text-left text-xs font-semibold text-slate-600 uppercase tracking-wider px-4 py-3;
   }
 
-  /* Buttons */
-  .button-primary {
-    background-color: var(--color-button-primary-bg);
-    color: var(--color-button-primary-text);
+  td {
+    @apply px-4 py-3 text-sm text-slate-700;
   }
+}
 
-  .button-primary:hover {
-    background-color: var(--color-button-primary-hover);
-  }
+/* Recharts customization */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  @apply stroke-slate-200;
+}
 
-  .button-secondary {
-    background-color: var(--color-button-secondary-bg);
-    color: var(--color-button-secondary-text);
-  }
+.recharts-text {
+  @apply fill-slate-600 text-xs;
+}
 
-  .button-secondary:hover {
-    background-color: var(--color-button-secondary-hover);
-  }
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-slate-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400;
 }
