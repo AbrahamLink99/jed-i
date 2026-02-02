@@ -27,6 +27,11 @@ Deno.serve(async (req) => {
     }
 
     const clientId = Deno.env.get('SHOPIFY_CLIENT_ID');
+    
+    if (!clientId) {
+      return Response.json({ error: 'Shopify client ID not configured' }, { status: 500 });
+    }
+    
     const redirectUri = 'https://jed-i.base44.app/api/functions/shopifyOAuthCallback';
     const scopes = 'read_products,write_inventory,read_inventory,read_orders';
     
