@@ -16,8 +16,8 @@ Deno.serve(async (req) => {
 
     const body = await req.text();
     
-    // Verify HMAC
-    const secret = Deno.env.get('SHOPIFY_WEBHOOK_SECRET');
+    // Verify HMAC using Client Secret
+    const secret = Deno.env.get('SHOPIFY_CLIENT_SECRET');
     const encoder = new TextEncoder();
     const key = await crypto.subtle.importKey(
       'raw',
