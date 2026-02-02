@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useEnvironmentFilter } from '@/components/environment/useEnvironmentFilter';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getDashboardMetrics } from '@/lib/dashboardMetrics';
+import { getDashboardMetrics } from '@/components/dashboard/dashboardMetrics';
 import KpiCard from '@/components/dashboard/KpiCard';
 import TrendChart from '@/components/dashboard/TrendChart';
 import HistogramChart from '@/components/dashboard/HistogramChart';
