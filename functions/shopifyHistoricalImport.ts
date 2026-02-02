@@ -12,11 +12,22 @@ Deno.serve(async (req) => {
     const { year = 2025, storeId = 'b2c' } = await req.json();
 
     const storeDomain = Deno.env.get("SHOPIFY_STORE_DOMAIN");
-    const accessToken = Deno.env.get("SHOPIFY_ACCESS_TOKEN");
+    
+    // Get access token from ShopifyConnection entity
+    const connections = await base44.asServiceRole.entities.ShopifyConnection.list();
+    if (!connections || connections.length === 0) {
+      return Response.json({ 
+        error: 'Shopify not connected. Please connect Shopify first.',
+        needsAuth: true
+      }, { status: 400 });
+    }
+
+    const accessToken = connections[0].access_token;
 
     if (!storeDomain || !accessToken) {
       return Response.json({ 
-        error: 'Shopify credentials missing. Set SHOPIFY_STORE_DOMAIN and SHOPIFY_ACCESS_TOKEN in environment variables.' 
+        error: 'Shopify credentials missing.',
+        needsAuth: true
       }, { status: 400 });
     }
 

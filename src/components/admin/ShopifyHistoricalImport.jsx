@@ -12,6 +12,58 @@ export default function ShopifyHistoricalImport() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [connectingShopify, setConnectingShopify] = useState(false);
+
+  // Check connection status on mount
+  React.useEffect(() => {
+    const checkConnection = async () => {
+      try {
+        const { data } = await base44.entities.ShopifyConnection.list();
+        setIsConnected(data && data.length > 0);
+      } catch (err) {
+        setIsConnected(false);
+      }
+    };
+    checkConnection();
+  }, []);
+
+  const handleConnectShopify = async () => {
+    setConnectingShopify(true);
+    setError(null);
+
+    try {
+      const { data } = await base44.functions.invoke('shopifyOAuthStart', {});
+      
+      if (data.authUrl) {
+        // Open Shopify OAuth in new window
+        window.open(data.authUrl, '_blank', 'width=800,height=700');
+        
+        // Poll for connection status
+        const interval = setInterval(async () => {
+          try {
+            const { data: connections } = await base44.entities.ShopifyConnection.list();
+            if (connections && connections.length > 0) {
+              setIsConnected(true);
+              setConnectingShopify(false);
+              clearInterval(interval);
+            }
+          } catch (err) {
+            console.error('Poll error:', err);
+          }
+        }, 2000);
+
+        // Stop polling after 2 minutes
+        setTimeout(() => {
+          clearInterval(interval);
+          setConnectingShopify(false);
+        }, 120000);
+      }
+    } catch (err) {
+      setError(err.message);
+      setConnectingShopify(false);
+    }
+  };
 
   const handleImport = async () => {
     setLoading(true);
@@ -27,7 +79,11 @@ export default function ShopifyHistoricalImport() {
       if (data.success) {
         setResult(data);
       } else {
-        setError(data.error || 'Import misslyckades');
+        if (data.needsAuth) {
+          setError('Vänligen anslut Shopify först');
+        } else {
+          setError(data.error || 'Import misslyckades');
+        }
       }
     } catch (err) {
       setError(err.message || 'Ett fel uppstod vid import');
@@ -80,6 +136,33 @@ export default function ShopifyHistoricalImport() {
       </CardHeader>
 
       <CardContent className="space-y-6">
+        {/* Connection Status */}
+        {!isConnected && (
+          <Alert>
+            <AlertCircle className="w-4 h-4" />
+            <AlertDescription>
+              Du måste ansluta Shopify innan du kan importera data.
+              <Button 
+                onClick={handleConnectShopify}
+                disabled={connectingShopify}
+                className="ml-4 bg-cyan-600 hover:bg-cyan-700"
+                size="sm"
+              >
+                {connectingShopify ? 'Ansluter...' : 'Anslut Shopify'}
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {isConnected && (
+          <Alert className="bg-green-50 border-green-200">
+            <CheckCircle2 className="w-4 h-4 text-green-600" />
+            <AlertDescription className="text-green-800">
+              Shopify ansluten och redo att användas
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Import Controls */}
         <div className="flex items-end gap-4">
           <div className="flex-1">
@@ -100,7 +183,7 @@ export default function ShopifyHistoricalImport() {
 
           <Button 
             onClick={handleImport} 
-            disabled={loading}
+            disabled={loading || !isConnected}
             className="bg-cyan-600 hover:bg-cyan-700"
           >
             {loading ? 'Importerar...' : 'Hämta data'}
