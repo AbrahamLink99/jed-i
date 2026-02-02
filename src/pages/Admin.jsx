@@ -24,6 +24,7 @@ import DataImport from '@/components/admin/DataImport';
 import InventoryCount from '@/components/admin/InventoryCount';
 import SandboxSeeder from '@/components/admin/SandboxSeeder';
 import ShopifyHistoricalImport from '@/components/admin/ShopifyHistoricalImport';
+import ShopifyConnection from '@/components/admin/ShopifyConnection';
 
 const roleColors = {
   admin: 'bg-purple-100 text-purple-700',
@@ -337,7 +338,8 @@ export default function AdminPage() {
 
           {/* Shopify Historical Import Tab */}
           <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
-            <TabsContent value="shopify">
+            <TabsContent value="shopify" className="space-y-6">
+              <ShopifyConnection />
               <ShopifyHistoricalImport />
             </TabsContent>
           </PermissionGate>
