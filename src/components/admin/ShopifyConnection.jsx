@@ -31,9 +31,13 @@ export default function ShopifyConnection() {
 
   const handleConnect = () => {
     const shop = prompt('Ange din Shopify-butik (t.ex. din-butik.myshopify.com):');
-    if (shop) {
-      window.location.href = `/api/functions/shopifyOAuthStart?shop=${encodeURIComponent(shop)}`;
+    if (!shop || shop.trim() === '') {
+      alert('Du måste ange en butiksdomain');
+      return;
     }
+    
+    const shopDomain = shop.includes('.myshopify.com') ? shop : `${shop}.myshopify.com`;
+    window.location.href = `/api/functions/shopifyOAuthStart?shop=${encodeURIComponent(shopDomain)}`;
   };
 
   const handleSync = async () => {
