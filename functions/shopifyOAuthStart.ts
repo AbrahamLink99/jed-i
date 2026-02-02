@@ -1,33 +1,36 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+// PUBLIC endpoint - no Base44 auth required
+// Initiates Shopify OAuth flow
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const url = new URL(req.url);
+    const shop = url.searchParams.get('shop');
 
-    if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Admin access required' }, { status: 403 });
+    if (!shop) {
+      return Response.json({ error: 'Missing shop parameter' }, { status: 400 });
     }
 
-    const clientId = Deno.env.get("SHOPIFY_CLIENT_ID");
-    const storeDomain = Deno.env.get("SHOPIFY_STORE_DOMAIN");
-
-    if (!clientId || !storeDomain) {
-      return Response.json({ error: 'Shopify credentials not configured' }, { status: 500 });
+    // Validate shop domain
+    if (!shop.endsWith('.myshopify.com')) {
+      return Response.json({ error: 'Invalid shop domain' }, { status: 400 });
     }
 
-    // Get the callback URL (this function's URL with /callback suffix)
-    const baseUrl = new URL(req.url).origin;
-    const redirectUri = `${baseUrl}/api/functions/shopifyOAuthCallback`;
+    const clientId = Deno.env.get('SHOPIFY_CLIENT_ID');
+    const redirectUri = 'https://jed-i.base44.app/api/functions/shopifyOAuthCallback';
+    const scopes = 'read_products,write_inventory,read_inventory,read_orders';
+    
+    // Generate state for CSRF protection
+    const state = crypto.randomUUID();
 
-    // Shopify OAuth URL
-    const scopes = 'read_orders,read_products,read_inventory';
-    const authUrl = `https://${storeDomain}/admin/oauth/authorize?client_id=${clientId}&scope=${scopes}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+    // Build Shopify OAuth URL
+    const authUrl = new URL(`https://${shop}/admin/oauth/authorize`);
+    authUrl.searchParams.set('client_id', clientId);
+    authUrl.searchParams.set('scope', scopes);
+    authUrl.searchParams.set('redirect_uri', redirectUri);
+    authUrl.searchParams.set('state', state);
 
-    return Response.json({ 
-      authUrl,
-      message: 'Redirect user to this URL to authorize'
-    });
+    // Redirect to Shopify
+    return Response.redirect(authUrl.toString(), 302);
 
   } catch (error) {
     console.error('OAuth start error:', error);
