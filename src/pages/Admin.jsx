@@ -16,7 +16,7 @@ import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import { 
   Shield, Users, FileText, AlertCircle, CheckCircle, 
-  UserPlus, Search, Calendar, Hash, Database, Activity, ClipboardList 
+  UserPlus, Search, Calendar, Hash, Database, Activity, ClipboardList, Download
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from "@/lib/utils";
@@ -190,6 +190,12 @@ export default function AdminPage() {
               </TabsTrigger>
             </PermissionGate>
             <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
+              <TabsTrigger value="shopify">
+                <Download className="w-4 h-4 mr-2" />
+                Shopify
+              </TabsTrigger>
+            </PermissionGate>
+            <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
               <TabsTrigger value="inventory">
                 <ClipboardList className="w-4 h-4 mr-2" />
                 Inventering
@@ -326,6 +332,13 @@ export default function AdminPage() {
           <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
             <TabsContent value="import">
               <DataImport />
+            </TabsContent>
+          </PermissionGate>
+
+          {/* Shopify Historical Import Tab */}
+          <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
+            <TabsContent value="shopify">
+              <ShopifyHistoricalImport />
             </TabsContent>
           </PermissionGate>
 
