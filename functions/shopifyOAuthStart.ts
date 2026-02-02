@@ -3,8 +3,19 @@
 
 Deno.serve(async (req) => {
   try {
+    // Get shop from query params (for direct browser calls)
     const url = new URL(req.url);
-    const shop = url.searchParams.get('shop');
+    let shop = url.searchParams.get('shop');
+    
+    // If not in query, try request body (for API calls)
+    if (!shop && req.method === 'POST') {
+      try {
+        const body = await req.json();
+        shop = body.shop;
+      } catch (e) {
+        // Body parsing failed, continue without it
+      }
+    }
 
     if (!shop) {
       return Response.json({ error: 'Missing shop parameter' }, { status: 400 });
