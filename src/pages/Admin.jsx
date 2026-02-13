@@ -26,6 +26,7 @@ import SandboxSeeder from '@/components/admin/SandboxSeeder';
 import ShopifyHistoricalImport from '@/components/admin/ShopifyHistoricalImport';
 import ShopifyConnection from '@/components/admin/ShopifyConnection';
 import SystemGuide from '@/components/admin/SystemGuide';
+import EnvironmentMigration from '@/components/admin/EnvironmentMigration';
 
 const roleColors = {
   admin: 'bg-purple-100 text-purple-700',
@@ -360,7 +361,8 @@ export default function AdminPage() {
 
           {/* Sandbox Tab */}
           <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
-            <TabsContent value="sandbox">
+            <TabsContent value="sandbox" className="space-y-6">
+              <EnvironmentMigration />
               <SandboxSeeder />
             </TabsContent>
           </PermissionGate>
