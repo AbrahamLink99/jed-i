@@ -13,7 +13,7 @@ export default function SandboxSeeder() {
 
   const seedMutation = useMutation({
     mutationFn: async () => {
-      const results = { products: 0, boms: 0, ledger: 0, batches: 0 };
+      const results = { products: 0, boms: 0, ledger: 0, batches: 0, mixBatches: 0, packagingRecipes: 0 };
 
       // Create sandbox products
       const products = [
@@ -36,7 +36,11 @@ export default function SandboxSeeder() {
         // Finished goods
         { environment: 'sandbox', sku: 'FG-001', name: 'Mörk Choklad 70% 100g', type: 'finished_good', brand: 'own', unit: 'pcs', safety_stock: 500, shopify_buffer: 50, active: true },
         { environment: 'sandbox', sku: 'FG-002', name: 'Mjölkchoklad 100g', type: 'finished_good', brand: 'own', unit: 'pcs', safety_stock: 300, shopify_buffer: 30, active: true },
-        { environment: 'sandbox', sku: 'FG-003', name: 'Premium Mörk 85% 200g', type: 'finished_good', brand: 'own', unit: 'pcs', safety_stock: 200, shopify_buffer: 20, active: true }
+        { environment: 'sandbox', sku: 'FG-003', name: 'Premium Mörk 85% 200g', type: 'finished_good', brand: 'own', unit: 'pcs', safety_stock: 200, shopify_buffer: 20, active: true },
+        
+        // Mix products (för tappning)
+        { environment: 'sandbox', sku: 'MIX-CHOCO-DARK', name: 'Chokladblandning Mörk', type: 'raw_material', unit: 'kg', active: true },
+        { environment: 'sandbox', sku: 'MIX-CHOCO-MILK', name: 'Chokladblandning Mjölk', type: 'raw_material', unit: 'kg', active: true }
       ];
 
       for (const product of products) {
@@ -133,6 +137,80 @@ export default function SandboxSeeder() {
         results.batches++;
       }
 
+      // Create MixBatches för tappning
+      const mixBatches = [
+        {
+          environment: 'sandbox',
+          mix_sku: 'MIX-CHOCO-DARK',
+          batch_no: 'MIX-DARK-2024-001',
+          produced_kg: 500,
+          remaining_kg: 350,
+          status: 'available',
+          produced_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+          notes: 'Testbatch för tappning'
+        },
+        {
+          environment: 'sandbox',
+          mix_sku: 'MIX-CHOCO-MILK',
+          batch_no: 'MIX-MILK-2024-001',
+          produced_kg: 400,
+          remaining_kg: 280,
+          status: 'available',
+          produced_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+          notes: 'Testbatch för tappning'
+        }
+      ];
+
+      for (const mixBatch of mixBatches) {
+        await base44.entities.MixBatch.create(mixBatch);
+        results.mixBatches++;
+      }
+
+      // Create PackagingRecipes
+      const packagingRecipes = [
+        {
+          environment: 'sandbox',
+          mix_sku: 'MIX-CHOCO-DARK',
+          finished_sku: 'FG-001',
+          finished_name: 'Mörk Choklad 70% 100g',
+          fill_ml_per_unit: 100,
+          components: [
+            { component_sku: 'PKG-001', component_name: 'Chokladförpackning 100g', qty_per_unit: 1 },
+            { component_sku: 'LBL-001', component_name: 'Etikett Mörk Choklad', qty_per_unit: 1 }
+          ],
+          active: true
+        },
+        {
+          environment: 'sandbox',
+          mix_sku: 'MIX-CHOCO-DARK',
+          finished_sku: 'FG-003',
+          finished_name: 'Premium Mörk 85% 200g',
+          fill_ml_per_unit: 200,
+          components: [
+            { component_sku: 'PKG-002', component_name: 'Chokladförpackning 200g', qty_per_unit: 1 },
+            { component_sku: 'LBL-001', component_name: 'Etikett Mörk Choklad', qty_per_unit: 1 }
+          ],
+          active: true
+        },
+        {
+          environment: 'sandbox',
+          mix_sku: 'MIX-CHOCO-MILK',
+          finished_sku: 'FG-002',
+          finished_name: 'Mjölkchoklad 100g',
+          fill_ml_per_unit: 100,
+          components: [
+            { component_sku: 'PKG-001', component_name: 'Chokladförpackning 100g', qty_per_unit: 1 },
+            { component_sku: 'LBL-002', component_name: 'Etikett Mjölkchoklad', qty_per_unit: 1 }
+          ],
+          active: true
+        }
+      ];
+
+      for (const recipe of packagingRecipes) {
+        await base44.entities.PackagingRecipe.create(recipe);
+        results.packagingRecipes++;
+      }
+
       return results;
     },
     onSuccess: (results) => {
@@ -147,7 +225,7 @@ export default function SandboxSeeder() {
 
   const clearMutation = useMutation({
     mutationFn: async () => {
-      const entities = ['Batch', 'InventoryLedger', 'BOMItem', 'Product', 'InventoryAlert', 'PlanningScenario'];
+      const entities = ['FillingReport', 'PackagingRecipe', 'MixBatch', 'Batch', 'InventoryLedger', 'BOMItem', 'Product', 'InventoryAlert', 'PlanningScenario'];
       let deleted = 0;
 
       for (const entityName of entities) {
@@ -234,6 +312,8 @@ export default function SandboxSeeder() {
                   <li>✓ {result.boms} BOM-rader</li>
                   <li>✓ {result.ledger} lagertransaktioner</li>
                   <li>✓ {result.batches} batcher</li>
+                  <li>✓ {result.mixBatches} blandningsbatcher</li>
+                  <li>✓ {result.packagingRecipes} tappningsrecept</li>
                 </ul>
               </AlertDescription>
             </Alert>
@@ -249,6 +329,8 @@ export default function SandboxSeeder() {
                 <li>• 3 färdigvaror med kompletta recept (BOM)</li>
                 <li>• Initial lagerstock för alla artiklar</li>
                 <li>• 2 testbatcher av färdigvaror</li>
+                <li>• 2 blandningsbatcher redo för tappning</li>
+                <li>• 3 tappningsrecept med förpackningskomponenter</li>
               </ul>
             </AlertDescription>
           </Alert>
