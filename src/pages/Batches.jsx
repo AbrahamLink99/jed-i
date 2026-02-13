@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import BatchSearch from '@/components/batches/BatchSearch';
 import BatchDetail from '@/components/batches/BatchDetail';
 import { toast } from 'sonner';
+import { useEnvironmentFilter } from '@/components/environment/useEnvironmentFilter';
 
 const statusColors = {
   available: 'bg-emerald-100 text-emerald-700',
@@ -32,15 +33,16 @@ export default function Batches() {
   const [selectedBatch, setSelectedBatch] = useState(null);
 
   const queryClient = useQueryClient();
+  const envFilter = useEnvironmentFilter();
 
   const { data: batches = [], isLoading } = useQuery({
-    queryKey: ['batches'],
-    queryFn: () => base44.entities.Batch.list('-created_date')
+    queryKey: ['batches', envFilter.environment],
+    queryFn: () => base44.entities.Batch.filter(envFilter, '-created_date')
   });
 
   const { data: ledger = [] } = useQuery({
-    queryKey: ['ledger'],
-    queryFn: () => base44.entities.InventoryLedger.list('-created_date', 500)
+    queryKey: ['ledger', envFilter.environment],
+    queryFn: () => base44.entities.InventoryLedger.filter(envFilter, '-created_date', 500)
   });
 
   // Handle URL parameter for batch selection

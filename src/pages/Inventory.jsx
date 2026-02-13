@@ -15,6 +15,7 @@ import LedgerTable from '@/components/inventory/LedgerTable';
 import AddBatchDialog from '@/components/finishedgoods/AddBatchDialog';
 import { getStockSummary } from '@/components/inventory/StockCalculations';
 import { toast } from 'sonner';
+import { useEnvironmentFilter } from '@/components/environment/useEnvironmentFilter';
 
 export default function Inventory() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -30,26 +31,28 @@ export default function Inventory() {
   });
 
   const queryClient = useQueryClient();
+  const envFilter = useEnvironmentFilter();
 
   const { data: products = [] } = useQuery({
-    queryKey: ['products'],
-    queryFn: () => base44.entities.Product.list()
+    queryKey: ['products', envFilter.environment],
+    queryFn: () => base44.entities.Product.filter(envFilter)
   });
 
   const { data: batches = [] } = useQuery({
-    queryKey: ['batches'],
-    queryFn: () => base44.entities.Batch.list()
+    queryKey: ['batches', envFilter.environment],
+    queryFn: () => base44.entities.Batch.filter(envFilter)
   });
 
   const { data: ledger = [] } = useQuery({
-    queryKey: ['ledger'],
-    queryFn: () => base44.entities.InventoryLedger.list('-created_date', 500)
+    queryKey: ['ledger', envFilter.environment],
+    queryFn: () => base44.entities.InventoryLedger.filter(envFilter, '-created_date', 500)
   });
 
   const adjustmentMutation = useMutation({
     mutationFn: async (data) => {
       const product = products.find(p => p.id === data.product_id);
       await base44.entities.InventoryLedger.create({
+        environment: envFilter.environment,
         product_id: data.product_id,
         product_sku: product?.sku,
         product_name: product?.name,

@@ -14,6 +14,7 @@ import ProductForm from '@/components/products/ProductForm';
 import BOMEditor from '@/components/products/BOMEditor';
 import AddBatchDialog from '@/components/finishedgoods/AddBatchDialog';
 import { getStockSummary } from '@/components/inventory/StockCalculations';
+import { useEnvironmentFilter } from '@/components/environment/useEnvironmentFilter';
 
 const typeLabels = {
   finished_good: 'Färdigvara',
@@ -53,29 +54,30 @@ export default function Products() {
   const [showAddBatch, setShowAddBatch] = useState(null);
 
   const queryClient = useQueryClient();
+  const envFilter = useEnvironmentFilter();
 
   const { data: products = [], isLoading } = useQuery({
-    queryKey: ['products'],
-    queryFn: () => base44.entities.Product.list()
+    queryKey: ['products', envFilter.environment],
+    queryFn: () => base44.entities.Product.filter(envFilter)
   });
 
   const { data: bomItems = [] } = useQuery({
-    queryKey: ['bom-items'],
-    queryFn: () => base44.entities.BOMItem.list()
+    queryKey: ['bom-items', envFilter.environment],
+    queryFn: () => base44.entities.BOMItem.filter(envFilter)
   });
 
   const { data: ledger = [] } = useQuery({
-    queryKey: ['ledger'],
-    queryFn: () => base44.entities.InventoryLedger.list('-created_date', 500)
+    queryKey: ['ledger', envFilter.environment],
+    queryFn: () => base44.entities.InventoryLedger.filter(envFilter, '-created_date', 500)
   });
 
   const { data: batches = [] } = useQuery({
-    queryKey: ['batches'],
-    queryFn: () => base44.entities.Batch.list()
+    queryKey: ['batches', envFilter.environment],
+    queryFn: () => base44.entities.Batch.filter(envFilter)
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Product.create(data),
+    mutationFn: (data) => base44.entities.Product.create({ ...data, environment: envFilter.environment }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       setShowForm(false);
@@ -108,6 +110,7 @@ export default function Products() {
       // Create new items
       for (const item of items) {
         await base44.entities.BOMItem.create({
+          environment: envFilter.environment,
           finished_product_id: productId,
           component_id: item.component_id,
           quantity_per_unit: item.quantity_per_unit,
