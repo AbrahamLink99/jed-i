@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import AddBatchDialog from '@/components/finishedgoods/AddBatchDialog';
+import { useEnvironmentFilter } from '@/components/environment/useEnvironmentFilter';
 
 const statusColors = {
   available: 'bg-emerald-100 text-emerald-700',
@@ -29,18 +30,19 @@ const statusLabels = {
 };
 
 export default function FinishedGoods() {
+  const envFilter = useEnvironmentFilter();
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedProduct, setExpandedProduct] = useState(null);
   const [addBatchProduct, setAddBatchProduct] = useState(null);
 
   const { data: products = [] } = useQuery({
-    queryKey: ['products'],
-    queryFn: () => base44.entities.Product.list()
+    queryKey: ['products', envFilter.environment],
+    queryFn: () => base44.entities.Product.filter(envFilter)
   });
 
   const { data: batches = [] } = useQuery({
-    queryKey: ['batches'],
-    queryFn: () => base44.entities.Batch.list('-created_date')
+    queryKey: ['batches', envFilter.environment],
+    queryFn: () => base44.entities.Batch.filter(envFilter, '-created_date')
   });
 
   const finishedGoods = useMemo(() => {

@@ -10,28 +10,30 @@ import { Factory, CheckCircle } from 'lucide-react';
 import ProductionForm from '@/components/production/ProductionForm';
 import { generateBatchNumber, getStockSummary } from '@/components/inventory/StockCalculations';
 import { toast } from 'sonner';
+import { useEnvironmentFilter } from '@/components/environment/useEnvironmentFilter';
 
 export default function Production() {
   const queryClient = useQueryClient();
+  const envFilter = useEnvironmentFilter();
 
   const { data: products = [] } = useQuery({
-    queryKey: ['products'],
-    queryFn: () => base44.entities.Product.list()
+    queryKey: ['products', envFilter.environment],
+    queryFn: () => base44.entities.Product.filter(envFilter)
   });
 
   const { data: bomItems = [] } = useQuery({
-    queryKey: ['bom-items'],
-    queryFn: () => base44.entities.BOMItem.list()
+    queryKey: ['bom-items', envFilter.environment],
+    queryFn: () => base44.entities.BOMItem.filter(envFilter)
   });
 
   const { data: batches = [] } = useQuery({
-    queryKey: ['batches'],
-    queryFn: () => base44.entities.Batch.list('-created_date', 20)
+    queryKey: ['batches', envFilter.environment],
+    queryFn: () => base44.entities.Batch.filter(envFilter, '-created_date', 20)
   });
 
   const { data: ledger = [] } = useQuery({
-    queryKey: ['ledger'],
-    queryFn: () => base44.entities.InventoryLedger.list('-created_date', 500)
+    queryKey: ['ledger', envFilter.environment],
+    queryFn: () => base44.entities.InventoryLedger.filter(envFilter, '-created_date', 500)
   });
 
   const finishedProducts = products.filter(p => p.type === 'finished_good' && p.active !== false);
@@ -66,6 +68,7 @@ export default function Production() {
       
       // 2. Create batch
       const batch = await base44.entities.Batch.create({
+        environment: envFilter.environment,
         batch_number: batchNumber,
         product_id: productId,
         product_sku: product.sku,
@@ -79,6 +82,7 @@ export default function Production() {
 
       // 3. Create ledger entry for production (finished goods in)
       await base44.entities.InventoryLedger.create({
+        environment: envFilter.environment,
         product_id: productId,
         product_sku: product.sku,
         product_name: product.name,
@@ -93,6 +97,7 @@ export default function Production() {
       // 4. Create backflush entries for components
       for (const impact of componentImpact) {
         await base44.entities.InventoryLedger.create({
+          environment: envFilter.environment,
           product_id: impact.component_id,
           product_sku: impact.component_sku,
           product_name: impact.component_name,

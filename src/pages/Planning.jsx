@@ -18,30 +18,32 @@ import {
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { getStockSummary, calculatePurchaseSuggestion } from '@/components/inventory/StockCalculations';
+import { useEnvironmentFilter } from '@/components/environment/useEnvironmentFilter';
 
 export default function Planning() {
+  const envFilter = useEnvironmentFilter();
   const [activeTab, setActiveTab] = useState('purchase');
   const [simulationProduct, setSimulationProduct] = useState('');
   const [simulationQty, setSimulationQty] = useState('');
 
   const { data: products = [] } = useQuery({
-    queryKey: ['products'],
-    queryFn: () => base44.entities.Product.list()
+    queryKey: ['products', envFilter.environment],
+    queryFn: () => base44.entities.Product.filter(envFilter)
   });
 
   const { data: bomItems = [] } = useQuery({
-    queryKey: ['bom-items'],
-    queryFn: () => base44.entities.BOMItem.list()
+    queryKey: ['bom-items', envFilter.environment],
+    queryFn: () => base44.entities.BOMItem.filter(envFilter)
   });
 
   const { data: batches = [] } = useQuery({
-    queryKey: ['batches'],
-    queryFn: () => base44.entities.Batch.list()
+    queryKey: ['batches', envFilter.environment],
+    queryFn: () => base44.entities.Batch.filter(envFilter)
   });
 
   const { data: ledger = [] } = useQuery({
-    queryKey: ['ledger'],
-    queryFn: () => base44.entities.InventoryLedger.list('-created_date', 1000)
+    queryKey: ['ledger', envFilter.environment],
+    queryFn: () => base44.entities.InventoryLedger.filter(envFilter, '-created_date', 1000)
   });
 
   // Calculate stock for all products

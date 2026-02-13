@@ -11,9 +11,11 @@ import { cn } from "@/lib/utils";
 import RecipeForm from '@/components/recipes/RecipeForm';
 import { toast } from 'sonner';
 import { usePermissions } from '@/components/auth/PermissionGate';
+import { useEnvironmentFilter } from '@/components/environment/useEnvironmentFilter';
 
 export default function Recipes() {
   const { isAdmin, loading: permissionsLoading } = usePermissions();
+  const envFilter = useEnvironmentFilter();
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState(null);
@@ -21,14 +23,14 @@ export default function Recipes() {
   const queryClient = useQueryClient();
 
   const { data: products = [] } = useQuery({
-    queryKey: ['products'],
-    queryFn: () => base44.entities.Product.list(),
+    queryKey: ['products', envFilter.environment],
+    queryFn: () => base44.entities.Product.filter(envFilter),
     enabled: !permissionsLoading && isAdmin
   });
 
   const { data: bomItems = [] } = useQuery({
-    queryKey: ['bom-items'],
-    queryFn: () => base44.entities.BOMItem.list(),
+    queryKey: ['bom-items', envFilter.environment],
+    queryFn: () => base44.entities.BOMItem.filter(envFilter),
     enabled: !permissionsLoading && isAdmin
   });
 
