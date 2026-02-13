@@ -12,6 +12,7 @@ import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import AcknowledgeOrderDialog from './AcknowledgeOrderDialog';
 import { evaluateInventoryAlerts } from './AlertEvaluator';
+import { useEnvironmentFilter } from '@/components/environment/useEnvironmentFilter';
 
 const severityConfig = {
   critical: { icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-50', badge: 'bg-red-100 text-red-700' },
@@ -34,12 +35,13 @@ const statusLabels = {
 
 export default function AlertList({ compact = false }) {
   const queryClient = useQueryClient();
+  const envFilter = useEnvironmentFilter();
   const [selectedAlert, setSelectedAlert] = useState(null);
   const [evaluating, setEvaluating] = useState(false);
 
   const { data: alerts = [], isLoading } = useQuery({
-    queryKey: ['inventory_alerts'],
-    queryFn: () => base44.entities.InventoryAlert.list('-created_date')
+    queryKey: ['inventory_alerts', envFilter.environment],
+    queryFn: () => base44.entities.InventoryAlert.filter(envFilter, '-created_date')
   });
 
   const handleEvaluate = async () => {
