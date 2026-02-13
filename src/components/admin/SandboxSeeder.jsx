@@ -17,30 +17,33 @@ export default function SandboxSeeder() {
 
       // Create sandbox products
       const products = [
-        // Raw materials
-        { environment: 'sandbox', sku: 'RM-001', name: 'Kakaomassa', type: 'raw_material', unit: 'kg', safety_stock: 100, lead_time_days: 14, moq: 500, supplier: 'Choklad AB', cost_per_unit: 85, active: true },
-        { environment: 'sandbox', sku: 'RM-002', name: 'Kakaosmör', type: 'raw_material', unit: 'kg', safety_stock: 50, lead_time_days: 14, moq: 250, supplier: 'Choklad AB', cost_per_unit: 120, active: true },
-        { environment: 'sandbox', sku: 'RM-003', name: 'Socker', type: 'raw_material', unit: 'kg', safety_stock: 200, lead_time_days: 7, moq: 1000, supplier: 'Nordic Sugar', cost_per_unit: 12, active: true },
-        { environment: 'sandbox', sku: 'RM-004', name: 'Vaniljextrakt', type: 'raw_material', unit: 'liter', safety_stock: 5, lead_time_days: 21, moq: 10, supplier: 'Aroma Import', cost_per_unit: 450, active: true },
-        { environment: 'sandbox', sku: 'RM-005', name: 'Mjölkpulver', type: 'raw_material', unit: 'kg', safety_stock: 80, lead_time_days: 10, moq: 500, supplier: 'Arla', cost_per_unit: 65, active: true },
+        // Raw materials - Schampo-råvaror
+        { environment: 'sandbox', sku: 'TEST-RM-001', name: 'Natriumlaurylsulfat (SLS)', type: 'raw_material', unit: 'kg', safety_stock: 50, lead_time_days: 14, moq: 200, supplier: 'Kemi AB', cost_per_unit: 45, active: true },
+        { environment: 'sandbox', sku: 'TEST-RM-002', name: 'Kokamidopropylbetain', type: 'raw_material', unit: 'kg', safety_stock: 30, lead_time_days: 14, moq: 100, supplier: 'Kemi AB', cost_per_unit: 85, active: true },
+        { environment: 'sandbox', sku: 'TEST-RM-003', name: 'Glycerin', type: 'raw_material', unit: 'kg', safety_stock: 40, lead_time_days: 10, moq: 150, supplier: 'Kemi AB', cost_per_unit: 35, active: true },
+        { environment: 'sandbox', sku: 'TEST-RM-004', name: 'Panthenol (ProVitamin B5)', type: 'raw_material', unit: 'kg', safety_stock: 10, lead_time_days: 21, moq: 25, supplier: 'Vitaminer Import', cost_per_unit: 320, active: true },
+        { environment: 'sandbox', sku: 'TEST-RM-005', name: 'Citric Acid', type: 'raw_material', unit: 'kg', safety_stock: 20, lead_time_days: 7, moq: 50, supplier: 'Kemi AB', cost_per_unit: 28, active: true },
+        { environment: 'sandbox', sku: 'TEST-RM-006', name: 'Parfym - Lavendel', type: 'raw_material', unit: 'liter', safety_stock: 5, lead_time_days: 14, moq: 10, supplier: 'Doft AB', cost_per_unit: 280, active: true },
+        { environment: 'sandbox', sku: 'TEST-RM-007', name: 'Konserveringsmedel', type: 'raw_material', unit: 'kg', safety_stock: 15, lead_time_days: 14, moq: 50, supplier: 'Kemi AB', cost_per_unit: 95, active: true },
         
-        // Packaging
-        { environment: 'sandbox', sku: 'PKG-001', name: 'Chokladförpackning 100g', type: 'packaging', unit: 'pcs', safety_stock: 1000, lead_time_days: 14, moq: 5000, supplier: 'PackDesign', cost_per_unit: 2.5, active: true },
-        { environment: 'sandbox', sku: 'PKG-002', name: 'Chokladförpackning 200g', type: 'packaging', unit: 'pcs', safety_stock: 500, lead_time_days: 14, moq: 2500, supplier: 'PackDesign', cost_per_unit: 3.5, active: true },
-        { environment: 'sandbox', sku: 'PKG-003', name: 'Kartong (12st)', type: 'packaging', unit: 'pcs', safety_stock: 200, lead_time_days: 7, moq: 1000, supplier: 'PackDesign', cost_per_unit: 8, active: true },
+        // Packaging - Schampoflaskor
+        { environment: 'sandbox', sku: 'TEST-PKG-001', name: 'Schampoflaska 250ml', type: 'packaging', unit: 'pcs', safety_stock: 500, lead_time_days: 21, moq: 2000, supplier: 'Plastic Packaging', cost_per_unit: 3.2, active: true },
+        { environment: 'sandbox', sku: 'TEST-PKG-002', name: 'Schampoflaska 500ml', type: 'packaging', unit: 'pcs', safety_stock: 300, lead_time_days: 21, moq: 1000, supplier: 'Plastic Packaging', cost_per_unit: 4.5, active: true },
+        { environment: 'sandbox', sku: 'TEST-PKG-003', name: 'Pumplock 250ml', type: 'packaging', unit: 'pcs', safety_stock: 500, lead_time_days: 14, moq: 2000, supplier: 'Plastic Packaging', cost_per_unit: 1.8, active: true },
+        { environment: 'sandbox', sku: 'TEST-PKG-004', name: 'Pumplock 500ml', type: 'packaging', unit: 'pcs', safety_stock: 300, lead_time_days: 14, moq: 1000, supplier: 'Plastic Packaging', cost_per_unit: 2.2, active: true },
         
         // Labels
-        { environment: 'sandbox', sku: 'LBL-001', name: 'Etikett Mörk Choklad', type: 'label', unit: 'roll', safety_stock: 10, lead_time_days: 10, moq: 50, supplier: 'LabelPrint', cost_per_unit: 250, active: true },
-        { environment: 'sandbox', sku: 'LBL-002', name: 'Etikett Mjölkchoklad', type: 'label', unit: 'roll', safety_stock: 10, lead_time_days: 10, moq: 50, supplier: 'LabelPrint', cost_per_unit: 250, active: true },
+        { environment: 'sandbox', sku: 'TEST-LBL-001', name: 'Etikett Volym Schampo', type: 'label', unit: 'roll', safety_stock: 10, lead_time_days: 10, moq: 50, supplier: 'Etikett Print', cost_per_unit: 180, active: true },
+        { environment: 'sandbox', sku: 'TEST-LBL-002', name: 'Etikett Mild Schampo', type: 'label', unit: 'roll', safety_stock: 10, lead_time_days: 10, moq: 50, supplier: 'Etikett Print', cost_per_unit: 180, active: true },
         
-        // Finished goods
-        { environment: 'sandbox', sku: 'FG-001', name: 'Mörk Choklad 70% 100g', type: 'finished_good', brand: 'own', unit: 'pcs', safety_stock: 500, shopify_buffer: 50, active: true },
-        { environment: 'sandbox', sku: 'FG-002', name: 'Mjölkchoklad 100g', type: 'finished_good', brand: 'own', unit: 'pcs', safety_stock: 300, shopify_buffer: 30, active: true },
-        { environment: 'sandbox', sku: 'FG-003', name: 'Premium Mörk 85% 200g', type: 'finished_good', brand: 'own', unit: 'pcs', safety_stock: 200, shopify_buffer: 20, active: true },
+        // Finished goods - Färdiga schampon
+        { environment: 'sandbox', sku: 'TEST-FG-001', name: 'Volym Schampo 250ml', type: 'finished_good', brand: 'own', unit: 'pcs', safety_stock: 200, shopify_buffer: 20, active: true },
+        { environment: 'sandbox', sku: 'TEST-FG-002', name: 'Volym Schampo 500ml', type: 'finished_good', brand: 'own', unit: 'pcs', safety_stock: 150, shopify_buffer: 15, active: true },
+        { environment: 'sandbox', sku: 'TEST-FG-003', name: 'Mild Schampo 250ml', type: 'finished_good', brand: 'own', unit: 'pcs', safety_stock: 180, shopify_buffer: 18, active: true },
         
-        // Mix products (för tappning)
-        { environment: 'sandbox', sku: 'MIX-CHOCO-DARK', name: 'Chokladblandning Mörk', type: 'raw_material', unit: 'kg', active: true },
-        { environment: 'sandbox', sku: 'MIX-CHOCO-MILK', name: 'Chokladblandning Mjölk', type: 'raw_material', unit: 'kg', active: true }
+        // Mix products (för tappning) - Schampoblandningar
+        { environment: 'sandbox', sku: 'TEST-MIX-VOLYM', name: 'Schampoblandning Volym', type: 'raw_material', unit: 'kg', active: true },
+        { environment: 'sandbox', sku: 'TEST-MIX-MILD', name: 'Schampoblandning Mild', type: 'raw_material', unit: 'kg', active: true }
       ];
 
       for (const product of products) {
@@ -53,26 +56,34 @@ export default function SandboxSeeder() {
       const productMap = {};
       createdProducts.forEach(p => productMap[p.sku] = p.id);
 
-      // Create BOMs
+      // Create BOMs - Schamporecept (per 1 kg = ca 1 liter schampo)
       const boms = [
-        // FG-001: Mörk Choklad 70% (per 1 kg = 10 st à 100g)
-        { environment: 'sandbox', finished_product_id: productMap['FG-001'], component_id: productMap['RM-001'], quantity_per_unit: 0.7 },
-        { environment: 'sandbox', finished_product_id: productMap['FG-001'], component_id: productMap['RM-002'], quantity_per_unit: 0.25 },
-        { environment: 'sandbox', finished_product_id: productMap['FG-001'], component_id: productMap['RM-003'], quantity_per_unit: 0.045 },
-        { environment: 'sandbox', finished_product_id: productMap['FG-001'], component_id: productMap['RM-004'], quantity_per_unit: 0.005 },
+        // TEST-FG-001: Volym Schampo (per 1 kg bulk)
+        { environment: 'sandbox', finished_product_id: productMap['TEST-FG-001'], component_id: productMap['TEST-RM-001'], quantity_per_unit: 0.35 },
+        { environment: 'sandbox', finished_product_id: productMap['TEST-FG-001'], component_id: productMap['TEST-RM-002'], quantity_per_unit: 0.15 },
+        { environment: 'sandbox', finished_product_id: productMap['TEST-FG-001'], component_id: productMap['TEST-RM-003'], quantity_per_unit: 0.08 },
+        { environment: 'sandbox', finished_product_id: productMap['TEST-FG-001'], component_id: productMap['TEST-RM-004'], quantity_per_unit: 0.02 },
+        { environment: 'sandbox', finished_product_id: productMap['TEST-FG-001'], component_id: productMap['TEST-RM-005'], quantity_per_unit: 0.01 },
+        { environment: 'sandbox', finished_product_id: productMap['TEST-FG-001'], component_id: productMap['TEST-RM-006'], quantity_per_unit: 0.015 },
+        { environment: 'sandbox', finished_product_id: productMap['TEST-FG-001'], component_id: productMap['TEST-RM-007'], quantity_per_unit: 0.005 },
         
-        // FG-002: Mjölkchoklad
-        { environment: 'sandbox', finished_product_id: productMap['FG-002'], component_id: productMap['RM-001'], quantity_per_unit: 0.45 },
-        { environment: 'sandbox', finished_product_id: productMap['FG-002'], component_id: productMap['RM-002'], quantity_per_unit: 0.25 },
-        { environment: 'sandbox', finished_product_id: productMap['FG-002'], component_id: productMap['RM-003'], quantity_per_unit: 0.2 },
-        { environment: 'sandbox', finished_product_id: productMap['FG-002'], component_id: productMap['RM-005'], quantity_per_unit: 0.095 },
-        { environment: 'sandbox', finished_product_id: productMap['FG-002'], component_id: productMap['RM-004'], quantity_per_unit: 0.005 },
+        // TEST-FG-002: Volym Schampo 500ml (samma recept, annan storlek)
+        { environment: 'sandbox', finished_product_id: productMap['TEST-FG-002'], component_id: productMap['TEST-RM-001'], quantity_per_unit: 0.35 },
+        { environment: 'sandbox', finished_product_id: productMap['TEST-FG-002'], component_id: productMap['TEST-RM-002'], quantity_per_unit: 0.15 },
+        { environment: 'sandbox', finished_product_id: productMap['TEST-FG-002'], component_id: productMap['TEST-RM-003'], quantity_per_unit: 0.08 },
+        { environment: 'sandbox', finished_product_id: productMap['TEST-FG-002'], component_id: productMap['TEST-RM-004'], quantity_per_unit: 0.02 },
+        { environment: 'sandbox', finished_product_id: productMap['TEST-FG-002'], component_id: productMap['TEST-RM-005'], quantity_per_unit: 0.01 },
+        { environment: 'sandbox', finished_product_id: productMap['TEST-FG-002'], component_id: productMap['TEST-RM-006'], quantity_per_unit: 0.015 },
+        { environment: 'sandbox', finished_product_id: productMap['TEST-FG-002'], component_id: productMap['TEST-RM-007'], quantity_per_unit: 0.005 },
         
-        // FG-003: Premium Mörk 85%
-        { environment: 'sandbox', finished_product_id: productMap['FG-003'], component_id: productMap['RM-001'], quantity_per_unit: 0.85 },
-        { environment: 'sandbox', finished_product_id: productMap['FG-003'], component_id: productMap['RM-002'], quantity_per_unit: 0.12 },
-        { environment: 'sandbox', finished_product_id: productMap['FG-003'], component_id: productMap['RM-003'], quantity_per_unit: 0.025 },
-        { environment: 'sandbox', finished_product_id: productMap['FG-003'], component_id: productMap['RM-004'], quantity_per_unit: 0.005 }
+        // TEST-FG-003: Mild Schampo (mildare formula)
+        { environment: 'sandbox', finished_product_id: productMap['TEST-FG-003'], component_id: productMap['TEST-RM-001'], quantity_per_unit: 0.25 },
+        { environment: 'sandbox', finished_product_id: productMap['TEST-FG-003'], component_id: productMap['TEST-RM-002'], quantity_per_unit: 0.20 },
+        { environment: 'sandbox', finished_product_id: productMap['TEST-FG-003'], component_id: productMap['TEST-RM-003'], quantity_per_unit: 0.12 },
+        { environment: 'sandbox', finished_product_id: productMap['TEST-FG-003'], component_id: productMap['TEST-RM-004'], quantity_per_unit: 0.03 },
+        { environment: 'sandbox', finished_product_id: productMap['TEST-FG-003'], component_id: productMap['TEST-RM-005'], quantity_per_unit: 0.015 },
+        { environment: 'sandbox', finished_product_id: productMap['TEST-FG-003'], component_id: productMap['TEST-RM-006'], quantity_per_unit: 0.01 },
+        { environment: 'sandbox', finished_product_id: productMap['TEST-FG-003'], component_id: productMap['TEST-RM-007'], quantity_per_unit: 0.005 }
       ];
 
       for (const bom of boms) {
@@ -83,20 +94,23 @@ export default function SandboxSeeder() {
       // Create initial inventory ledger entries
       const ledgerEntries = [
         // Raw materials
-        { environment: 'sandbox', product_id: productMap['RM-001'], product_sku: 'RM-001', product_name: 'Kakaomassa', transaction_type: 'inbound', quantity: 250, reference_type: 'manual', notes: 'Initial sandbox stock' },
-        { environment: 'sandbox', product_id: productMap['RM-002'], product_sku: 'RM-002', product_name: 'Kakaosmör', transaction_type: 'inbound', quantity: 120, reference_type: 'manual', notes: 'Initial sandbox stock' },
-        { environment: 'sandbox', product_id: productMap['RM-003'], product_sku: 'RM-003', product_name: 'Socker', transaction_type: 'inbound', quantity: 500, reference_type: 'manual', notes: 'Initial sandbox stock' },
-        { environment: 'sandbox', product_id: productMap['RM-004'], product_sku: 'RM-004', product_name: 'Vaniljextrakt', transaction_type: 'inbound', quantity: 8, reference_type: 'manual', notes: 'Initial sandbox stock' },
-        { environment: 'sandbox', product_id: productMap['RM-005'], product_sku: 'RM-005', product_name: 'Mjölkpulver', transaction_type: 'inbound', quantity: 150, reference_type: 'manual', notes: 'Initial sandbox stock' },
+        { environment: 'sandbox', product_id: productMap['TEST-RM-001'], product_sku: 'TEST-RM-001', product_name: 'Natriumlaurylsulfat (SLS)', transaction_type: 'inbound', quantity: 150, reference_type: 'manual', notes: 'Initial sandbox stock' },
+        { environment: 'sandbox', product_id: productMap['TEST-RM-002'], product_sku: 'TEST-RM-002', product_name: 'Kokamidopropylbetain', transaction_type: 'inbound', quantity: 80, reference_type: 'manual', notes: 'Initial sandbox stock' },
+        { environment: 'sandbox', product_id: productMap['TEST-RM-003'], product_sku: 'TEST-RM-003', product_name: 'Glycerin', transaction_type: 'inbound', quantity: 120, reference_type: 'manual', notes: 'Initial sandbox stock' },
+        { environment: 'sandbox', product_id: productMap['TEST-RM-004'], product_sku: 'TEST-RM-004', product_name: 'Panthenol (ProVitamin B5)', transaction_type: 'inbound', quantity: 25, reference_type: 'manual', notes: 'Initial sandbox stock' },
+        { environment: 'sandbox', product_id: productMap['TEST-RM-005'], product_sku: 'TEST-RM-005', product_name: 'Citric Acid', transaction_type: 'inbound', quantity: 50, reference_type: 'manual', notes: 'Initial sandbox stock' },
+        { environment: 'sandbox', product_id: productMap['TEST-RM-006'], product_sku: 'TEST-RM-006', product_name: 'Parfym - Lavendel', transaction_type: 'inbound', quantity: 12, reference_type: 'manual', notes: 'Initial sandbox stock' },
+        { environment: 'sandbox', product_id: productMap['TEST-RM-007'], product_sku: 'TEST-RM-007', product_name: 'Konserveringsmedel', transaction_type: 'inbound', quantity: 35, reference_type: 'manual', notes: 'Initial sandbox stock' },
         
         // Packaging
-        { environment: 'sandbox', product_id: productMap['PKG-001'], product_sku: 'PKG-001', product_name: 'Chokladförpackning 100g', transaction_type: 'inbound', quantity: 2000, reference_type: 'manual', notes: 'Initial sandbox stock' },
-        { environment: 'sandbox', product_id: productMap['PKG-002'], product_sku: 'PKG-002', product_name: 'Chokladförpackning 200g', transaction_type: 'inbound', quantity: 800, reference_type: 'manual', notes: 'Initial sandbox stock' },
-        { environment: 'sandbox', product_id: productMap['PKG-003'], product_sku: 'PKG-003', product_name: 'Kartong (12st)', transaction_type: 'inbound', quantity: 400, reference_type: 'manual', notes: 'Initial sandbox stock' },
+        { environment: 'sandbox', product_id: productMap['TEST-PKG-001'], product_sku: 'TEST-PKG-001', product_name: 'Schampoflaska 250ml', transaction_type: 'inbound', quantity: 1500, reference_type: 'manual', notes: 'Initial sandbox stock' },
+        { environment: 'sandbox', product_id: productMap['TEST-PKG-002'], product_sku: 'TEST-PKG-002', product_name: 'Schampoflaska 500ml', transaction_type: 'inbound', quantity: 800, reference_type: 'manual', notes: 'Initial sandbox stock' },
+        { environment: 'sandbox', product_id: productMap['TEST-PKG-003'], product_sku: 'TEST-PKG-003', product_name: 'Pumplock 250ml', transaction_type: 'inbound', quantity: 1500, reference_type: 'manual', notes: 'Initial sandbox stock' },
+        { environment: 'sandbox', product_id: productMap['TEST-PKG-004'], product_sku: 'TEST-PKG-004', product_name: 'Pumplock 500ml', transaction_type: 'inbound', quantity: 800, reference_type: 'manual', notes: 'Initial sandbox stock' },
         
         // Labels
-        { environment: 'sandbox', product_id: productMap['LBL-001'], product_sku: 'LBL-001', product_name: 'Etikett Mörk Choklad', transaction_type: 'inbound', quantity: 20, reference_type: 'manual', notes: 'Initial sandbox stock' },
-        { environment: 'sandbox', product_id: productMap['LBL-002'], product_sku: 'LBL-002', product_name: 'Etikett Mjölkchoklad', transaction_type: 'inbound', quantity: 15, reference_type: 'manual', notes: 'Initial sandbox stock' }
+        { environment: 'sandbox', product_id: productMap['TEST-LBL-001'], product_sku: 'TEST-LBL-001', product_name: 'Etikett Volym Schampo', transaction_type: 'inbound', quantity: 15, reference_type: 'manual', notes: 'Initial sandbox stock' },
+        { environment: 'sandbox', product_id: productMap['TEST-LBL-002'], product_sku: 'TEST-LBL-002', product_name: 'Etikett Mild Schampo', transaction_type: 'inbound', quantity: 12, reference_type: 'manual', notes: 'Initial sandbox stock' }
       ];
 
       for (const entry of ledgerEntries) {
@@ -108,24 +122,24 @@ export default function SandboxSeeder() {
       const batches = [
         {
           environment: 'sandbox',
-          batch_number: 'SB-FG001-001',
-          product_id: productMap['FG-001'],
-          product_sku: 'FG-001',
-          product_name: 'Mörk Choklad 70% 100g',
-          produced_quantity: 1000,
-          current_quantity: 850,
+          batch_number: 'TEST-BATCH-001',
+          product_id: productMap['TEST-FG-001'],
+          product_sku: 'TEST-FG-001',
+          product_name: 'Volym Schampo 250ml',
+          produced_quantity: 500,
+          current_quantity: 420,
           production_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           status: 'available',
           notes: 'Sandbox testbatch'
         },
         {
           environment: 'sandbox',
-          batch_number: 'SB-FG002-001',
-          product_id: productMap['FG-002'],
-          product_sku: 'FG-002',
-          product_name: 'Mjölkchoklad 100g',
-          produced_quantity: 600,
-          current_quantity: 450,
+          batch_number: 'TEST-BATCH-002',
+          product_id: productMap['TEST-FG-003'],
+          product_sku: 'TEST-FG-003',
+          product_name: 'Mild Schampo 250ml',
+          produced_quantity: 400,
+          current_quantity: 330,
           production_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           status: 'available',
           notes: 'Sandbox testbatch'
@@ -141,23 +155,23 @@ export default function SandboxSeeder() {
       const mixBatches = [
         {
           environment: 'sandbox',
-          mix_sku: 'MIX-CHOCO-DARK',
-          batch_no: 'MIX-DARK-2024-001',
-          produced_kg: 500,
-          remaining_kg: 350,
+          mix_sku: 'TEST-MIX-VOLYM',
+          batch_no: 'TEST-MIX-VOLYM-2026-001',
+          produced_kg: 300,
+          remaining_kg: 220,
           status: 'available',
           produced_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-          notes: 'Testbatch för tappning'
+          notes: 'Testbatch för tappning - Volym schampo'
         },
         {
           environment: 'sandbox',
-          mix_sku: 'MIX-CHOCO-MILK',
-          batch_no: 'MIX-MILK-2024-001',
-          produced_kg: 400,
-          remaining_kg: 280,
+          mix_sku: 'TEST-MIX-MILD',
+          batch_no: 'TEST-MIX-MILD-2026-001',
+          produced_kg: 250,
+          remaining_kg: 180,
           status: 'available',
           produced_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-          notes: 'Testbatch för tappning'
+          notes: 'Testbatch för tappning - Mild schampo'
         }
       ];
 
@@ -170,37 +184,40 @@ export default function SandboxSeeder() {
       const packagingRecipes = [
         {
           environment: 'sandbox',
-          mix_sku: 'MIX-CHOCO-DARK',
-          finished_sku: 'FG-001',
-          finished_name: 'Mörk Choklad 70% 100g',
-          fill_ml_per_unit: 100,
+          mix_sku: 'TEST-MIX-VOLYM',
+          finished_sku: 'TEST-FG-001',
+          finished_name: 'Volym Schampo 250ml',
+          fill_ml_per_unit: 250,
           components: [
-            { component_sku: 'PKG-001', component_name: 'Chokladförpackning 100g', qty_per_unit: 1 },
-            { component_sku: 'LBL-001', component_name: 'Etikett Mörk Choklad', qty_per_unit: 1 }
+            { component_sku: 'TEST-PKG-001', component_name: 'Schampoflaska 250ml', qty_per_unit: 1 },
+            { component_sku: 'TEST-PKG-003', component_name: 'Pumplock 250ml', qty_per_unit: 1 },
+            { component_sku: 'TEST-LBL-001', component_name: 'Etikett Volym Schampo', qty_per_unit: 1 }
           ],
           active: true
         },
         {
           environment: 'sandbox',
-          mix_sku: 'MIX-CHOCO-DARK',
-          finished_sku: 'FG-003',
-          finished_name: 'Premium Mörk 85% 200g',
-          fill_ml_per_unit: 200,
+          mix_sku: 'TEST-MIX-VOLYM',
+          finished_sku: 'TEST-FG-002',
+          finished_name: 'Volym Schampo 500ml',
+          fill_ml_per_unit: 500,
           components: [
-            { component_sku: 'PKG-002', component_name: 'Chokladförpackning 200g', qty_per_unit: 1 },
-            { component_sku: 'LBL-001', component_name: 'Etikett Mörk Choklad', qty_per_unit: 1 }
+            { component_sku: 'TEST-PKG-002', component_name: 'Schampoflaska 500ml', qty_per_unit: 1 },
+            { component_sku: 'TEST-PKG-004', component_name: 'Pumplock 500ml', qty_per_unit: 1 },
+            { component_sku: 'TEST-LBL-001', component_name: 'Etikett Volym Schampo', qty_per_unit: 1 }
           ],
           active: true
         },
         {
           environment: 'sandbox',
-          mix_sku: 'MIX-CHOCO-MILK',
-          finished_sku: 'FG-002',
-          finished_name: 'Mjölkchoklad 100g',
-          fill_ml_per_unit: 100,
+          mix_sku: 'TEST-MIX-MILD',
+          finished_sku: 'TEST-FG-003',
+          finished_name: 'Mild Schampo 250ml',
+          fill_ml_per_unit: 250,
           components: [
-            { component_sku: 'PKG-001', component_name: 'Chokladförpackning 100g', qty_per_unit: 1 },
-            { component_sku: 'LBL-002', component_name: 'Etikett Mjölkchoklad', qty_per_unit: 1 }
+            { component_sku: 'TEST-PKG-001', component_name: 'Schampoflaska 250ml', qty_per_unit: 1 },
+            { component_sku: 'TEST-PKG-003', component_name: 'Pumplock 250ml', qty_per_unit: 1 },
+            { component_sku: 'TEST-LBL-002', component_name: 'Etikett Mild Schampo', qty_per_unit: 1 }
           ],
           active: true
         }
@@ -324,13 +341,13 @@ export default function SandboxSeeder() {
             <AlertDescription>
               <p className="font-medium mb-2">Vad inkluderas:</p>
               <ul className="text-sm space-y-1">
-                <li>• 5 råvaror (kakaomassa, kakaosmör, socker, vanilj, mjölkpulver)</li>
-                <li>• 3 förpackningar och 2 etiketter</li>
-                <li>• 3 färdigvaror med kompletta recept (BOM)</li>
+                <li>• 7 råvaror för schampo (tensider, glycerin, panthenol, parfym, etc)</li>
+                <li>• 4 förpackningar (flaskor och lock) och 2 etiketter</li>
+                <li>• 3 färdiga schampoprodukter med kompletta recept (BOM)</li>
                 <li>• Initial lagerstock för alla artiklar</li>
                 <li>• 2 testbatcher av färdigvaror</li>
-                <li>• 2 blandningsbatcher redo för tappning</li>
-                <li>• 3 tappningsrecept med förpackningskomponenter</li>
+                <li>• 2 schampoblandningsbatcher redo för tappning</li>
+                <li>• 3 tappningsrecept med alla förpackningskomponenter</li>
               </ul>
             </AlertDescription>
           </Alert>
