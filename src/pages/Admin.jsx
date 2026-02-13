@@ -25,6 +25,7 @@ import InventoryCount from '@/components/admin/InventoryCount';
 import SandboxSeeder from '@/components/admin/SandboxSeeder';
 import ShopifyHistoricalImport from '@/components/admin/ShopifyHistoricalImport';
 import ShopifyConnection from '@/components/admin/ShopifyConnection';
+import SystemGuide from '@/components/admin/SystemGuide';
 
 const roleColors = {
   admin: 'bg-purple-100 text-purple-700',
@@ -208,6 +209,12 @@ export default function AdminPage() {
                 Sandbox
               </TabsTrigger>
             </PermissionGate>
+            <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
+              <TabsTrigger value="guide">
+                <FileText className="w-4 h-4 mr-2" />
+                Guide
+              </TabsTrigger>
+            </PermissionGate>
             <PermissionGate permission={PERMISSIONS.AUDITLOG_READ}>
               <TabsTrigger value="audit">
                 <FileText className="w-4 h-4 mr-2" />
@@ -355,6 +362,13 @@ export default function AdminPage() {
           <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
             <TabsContent value="sandbox">
               <SandboxSeeder />
+            </TabsContent>
+          </PermissionGate>
+
+          {/* System Guide Tab */}
+          <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
+            <TabsContent value="guide">
+              <SystemGuide />
             </TabsContent>
           </PermissionGate>
 
