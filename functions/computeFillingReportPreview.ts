@@ -89,28 +89,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Check component availability
-    for (const comp of components_used) {
-      const product = await base44.entities.Product.filter({ sku: comp.component_sku });
-      if (product.length === 0) {
-        warnings.push({
-          type: 'warning',
-          message: `Komponent ${comp.component_sku} finns inte i systemet`
-        });
-        continue;
-      }
-
-      // Calculate available stock
-      const ledger = await base44.entities.InventoryLedger.filter({ product_sku: comp.component_sku });
-      const available = ledger.reduce((sum, entry) => sum + entry.quantity, 0);
-      
-      if (available < comp.qty_used) {
-        warnings.push({
-          type: 'warning',
-          message: `Lagerbrist: ${comp.component_name} - Behöver ${comp.qty_used}, finns ${available.toFixed(0)}`
-        });
-      }
-    }
+    // Skippa per-komponent lagerkontroll i förhandsvisning för att undvika 429-rate limits.
+    // Lagertransaktioner och validering sker vid slutförande (completeFillingReport).
+    // Om du vill återaktivera koll, gör det med batchede anrop (IN-listor) eller cache.
 
     return Response.json({
       bulk_used_kg: parseFloat(bulk_used_kg.toFixed(3)),

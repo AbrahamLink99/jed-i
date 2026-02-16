@@ -100,16 +100,19 @@ export default function FillingPage() {
 
   // Auto-preview when data changes
   useEffect(() => {
-    if (selectedBatchId && lines.some(l => l.produced_units > 0)) {
+    if (!selectedBatchId || !lines.some(l => l.produced_units > 0)) {
+      setPreview(null);
+      return;
+    }
+    const h = setTimeout(() => {
       previewMutation.mutate({
         mix_batch_id: selectedBatchId,
         lines: lines.filter(l => l.produced_units > 0),
         waste,
         bulk_waste_kg: parseFloat(bulkWasteKg) || 0
       });
-    } else {
-      setPreview(null);
-    }
+    }, 400);
+    return () => clearTimeout(h);
   }, [selectedBatchId, lines, waste, bulkWasteKg]);
 
   const handleLineChange = (index, value) => {
