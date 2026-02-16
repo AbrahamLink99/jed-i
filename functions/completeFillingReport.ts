@@ -123,6 +123,7 @@ Deno.serve(async (req) => {
     ledgerEntries.push({
       product_id: productMap[mixBatch.mix_sku].id,
       product_sku: mixBatch.mix_sku,
+      batch_number: mixBatch.batch_no,
       transaction_type: 'backflush',
       quantity: -bulk_used_kg,
       reference_type: 'filling_report',
@@ -130,6 +131,28 @@ Deno.serve(async (req) => {
       notes: `Tappning från batch ${mixBatch.batch_no}`,
       environment: mixBatch.environment
     });
+
+    // Create batch lots for each finished line
+    const lineBatch = {};
+    for (const line of lines) {
+      const product = productMap[line.finished_sku];
+      const recipe = recipesMap[line.finished_sku];
+      const ts = new Date();
+      const ymd = ts.toISOString().slice(0,10).replace(/-/g,'');
+      const rnd = Math.random().toString(36).slice(2,6);
+      const batch_number = `${mixBatch.batch_no}-${line.finished_sku}-${ymd}-${rnd}`;
+      const batchLot = await base44.asServiceRole.entities.BatchLot.create({
+        batch_number,
+        finished_sku: line.finished_sku,
+        product_id: product.id,
+        product_name: recipe.finished_name,
+        initial_qty_pcs: line.produced_units,
+        production_date: ts.toISOString().slice(0,10),
+        status: 'available',
+        environment: mixBatch.environment
+      });
+      lineBatch[line.finished_sku] = { batch_number, batch_lot_id: batchLot.id };
+    }
 
     // Add finished goods
     for (const line of lines) {
@@ -139,9 +162,11 @@ Deno.serve(async (req) => {
         product_sku: line.finished_sku,
         product_name: recipe.finished_name,
         transaction_type: 'production',
-        quantity: line.produced_units,
+        quantity: Number(line.produced_units) || 0,
         reference_type: 'filling_report',
         reference_id: mix_batch_id,
+        batch_lot_id: lineBatch[line.finished_sku]?.batch_lot_id,
+        batch_number: lineBatch[line.finished_sku]?.batch_number,
         notes: `Tappning från batch ${mixBatch.batch_no}`,
         environment: mixBatch.environment
       });
@@ -172,7 +197,9 @@ Deno.serve(async (req) => {
       lines: lines.map(l => ({
         finished_sku: l.finished_sku,
         finished_name: recipesMap[l.finished_sku].finished_name,
-        produced_units: l.produced_units
+        produced_units: l.produced_units,
+        batch_number: lineBatch[l.finished_sku]?.batch_number,
+        batch_lot_id: lineBatch[l.finished_sku]?.batch_lot_id
       })),
       waste: waste || [],
       bulk_waste_kg: bulk_waste_kg || 0,
