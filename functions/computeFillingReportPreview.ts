@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
     const recipes = await base44.entities.PackagingRecipe.filter({
       mix_sku: mixBatch.mix_sku,
       active: true
-    });
+    }, undefined, 50)
 
     const recipesMap = {};
     recipes.forEach(r => {
@@ -33,13 +33,13 @@ Deno.serve(async (req) => {
     });
 
     // Calculate bulk usage
-    let bulk_used_kg = (bulk_waste_kg || 0);
+    let bulk_used_kg = Number(bulk_waste_kg) || 0;
     
     for (const line of lines) {
       const recipe = recipesMap[line.finished_sku];
       if (!recipe) continue;
-      
-      const fill_liters = (recipe.fill_ml_per_unit * line.produced_units) / 1000;
+      const units = Number(line.produced_units) || 0;
+      const fill_liters = (Number(recipe.fill_ml_per_unit) * units) / 1000;
       bulk_used_kg += fill_liters;
     }
 
@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
     }
 
     const components_used = Object.values(componentsMap);
-    const remaining_kg_after = mixBatch.remaining_kg - bulk_used_kg;
+    const remaining_kg_after = Number(mixBatch.remaining_kg) - bulk_used_kg;
 
     // Check for warnings
     const warnings = [];
@@ -102,6 +102,7 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Preview error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    const msg = error?.data?.message || error?.message || 'Internal error';
+    return Response.json({ error: msg }, { status: 500 });
   }
 });

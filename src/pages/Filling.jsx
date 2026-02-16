@@ -23,6 +23,7 @@ export default function FillingPage() {
   const [bulkWasteKg, setBulkWasteKg] = useState(0);
   const [preview, setPreview] = useState(null);
   const [receipt, setReceipt] = useState(null);
+  const [errorMsg, setErrorMsg] = useState('');
 
   // Fetch available mix batches
   const { data: mixBatches = [] } = useQuery({
@@ -76,7 +77,13 @@ export default function FillingPage() {
       return response.data;
     },
     onSuccess: (data) => {
+      setErrorMsg('');
       setPreview(data);
+    },
+    onError: (err) => {
+      setPreview(null);
+      const msg = err?.response?.data?.error || 'Kunde inte beräkna förhandsvisning (försök igen)';
+      setErrorMsg(msg);
     }
   });
 
@@ -92,9 +99,14 @@ export default function FillingPage() {
       return response.data;
     },
     onSuccess: (data) => {
+      setErrorMsg('');
       setReceipt(data.receipt);
       queryClient.invalidateQueries(['mixBatches']);
       queryClient.invalidateQueries(['inventoryLedger']);
+    },
+    onError: (err) => {
+      const msg = err?.response?.data?.error || 'Kunde inte slutföra tappning';
+      setErrorMsg(msg);
     }
   });
 
@@ -156,6 +168,7 @@ export default function FillingPage() {
     setBulkWasteKg(0);
     setPreview(null);
     setReceipt(null);
+    setErrorMsg('');
   };
 
   if (receipt) {
@@ -234,6 +247,11 @@ export default function FillingPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {errorMsg && (
+            <Alert variant="destructive">
+              <AlertDescription>{errorMsg}</AlertDescription>
+            </Alert>
+          )}
           {mixBatches.length === 0 && (
             <Alert>
               <AlertDescription>
