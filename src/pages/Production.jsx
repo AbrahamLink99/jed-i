@@ -80,7 +80,19 @@ export default function Production() {
         notes
       });
 
-      // 3. Create ledger entry for production (finished goods in)
+      // 3. Create MixBatch for filling (if this is a mix product)
+      await base44.entities.MixBatch.create({
+        environment: envFilter.environment,
+        mix_sku: product.sku,
+        batch_no: batchNumber,
+        produced_kg: quantity,
+        remaining_kg: quantity,
+        status: 'available',
+        produced_at: new Date().toISOString(),
+        notes
+      });
+
+      // 4. Create ledger entry for production (finished goods in)
       await base44.entities.InventoryLedger.create({
         environment: envFilter.environment,
         product_id: productId,
@@ -94,7 +106,7 @@ export default function Production() {
         notes
       });
 
-      // 4. Create backflush entries for components
+      // 5. Create backflush entries for components
       for (const impact of componentImpact) {
         await base44.entities.InventoryLedger.create({
           environment: envFilter.environment,
@@ -114,6 +126,7 @@ export default function Production() {
     },
     onSuccess: (batch) => {
       queryClient.invalidateQueries({ queryKey: ['batches'] });
+      queryClient.invalidateQueries({ queryKey: ['mixBatches'] });
       queryClient.invalidateQueries({ queryKey: ['ledger'] });
       toast.success(`Produktion registrerad: ${batch.batch_number}`);
     },

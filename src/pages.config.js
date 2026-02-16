@@ -51,13 +51,13 @@ import Admin from './pages/Admin';
 import Alerts from './pages/Alerts';
 import Batches from './pages/Batches';
 import Dashboard from './pages/Dashboard';
+import Filling from './pages/Filling';
 import FinishedGoods from './pages/FinishedGoods';
 import Inventory from './pages/Inventory';
 import Planning from './pages/Planning';
 import Production from './pages/Production';
 import Products from './pages/Products';
 import Recipes from './pages/Recipes';
-import Filling from './pages/Filling';
 import __Layout from './Layout.jsx';
 
 
@@ -66,13 +66,13 @@ export const PAGES = {
     "Alerts": Alerts,
     "Batches": Batches,
     "Dashboard": Dashboard,
+    "Filling": Filling,
     "FinishedGoods": FinishedGoods,
     "Inventory": Inventory,
     "Planning": Planning,
     "Production": Production,
     "Products": Products,
     "Recipes": Recipes,
-    "Filling": Filling,
 }
 
 export const pagesConfig = {
