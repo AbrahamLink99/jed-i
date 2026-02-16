@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,7 +15,7 @@ import { useEnvironmentFilter } from '@/components/environment/useEnvironmentFil
 
 export default function FillingPage() {
   const queryClient = useQueryClient();
-  const currentEnv = useEnvironmentFilter();
+  const envFilter = useEnvironmentFilter();
   
   const [selectedBatchId, setSelectedBatchId] = useState('');
   const [lines, setLines] = useState([]);
@@ -24,11 +26,11 @@ export default function FillingPage() {
 
   // Fetch available mix batches
   const { data: mixBatches = [] } = useQuery({
-    queryKey: ['mixBatches', currentEnv],
+    queryKey: ['mixBatches', envFilter.environment],
     queryFn: async () => {
       const batches = await base44.entities.MixBatch.filter({ 
         status: 'available',
-        environment: currentEnv
+        environment: envFilter.environment
       });
       return batches.filter(b => b.remaining_kg > 0);
     }
@@ -36,7 +38,7 @@ export default function FillingPage() {
 
   // Fetch packaging recipes for selected batch
   const { data: recipes = [] } = useQuery({
-    queryKey: ['packagingRecipes', selectedBatchId, currentEnv],
+    queryKey: ['packagingRecipes', selectedBatchId, envFilter.environment],
     queryFn: async () => {
       if (!selectedBatchId) return [];
       const batch = mixBatches.find(b => b.id === selectedBatchId);
@@ -44,7 +46,7 @@ export default function FillingPage() {
       return await base44.entities.PackagingRecipe.filter({
         mix_sku: batch.mix_sku,
         active: true,
-        environment: currentEnv
+        environment: envFilter.environment
       });
     },
     enabled: !!selectedBatchId
@@ -218,6 +220,18 @@ export default function FillingPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {mixBatches.length === 0 && (
+            <Alert>
+              <AlertDescription>
+                Inga blandningsbatcher tillgängliga i {envFilter.environment}. Skapa en blandning via Produktion och säkerställ att tappningsrecept finns för mixens SKU.
+              </AlertDescription>
+              <div className="mt-3">
+                <Button asChild variant="outline" size="sm">
+                  <Link to={createPageUrl('Production')}>Gå till Produktion</Link>
+                </Button>
+              </div>
+            </Alert>
+          )}
           {/* Batch selection */}
           <div className="space-y-2">
             <Label>Välj blandningsbatch</Label>
@@ -226,11 +240,15 @@ export default function FillingPage() {
                 <SelectValue placeholder="Välj batch..." />
               </SelectTrigger>
               <SelectContent>
-                {mixBatches.map(batch => (
-                  <SelectItem key={batch.id} value={batch.id}>
-                    {batch.mix_sku} - {batch.batch_no} ({batch.remaining_kg} kg kvar)
-                  </SelectItem>
-                ))}
+               {mixBatches.length === 0 ? (
+                 <SelectItem value={null} disabled>Inga blandningsbatcher</SelectItem>
+               ) : (
+                 mixBatches.map(batch => (
+                   <SelectItem key={batch.id} value={batch.id}>
+                     {batch.mix_sku} - {batch.batch_no} ({batch.remaining_kg} kg kvar)
+                   </SelectItem>
+                 ))
+               )}
               </SelectContent>
             </Select>
           </div>
