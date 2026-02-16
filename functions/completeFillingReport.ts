@@ -132,8 +132,9 @@ Deno.serve(async (req) => {
       environment: mixBatch.environment
     });
 
-    // Create batch lots for each finished line
+    // Create batch lots for each finished line and FinishedBatch records
     const lineBatch = {};
+    const finishedBatchMap = {};
     for (const line of lines) {
       const product = productMap[line.finished_sku];
       const recipe = recipesMap[line.finished_sku];
@@ -153,6 +154,18 @@ Deno.serve(async (req) => {
         environment: mixBatch.environment
       });
       lineBatch[line.finished_sku] = { batch_number, batch_lot_id: batchLot.id };
+
+      // FinishedBatch (requested): one per line using user-provided batch_no
+      const finishedBatch = await base44.asServiceRole.entities.FinishedBatch.create({
+        environment: mixBatch.environment,
+        finished_sku: line.finished_sku,
+        batch_no: batch_number,
+        quantity: Number(line.produced_units) || 0, // actual units
+        source_mix_batch_id: mix_batch_id,
+        produced_at: ts.toISOString(),
+        status: 'available'
+      });
+      finishedBatchMap[line.finished_sku] = { id: finishedBatch.id, batch_no: batch_number };
     }
 
     // Add finished goods
@@ -200,7 +213,8 @@ Deno.serve(async (req) => {
         finished_name: recipesMap[l.finished_sku].finished_name,
         produced_units: l.produced_units,
         batch_number: lineBatch[l.finished_sku]?.batch_number,
-        batch_lot_id: lineBatch[l.finished_sku]?.batch_lot_id
+        batch_lot_id: lineBatch[l.finished_sku]?.batch_lot_id,
+        finished_batch_id: finishedBatchMap[l.finished_sku]?.id
       })),
       waste: waste || [],
       bulk_waste_kg: bulk_waste_kg || 0,

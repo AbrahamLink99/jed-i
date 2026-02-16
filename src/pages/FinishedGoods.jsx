@@ -45,6 +45,11 @@ export default function FinishedGoods() {
     queryFn: () => base44.entities.Batch.filter(envFilter, '-created_date')
   });
 
+  const { data: finishedBatches = [] } = useQuery({
+    queryKey: ['finished-batches', envFilter.environment],
+    queryFn: () => base44.entities.FinishedBatch.filter(envFilter, '-created_date', 500)
+  });
+
   const finishedGoods = useMemo(() => {
     return products.filter(p => p.type === 'finished_good');
   }, [products]);
@@ -73,6 +78,12 @@ export default function FinishedGoods() {
       activeBatches: activeBatches.length,
       totalStock
     };
+  };
+
+  const getFinishedBatchesForSku = (sku) => {
+    return (finishedBatches || [])
+      .filter(fb => fb.finished_sku === sku)
+      .sort((a, b) => new Date(b.produced_at || b.created_date) - new Date(a.produced_at || a.created_date));
   };
 
   return (
