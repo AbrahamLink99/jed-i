@@ -32,7 +32,8 @@ export default function FillingPage() {
         status: 'available',
         environment: envFilter.environment
       });
-      return batches.filter(b => b.remaining_kg > 0);
+      // sortera nyaste först
+      return batches.filter(b => b.remaining_kg > 0).sort((a,b) => (b.produced_at || '').localeCompare(a.produced_at || ''));
     }
   });
 
@@ -216,14 +217,14 @@ export default function FillingPage() {
             Ny tappning
           </CardTitle>
           <CardDescription>
-            Registrera tappning/packning från en tillverkad blandning
+           Registrera tappning/packning från en tillverkad blandning. Endast blandningar (MixBatch) med status Tillgänglig visas.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {mixBatches.length === 0 && (
             <Alert>
               <AlertDescription>
-                Inga blandningsbatcher tillgängliga i {envFilter.environment}. Skapa en blandning via Produktion och säkerställ att tappningsrecept finns för mixens SKU.
+                Inga blandningsbatcher tillgängliga i {envFilter.environment}. Skapa en blandning via Produktion (aktivera "Blandning (bulk)") och säkerställ att tappningsrecept finns för mixens SKU.
               </AlertDescription>
               <div className="mt-3">
                 <Button asChild variant="outline" size="sm">

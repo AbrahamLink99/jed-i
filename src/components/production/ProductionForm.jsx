@@ -8,21 +8,25 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Factory, AlertTriangle, CheckCircle, Package } from 'lucide-react';
+import { Switch } from "@/components/ui/switch";
 import { format } from 'date-fns';
 
 export default function ProductionForm({ 
   finishedProducts = [], 
+  mixEligibleProducts = [],
   bomItems = [],
   componentStock = {},
   onSubmit,
   isLoading 
 }) {
   const [selectedProduct, setSelectedProduct] = useState('');
+  const [isMix, setIsMix] = useState(false);
   const [quantity, setQuantity] = useState('');
   const [productionDate, setProductionDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [notes, setNotes] = useState('');
 
-  const product = finishedProducts.find(p => p.id === selectedProduct);
+  const productList = isMix ? mixEligibleProducts : finishedProducts;
+  const product = productList.find(p => p.id === selectedProduct);
   const productBOM = bomItems.filter(b => b.finished_product_id === selectedProduct);
 
   const componentImpact = useMemo(() => {
@@ -58,32 +62,39 @@ export default function ProductionForm({
       quantity: parseFloat(quantity),
       productionDate,
       notes,
-      componentImpact
+      componentImpact,
+      isMix
     });
   };
 
   return (
     <Card className="p-6 border-slate-200">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-3 rounded-xl bg-indigo-100">
-          <Factory className="w-6 h-6 text-indigo-600" />
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="p-3 rounded-xl bg-indigo-100">
+            <Factory className="w-6 h-6 text-indigo-600" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold text-slate-900">Registrera produktion</h2>
+            <p className="text-sm text-slate-500">Deklarera vad som har producerats</p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-xl font-semibold text-slate-900">Registrera produktion</h2>
-          <p className="text-sm text-slate-500">Deklarera vad som har producerats</p>
+        <div className="flex items-center gap-2">
+          <Label className="text-sm text-slate-600">Blandning (bulk för tappning)</Label>
+          <Switch checked={isMix} onCheckedChange={setIsMix} />
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>Produkt *</Label>
+            <Label>{isMix ? 'Blandning (mix) *' : 'Färdigvara *'}</Label>
             <Select value={selectedProduct} onValueChange={setSelectedProduct}>
               <SelectTrigger>
-                <SelectValue placeholder="Välj färdigvara..." />
+                <SelectValue placeholder={isMix ? 'Välj blandning...' : 'Välj färdigvara...'} />
               </SelectTrigger>
               <SelectContent>
-                {finishedProducts.map(p => (
+                {productList.map(p => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.sku} - {p.name}
                   </SelectItem>

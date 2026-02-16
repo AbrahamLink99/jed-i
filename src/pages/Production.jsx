@@ -43,6 +43,12 @@ export default function Production() {
 
   const finishedProducts = products.filter(p => p.type === 'finished_good' && p.active !== false);
 
+  // Produkter som är godkända som blandningar (har tappningsrecept)
+  const mixEligibleProducts = useMemo(() => {
+    const mixSkus = new Set((packagingRecipes || []).map(r => r.mix_sku));
+    return products.filter(p => mixSkus.has(p.sku) && p.active !== false);
+  }, [products, packagingRecipes]);
+
   const bomWithNames = useMemo(() => {
     return bomItems.map(bom => {
       const component = products.find(p => p.id === bom.component_id);
@@ -66,7 +72,7 @@ export default function Production() {
 
   const productionMutation = useMutation({
     mutationFn: async (data) => {
-      const { productId, product, quantity, productionDate, notes, componentImpact } = data;
+      const { productId, product, quantity, productionDate, notes, componentImpact, isMix } = data;
       
       // Check if this product has packaging recipes (is a mix)
       const hasPackagingRecipes = packagingRecipes.some(r => r.mix_sku === product.sku);
@@ -88,8 +94,8 @@ export default function Production() {
         notes
       });
 
-      // 3. Create MixBatch for filling (only if packaging recipes exist for this product)
-      if (hasPackagingRecipes) {
+      // 3. Create MixBatch för tappning (endast om detta är markerat som blandning OCH recept finns)
+      if (isMix && hasPackagingRecipes) {
         await base44.entities.MixBatch.create({
           environment: envFilter.environment,
           mix_sku: product.sku,
@@ -162,6 +168,7 @@ export default function Production() {
           <div className="lg:col-span-2">
             <ProductionForm
               finishedProducts={finishedProducts}
+              mixEligibleProducts={mixEligibleProducts}
               bomItems={bomWithNames}
               componentStock={componentStock}
               onSubmit={(data) => productionMutation.mutate(data)}
