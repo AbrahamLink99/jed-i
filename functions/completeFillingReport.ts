@@ -44,8 +44,8 @@ Deno.serve(async (req) => {
       if (!recipe) {
         return Response.json({ error: `Recipe not found for ${line.finished_sku}` }, { status: 400 });
       }
-      
-      const fill_liters = (recipe.fill_ml_per_unit * line.produced_units) / 1000;
+      const units = Number(line.actual_units ?? line.produced_units) || 0;
+      const fill_liters = (recipe.fill_ml_per_unit * units) / 1000;
       bulk_used_kg += fill_liters;
     }
 
@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
     
     for (const line of lines) {
       const recipe = recipesMap[line.finished_sku];
-      
+      const units = Number(line.actual_units ?? line.produced_units) || 0;
       for (const comp of recipe.components) {
         if (!componentsMap[comp.component_sku]) {
           componentsMap[comp.component_sku] = {
@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
             qty_used: 0
           };
         }
-        componentsMap[comp.component_sku].qty_used += comp.qty_per_unit * line.produced_units;
+        componentsMap[comp.component_sku].qty_used += comp.qty_per_unit * units;
       }
     }
 
@@ -143,12 +143,13 @@ Deno.serve(async (req) => {
       const rnd = Math.random().toString(36).slice(2,6);
       const provided = (line.batch_number || '').trim();
       const batch_number = provided || `${mixBatch.batch_no}-${line.finished_sku}-${ymd}-${rnd}`;
+      const units = Number(line.actual_units ?? line.produced_units) || 0;
       const batchLot = await base44.asServiceRole.entities.BatchLot.create({
         batch_number,
         finished_sku: line.finished_sku,
         product_id: product.id,
         product_name: recipe.finished_name,
-        initial_qty_pcs: line.produced_units,
+        initial_qty_pcs: units,
         production_date: ts.toISOString().slice(0,10),
         status: 'available',
         environment: mixBatch.environment
@@ -156,11 +157,12 @@ Deno.serve(async (req) => {
       lineBatch[line.finished_sku] = { batch_number, batch_lot_id: batchLot.id };
 
       // FinishedBatch (requested): one per line using user-provided batch_no
+      const unitsFB = Number(line.actual_units ?? line.produced_units) || 0;
       const finishedBatch = await base44.asServiceRole.entities.FinishedBatch.create({
         environment: mixBatch.environment,
         finished_sku: line.finished_sku,
         batch_no: batch_number,
-        quantity: Number(line.produced_units) || 0, // actual units
+        quantity: unitsFB, // actual units
         source_mix_batch_id: mix_batch_id,
         produced_at: ts.toISOString(),
         status: 'available'

@@ -104,6 +104,7 @@ export default function FillingPage() {
       setReceipt(data.receipt);
       queryClient.invalidateQueries(['mixBatches']);
       queryClient.invalidateQueries(['inventoryLedger']);
+      queryClient.invalidateQueries(['finished-batches']);
     },
     onError: (err) => {
       const msg = err?.response?.data?.error || 'Kunde inte slutföra tappning';
