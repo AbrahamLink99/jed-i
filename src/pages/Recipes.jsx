@@ -10,6 +10,7 @@ import { Plus, Search, ChefHat, Edit2, Trash2, Shield } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import RecipeForm from '@/components/recipes/RecipeForm';
 import PackagingRecipeForm from '@/components/recipes/PackagingRecipeForm';
+import PackagingRecipeImportDialog from '@/components/recipes/PackagingRecipeImportDialog';
 import { toast } from 'sonner';
 import { usePermissions } from '@/components/auth/PermissionGate';
 import { useEnvironmentFilter } from '@/components/environment/useEnvironmentFilter';
@@ -23,6 +24,7 @@ export default function Recipes() {
   const [mode, setMode] = useState('bom'); // 'bom' | 'pack'
   const [showPackagingForm, setShowPackagingForm] = useState(false);
   const [editingPackagingRecipe, setEditingPackagingRecipe] = useState(null);
+  const [showImport, setShowImport] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -192,11 +194,19 @@ export default function Recipes() {
             </div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setMode('bom')}>Visa produktionsrecept</Button>
+              <Button variant="outline" onClick={() => setShowImport(true)}>Importera CSV</Button>
               <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => { setEditingPackagingRecipe(null); setShowPackagingForm(true); }}>
                 <Plus className="w-4 h-4 mr-2" /> Skapa tappningsrecept
               </Button>
             </div>
           </div>
+
+          <PackagingRecipeImportDialog 
+            open={showImport} 
+            onOpenChange={setShowImport} 
+            onImported={() => queryClient.invalidateQueries({ queryKey: ['packaging-recipes-entities'] })}
+            availableProducts={products}
+          />
 
           <Card className="p-4 mb-6">
             <div className="relative">
