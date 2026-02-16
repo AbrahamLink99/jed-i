@@ -26,6 +26,11 @@ export default function Production() {
     queryFn: () => base44.entities.BOMItem.filter(envFilter)
   });
 
+  const { data: packagingRecipes = [] } = useQuery({
+    queryKey: ['packaging-recipes', envFilter.environment],
+    queryFn: () => base44.entities.PackagingRecipe.filter(envFilter)
+  });
+
   const { data: batches = [] } = useQuery({
     queryKey: ['batches', envFilter.environment],
     queryFn: () => base44.entities.Batch.filter(envFilter, '-created_date', 20)
@@ -63,6 +68,9 @@ export default function Production() {
     mutationFn: async (data) => {
       const { productId, product, quantity, productionDate, notes, componentImpact } = data;
       
+      // Check if this product has packaging recipes (is a mix)
+      const hasPackagingRecipes = packagingRecipes.some(r => r.mix_sku === product.sku);
+      
       // 1. Generate batch number
       const batchNumber = generateBatchNumber(product.sku);
       
@@ -80,17 +88,19 @@ export default function Production() {
         notes
       });
 
-      // 3. Create MixBatch for filling (if this is a mix product)
-      await base44.entities.MixBatch.create({
-        environment: envFilter.environment,
-        mix_sku: product.sku,
-        batch_no: batchNumber,
-        produced_kg: quantity,
-        remaining_kg: quantity,
-        status: 'available',
-        produced_at: new Date().toISOString(),
-        notes
-      });
+      // 3. Create MixBatch for filling (only if packaging recipes exist for this product)
+      if (hasPackagingRecipes) {
+        await base44.entities.MixBatch.create({
+          environment: envFilter.environment,
+          mix_sku: product.sku,
+          batch_no: batchNumber,
+          produced_kg: quantity,
+          remaining_kg: quantity,
+          status: 'available',
+          produced_at: new Date().toISOString(),
+          notes
+        });
+      }
 
       // 4. Create ledger entry for production (finished goods in)
       await base44.entities.InventoryLedger.create({
