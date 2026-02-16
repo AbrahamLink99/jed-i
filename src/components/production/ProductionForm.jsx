@@ -17,16 +17,17 @@ export default function ProductionForm({
   bomItems = [],
   componentStock = {},
   onSubmit,
-  isLoading 
+  isLoading,
+  mixOnly = false,
 }) {
   const [selectedProduct, setSelectedProduct] = useState('');
-  const [isMix, setIsMix] = useState(false);
+  const [isMix, setIsMix] = useState(true);
   const [quantity, setQuantity] = useState('');
   const [productionDate, setProductionDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [notes, setNotes] = useState('');
   const [batchNumber, setBatchNumber] = useState('');
 
-  const productList = isMix ? mixEligibleProducts : finishedProducts;
+  const productList = mixOnly ? mixEligibleProducts : (isMix ? mixEligibleProducts : finishedProducts);
   const product = productList.find(p => p.id === selectedProduct);
   const productBOM = bomItems.filter(b => b.finished_product_id === selectedProduct);
 

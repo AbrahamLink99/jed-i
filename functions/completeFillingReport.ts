@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
     // Update mix batch
     await base44.asServiceRole.entities.MixBatch.update(mix_batch_id, {
       remaining_kg: remaining_kg_after,
-      status: remaining_kg_after <= 0 ? 'depleted' : 'available'
+      status: remaining_kg_after <= 0 ? 'closed' : 'available'
     });
 
     // Create inventory ledger entries

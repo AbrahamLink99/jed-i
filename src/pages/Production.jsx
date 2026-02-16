@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card } from "@/components/ui/card";
@@ -8,6 +8,9 @@ import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import { Factory, CheckCircle } from 'lucide-react';
 import ProductionForm from '@/components/production/ProductionForm';
+import MixBatchList from '@/components/production/MixBatchList';
+import FillingTab from '@/components/production/FillingTab';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { generateBatchNumber, getStockSummary } from '@/components/inventory/StockCalculations';
 import { toast } from 'sonner';
 import { useEnvironmentFilter } from '@/components/environment/useEnvironmentFilter';
@@ -34,6 +37,11 @@ export default function Production() {
   const { data: batches = [] } = useQuery({
     queryKey: ['batches', envFilter.environment],
     queryFn: () => base44.entities.Batch.filter(envFilter, '-created_date', 20)
+  });
+
+  const { data: mixBatches = [] } = useQuery({
+    queryKey: ['mixBatches', envFilter.environment],
+    queryFn: () => base44.entities.MixBatch.filter(envFilter, '-created_date', 100)
   });
 
   const { data: ledger = [] } = useQuery({
@@ -154,74 +162,100 @@ export default function Production() {
 
   const recentBatches = batches.slice(0, 10);
 
+  const [activeTab, setActiveTab] = useState('tillverkning');
+  const [selectedMixBatchId, setSelectedMixBatchId] = useState(null);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const preselect = urlParams.get('mix_batch_id');
+    if (preselect) {
+      setSelectedMixBatchId(preselect);
+      setActiveTab('tappning');
+    }
+  }, []);
+
+  const handleTapClick = (batch) => {
+    setSelectedMixBatchId(batch.id);
+    setActiveTab('tappning');
+    const url = new URL(window.location.href);
+    url.searchParams.set('mix_batch_id', batch.id);
+    window.history.replaceState({}, '', url.toString());
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="text-3xl font-bold text-slate-900">Produktion</h1>
-          <p className="text-slate-500 mt-1">Registrera vad som har producerats</p>
+          <p className="text-slate-500 mt-1">Tillverkning → färdiga blandningar → tappning</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Production Form */}
-          <div className="lg:col-span-2">
-            <ProductionForm
-              finishedProducts={finishedProducts}
-              mixEligibleProducts={mixEligibleProducts}
-              bomItems={bomWithNames}
-              componentStock={componentStock}
-              onSubmit={(data) => productionMutation.mutate(data)}
-              isLoading={productionMutation.isPending}
-            />
-          </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-6">
+            <TabsTrigger value="tillverkning">Tillverkning</TabsTrigger>
+            <TabsTrigger value="mixar">Färdiga blandningar</TabsTrigger>
+            <TabsTrigger value="tappning">Tappning</TabsTrigger>
+          </TabsList>
 
-          {/* Recent Productions */}
-          <div className="lg:col-span-1">
-            <Card className="p-6 border-slate-200">
-              <h3 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                <Factory className="w-5 h-5 text-indigo-600" />
-                Senaste produktioner
-              </h3>
-              
-              {recentBatches.length === 0 ? (
-                <div className="text-center py-8 text-slate-500">
-                  <Factory className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                  <p>Inga produktioner registrerade</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {recentBatches.map((batch) => (
-                    <div 
-                      key={batch.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-slate-50"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <CheckCircle className="w-4 h-4 text-emerald-500" />
-                          <span className="font-mono text-sm font-medium text-slate-900">
-                            {batch.batch_number}
-                          </span>
-                        </div>
-                        <p className="text-sm text-slate-500 truncate">
-                          {batch.product_name || batch.product_sku}
-                        </p>
-                      </div>
-                      <div className="text-right ml-4">
-                        <p className="font-semibold text-slate-900">
-                          {batch.produced_quantity?.toLocaleString('sv-SE')} kg
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          {batch.production_date && format(new Date(batch.production_date), 'd MMM', { locale: sv })}
-                        </p>
-                      </div>
+          <TabsContent value="tillverkning">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <ProductionForm
+                  finishedProducts={finishedProducts}
+                  mixEligibleProducts={mixEligibleProducts}
+                  bomItems={bomWithNames}
+                  componentStock={componentStock}
+                  onSubmit={(data) => productionMutation.mutate(data)}
+                  isLoading={productionMutation.isPending}
+                  mixOnly
+                />
+              </div>
+              <div className="lg:col-span-1">
+                <Card className="p-6 border-slate-200">
+                  <h3 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                    <Factory className="w-5 h-5 text-indigo-600" />
+                    Senaste produktioner
+                  </h3>
+                  {recentBatches.length === 0 ? (
+                    <div className="text-center py-8 text-slate-500">
+                      Inga produktioner registrerade
                     </div>
-                  ))}
-                </div>
-              )}
-            </Card>
-          </div>
-        </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {recentBatches.map((batch) => (
+                        <div key={batch.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="w-4 h-4 text-emerald-500" />
+                              <span className="font-mono text-sm font-medium text-slate-900">{batch.batch_number}</span>
+                            </div>
+                            <p className="text-sm text-slate-500 truncate">{batch.product_name || batch.product_sku}</p>
+                          </div>
+                          <div className="text-right ml-4">
+                            <p className="font-semibold text-slate-900">{batch.produced_quantity?.toLocaleString('sv-SE')} kg</p>
+                            <p className="text-xs text-slate-500">{batch.production_date && format(new Date(batch.production_date), 'd MMM', { locale: sv })}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="mixar">
+            <MixBatchList mixBatches={mixBatches} onTap={handleTapClick} />
+          </TabsContent>
+
+          <TabsContent value="tappning">
+            <FillingTab selectedMixBatchId={selectedMixBatchId} onCompleted={() => {
+              // Refresh lists and keep tab
+              setActiveTab('tappning');
+              queryClient.invalidateQueries({ queryKey: ['mixBatches'] });
+            }} />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
