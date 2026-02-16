@@ -91,6 +91,25 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
+    // Resolve product_ids for all SKUs (required by InventoryLedger)
+    const skuSet = new Set();
+    skuSet.add(mixBatch.mix_sku);
+    for (const line of lines) { skuSet.add(line.finished_sku); }
+    for (const comp of components_used) { skuSet.add(comp.component_sku); }
+
+    const productMap = {};
+    for (const sku of skuSet) {
+      const products = await base44.asServiceRole.entities.Product.filter({ sku });
+      if (products.length > 0) {
+        productMap[sku] = products[0];
+      }
+    }
+
+    const missing = [...skuSet].filter(sku => !productMap[sku]);
+    if (missing.length > 0) {
+      return Response.json({ error: `Saknar produkt(er) för SKU: ${missing.join(', ')}` }, { status: 400 });
+    }
+
     // Update mix batch
     await base44.asServiceRole.entities.MixBatch.update(mix_batch_id, {
       remaining_kg: remaining_kg_after,
@@ -102,6 +121,7 @@ Deno.serve(async (req) => {
 
     // Deduct bulk from mix batch
     ledgerEntries.push({
+      product_id: productMap[mixBatch.mix_sku].id,
       product_sku: mixBatch.mix_sku,
       transaction_type: 'backflush',
       quantity: -bulk_used_kg,
@@ -115,6 +135,7 @@ Deno.serve(async (req) => {
     for (const line of lines) {
       const recipe = recipesMap[line.finished_sku];
       ledgerEntries.push({
+        product_id: productMap[line.finished_sku].id,
         product_sku: line.finished_sku,
         product_name: recipe.finished_name,
         transaction_type: 'production',
@@ -129,6 +150,7 @@ Deno.serve(async (req) => {
     // Deduct components
     for (const comp of components_used) {
       ledgerEntries.push({
+        product_id: productMap[comp.component_sku].id,
         product_sku: comp.component_sku,
         product_name: comp.component_name,
         transaction_type: 'backflush',
