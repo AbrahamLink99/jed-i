@@ -77,8 +77,8 @@ export default function Production() {
       // Check if this product has packaging recipes (is a mix)
       const hasPackagingRecipes = packagingRecipes.some(r => r.mix_sku === product.sku);
       
-      // 1. Generate batch number
-      const batchNumber = generateBatchNumber(product.sku);
+      // 1. Generate batch number (allow override from UI)
+      const batchNumber = (data.batchNumber && data.batchNumber.trim()) ? data.batchNumber.trim() : generateBatchNumber(product.sku);
       
       // 2. Create batch
       const batch = await base44.entities.Batch.create({

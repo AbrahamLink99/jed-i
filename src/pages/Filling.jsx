@@ -60,7 +60,8 @@ export default function FillingPage() {
       setLines(recipes.map(r => ({
         finished_sku: r.finished_sku,
         finished_name: r.finished_name,
-        produced_units: 0
+        produced_units: 0,
+        batch_number: ''
       })));
     }
   }, [recipes]);
@@ -206,7 +207,12 @@ export default function FillingPage() {
               <div className="space-y-2">
                 {receipt.lines.map((line, i) => (
                   <div key={i} className="flex justify-between p-2 bg-slate-50 rounded">
-                    <span>{line.finished_name}</span>
+                    <div>
+                      <span>{line.finished_name}</span>
+                      {line.batch_number && (
+                        <p className="text-xs text-slate-500">Batch: {line.batch_number}</p>
+                      )}
+                    </div>
                     <span className="font-semibold">{line.produced_units} st</span>
                   </div>
                 ))}
@@ -305,6 +311,18 @@ export default function FillingPage() {
                         placeholder="Antal"
                         value={line.produced_units || ''}
                         onChange={(e) => handleLineChange(index, e.target.value)}
+                      />
+                    </div>
+                    <div className="w-56">
+                      <Input
+                        type="text"
+                        placeholder="Batchnr (valfritt)"
+                        value={line.batch_number || ''}
+                        onChange={(e) => {
+                          const newLines = [...lines];
+                          newLines[index].batch_number = e.target.value;
+                          setLines(newLines);
+                        }}
                       />
                     </div>
                   </div>

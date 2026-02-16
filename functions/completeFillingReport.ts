@@ -140,7 +140,8 @@ Deno.serve(async (req) => {
       const ts = new Date();
       const ymd = ts.toISOString().slice(0,10).replace(/-/g,'');
       const rnd = Math.random().toString(36).slice(2,6);
-      const batch_number = `${mixBatch.batch_no}-${line.finished_sku}-${ymd}-${rnd}`;
+      const provided = (line.batch_number || '').trim();
+      const batch_number = provided || `${mixBatch.batch_no}-${line.finished_sku}-${ymd}-${rnd}`;
       const batchLot = await base44.asServiceRole.entities.BatchLot.create({
         batch_number,
         finished_sku: line.finished_sku,

@@ -24,6 +24,7 @@ export default function ProductionForm({
   const [quantity, setQuantity] = useState('');
   const [productionDate, setProductionDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [notes, setNotes] = useState('');
+  const [batchNumber, setBatchNumber] = useState('');
 
   const productList = isMix ? mixEligibleProducts : finishedProducts;
   const product = productList.find(p => p.id === selectedProduct);
@@ -63,7 +64,8 @@ export default function ProductionForm({
       productionDate,
       notes,
       componentImpact,
-      isMix
+      isMix,
+      batchNumber
     });
   };
 
@@ -123,6 +125,17 @@ export default function ProductionForm({
               type="date"
               value={productionDate}
               onChange={(e) => setProductionDate(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="batchNumber">Batchnummer (valfritt)</Label>
+            <Input
+              id="batchNumber"
+              type="text"
+              value={batchNumber}
+              onChange={(e) => setBatchNumber(e.target.value)}
+              placeholder="Lämna tomt för auto-generering"
             />
           </div>
         </div>
