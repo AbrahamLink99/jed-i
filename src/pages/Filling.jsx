@@ -66,12 +66,12 @@ export default function FillingPage() {
 
   // Preview mutation
   const previewMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (vars) => {
       const response = await base44.functions.invoke('computeFillingReportPreview', {
-        mix_batch_id: selectedBatchId,
-        lines: lines.filter(l => l.produced_units > 0),
-        waste,
-        bulk_waste_kg: parseFloat(bulkWasteKg) || 0
+        mix_batch_id: vars.mix_batch_id,
+        lines: vars.lines,
+        waste: vars.waste,
+        bulk_waste_kg: vars.bulk_waste_kg
       });
       return response.data;
     },
@@ -82,12 +82,12 @@ export default function FillingPage() {
 
   // Complete mutation
   const completeMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (vars) => {
       const response = await base44.functions.invoke('completeFillingReport', {
-        mix_batch_id: selectedBatchId,
-        lines: lines.filter(l => l.produced_units > 0),
-        waste,
-        bulk_waste_kg: parseFloat(bulkWasteKg) || 0
+        mix_batch_id: vars.mix_batch_id,
+        lines: vars.lines,
+        waste: vars.waste,
+        bulk_waste_kg: vars.bulk_waste_kg
       });
       return response.data;
     },
@@ -101,7 +101,12 @@ export default function FillingPage() {
   // Auto-preview when data changes
   useEffect(() => {
     if (selectedBatchId && lines.some(l => l.produced_units > 0)) {
-      previewMutation.mutate();
+      previewMutation.mutate({
+        mix_batch_id: selectedBatchId,
+        lines: lines.filter(l => l.produced_units > 0),
+        waste,
+        bulk_waste_kg: parseFloat(bulkWasteKg) || 0
+      });
     } else {
       setPreview(null);
     }
@@ -133,7 +138,12 @@ export default function FillingPage() {
       alert('Fyll i minst en variant');
       return;
     }
-    completeMutation.mutate();
+    completeMutation.mutate({
+      mix_batch_id: selectedBatchId,
+      lines: lines.filter(l => l.produced_units > 0),
+      waste,
+      bulk_waste_kg: parseFloat(bulkWasteKg) || 0
+    });
   };
 
   const resetForm = () => {
@@ -344,6 +354,7 @@ export default function FillingPage() {
                 <div>
                   <p className="text-slate-600">Bulk förbrukad</p>
                   <p className="font-semibold">{preview.bulk_used_kg} kg</p>
+                  <p className="text-xs text-slate-500">Beräknat som (ml per enhet × antal) / 1000 + bulkspill</p>
                 </div>
                 <div>
                   <p className="text-slate-600">Kvarvarande</p>
