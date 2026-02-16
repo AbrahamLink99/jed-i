@@ -173,12 +173,13 @@ Deno.serve(async (req) => {
     // Add finished goods
     for (const line of lines) {
       const recipe = recipesMap[line.finished_sku];
+      const unitsFG = Number(line.actual_units ?? line.produced_units) || 0;
       ledgerEntries.push({
         product_id: productMap[line.finished_sku].id,
         product_sku: line.finished_sku,
         product_name: recipe.finished_name,
         transaction_type: 'production',
-        quantity: Number(line.produced_units) || 0,
+        quantity: unitsFG,
         reference_type: 'filling_report',
         reference_id: mix_batch_id,
         batch_lot_id: lineBatch[line.finished_sku]?.batch_lot_id,
