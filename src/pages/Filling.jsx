@@ -273,9 +273,9 @@ export default function FillingPage() {
               </SelectTrigger>
               <SelectContent>
                {mixBatches.length === 0 ? (
-                 <SelectItem value={null} disabled>Inga blandningsbatcher</SelectItem>
+                <SelectItem value="none" disabled>Inga blandningsbatcher</SelectItem>
                ) : (
-                 mixBatches.map(batch => (
+                mixBatches.map(batch => (
                    <SelectItem key={batch.id} value={batch.id}>
                      {batch.mix_sku} - {batch.batch_no} ({batch.remaining_kg} kg kvar)
                    </SelectItem>
