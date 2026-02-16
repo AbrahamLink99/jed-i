@@ -206,6 +206,11 @@ Deno.serve(async (req) => {
 
     await base44.asServiceRole.entities.InventoryLedger.bulkCreate(ledgerEntries);
 
+    // If remaining reaches zero, close the mix batch
+    if (remaining_kg_after <= 0) {
+      await base44.asServiceRole.entities.MixBatch.update(mix_batch_id, { status: 'closed', remaining_kg: 0 });
+    }
+
     // Create filling report
     const reportData = {
       mix_batch_id,
