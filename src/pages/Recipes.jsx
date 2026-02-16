@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, Search, ChefHat, Edit2, Trash2, Shield } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import RecipeForm from '@/components/recipes/RecipeForm';
+import PackagingRecipeForm from '@/components/recipes/PackagingRecipeForm';
 import { toast } from 'sonner';
 import { usePermissions } from '@/components/auth/PermissionGate';
 import { useEnvironmentFilter } from '@/components/environment/useEnvironmentFilter';
@@ -19,6 +20,9 @@ export default function Recipes() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState(null);
+  const [mode, setMode] = useState('bom'); // 'bom' | 'pack'
+  const [showPackagingForm, setShowPackagingForm] = useState(false);
+  const [editingPackagingRecipe, setEditingPackagingRecipe] = useState(null);
 
   const queryClient = useQueryClient();
 
@@ -31,6 +35,12 @@ export default function Recipes() {
   const { data: bomItems = [] } = useQuery({
     queryKey: ['bom-items', envFilter.environment],
     queryFn: () => base44.entities.BOMItem.filter(envFilter),
+    enabled: !permissionsLoading && isAdmin
+  });
+
+  const { data: packagingRecipes = [] } = useQuery({
+    queryKey: ['packaging-recipes-entities', envFilter.environment],
+    queryFn: () => base44.entities.PackagingRecipe.filter(envFilter),
     enabled: !permissionsLoading && isAdmin
   });
 
@@ -83,6 +93,16 @@ export default function Recipes() {
     }
   });
 
+  const deletePackagingRecipeMutation = useMutation({
+    mutationFn: async (id) => {
+      await base44.entities.PackagingRecipe.delete(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['packaging-recipes-entities'] });
+      toast.success('Tappningsrecept raderat');
+    }
+  });
+
   const handleEdit = (recipe) => {
     setEditingRecipe(recipe);
     setShowForm(true);
@@ -120,6 +140,23 @@ export default function Recipes() {
     );
   }
 
+  if (mode === 'pack' && showPackagingForm) {
+    return (
+      <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
+        <div className="max-w-4xl mx-auto">
+          <PackagingRecipeForm
+            recipe={editingPackagingRecipe}
+            availableProducts={products}
+            onClose={() => {
+              setShowPackagingForm(false);
+              setEditingPackagingRecipe(null);
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
   if (showForm) {
     return (
       <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
@@ -138,6 +175,94 @@ export default function Recipes() {
     );
   }
 
+  if (mode === 'pack') {
+    const filteredPR = (packagingRecipes || []).filter(r => {
+      if (!searchTerm) return true;
+      const s = searchTerm.toLowerCase();
+      return r.mix_sku?.toLowerCase().includes(s) || r.finished_sku?.toLowerCase().includes(s) || r.finished_name?.toLowerCase().includes(s);
+    }).sort((a,b) => (a.mix_sku + a.finished_sku).localeCompare(b.mix_sku + b.finished_sku));
+
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900">Tappningsrecept</h1>
+              <p className="text-slate-500 mt-1">Koppla blandning (mix SKU) till färdigvaruvarianter med fyllmängd och komponenter</p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setMode('bom')}>Visa produktionsrecept</Button>
+              <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => { setEditingPackagingRecipe(null); setShowPackagingForm(true); }}>
+                <Plus className="w-4 h-4 mr-2" /> Skapa tappningsrecept
+              </Button>
+            </div>
+          </div>
+
+          <Card className="p-4 mb-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Sök mix eller färdig SKU..." className="pl-10" />
+            </div>
+          </Card>
+
+          <Card className="overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Mix SKU</TableHead>
+                  <TableHead>Färdig SKU</TableHead>
+                  <TableHead>Färdigvara</TableHead>
+                  <TableHead>Fyll (ml)</TableHead>
+                  <TableHead>Komponenter</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Åtgärder</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredPR.map((r) => (
+                  <TableRow key={r.id}>
+                    <TableCell className="font-mono text-sm">{r.mix_sku}</TableCell>
+                    <TableCell className="font-mono text-sm">{r.finished_sku}</TableCell>
+                    <TableCell>{r.finished_name}</TableCell>
+                    <TableCell>{r.fill_ml_per_unit}</TableCell>
+                    <TableCell>{r.components?.length || 0} st</TableCell>
+                    <TableCell>
+                      {r.active ? (
+                        <Badge className="bg-green-100 text-green-700 font-normal">Aktiv</Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-slate-500 font-normal">Inaktiv</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button variant="ghost" size="icon" onClick={() => { setEditingPackagingRecipe(r); setShowPackagingForm(true); }}>
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700" onClick={() => {
+                          if (confirm(`Radera tappningsrecept för ${r.finished_sku}?`)) { deletePackagingRecipeMutation.mutate(r.id); }
+                        }}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {filteredPR.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-12 text-slate-500">
+                      <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                      <p>Inga tappningsrecept hittades</p>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -147,14 +272,17 @@ export default function Recipes() {
             <h1 className="text-3xl font-bold text-slate-900">Recept</h1>
             <p className="text-slate-500 mt-1">Skapa och hantera produktionsrecept (BOM)</p>
           </div>
-          <Button 
-            onClick={() => setShowForm(true)} 
-            className="bg-indigo-600 hover:bg-indigo-700"
-            disabled={availableComponents.length === 0}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Skapa recept
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setMode('pack')}>Visa tappningsrecept</Button>
+            <Button 
+              onClick={() => setShowForm(true)} 
+              className="bg-indigo-600 hover:bg-indigo-700"
+              disabled={availableComponents.length === 0}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Skapa recept
+            </Button>
+          </div>
         </div>
 
         {availableComponents.length === 0 && (
