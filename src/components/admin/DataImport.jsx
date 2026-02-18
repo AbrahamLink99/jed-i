@@ -49,7 +49,7 @@ export default function DataImport() {
   // Import raw materials
   const importRawMaterials = async (data) => {
     const results = { success: 0, failed: 0, skipped: 0, errors: [] };
-    const existingProducts = await base44.entities.Product.list();
+    const existingProducts = await base44.entities.Product.filter({ environment: envFilter.environment });
     const existingSKUs = new Set(existingProducts.map(p => p.sku));
     
     for (const row of data) {
@@ -104,7 +104,7 @@ export default function DataImport() {
           continue;
         }
 
-        const created = await base44.entities.Product.create(product);
+        const created = await base44.entities.Product.create({ ...product, environment: envFilter.environment });
         await auditLog.createEntity('Product', product.sku, product, 'DataImport');
         // Sätt lagersaldo om angivet i mallen
         if (row.Saldo !== undefined && String(row.Saldo).trim() !== '') {
@@ -142,7 +142,7 @@ export default function DataImport() {
   // Import bottles/packaging
   const importPackaging = async (data) => {
     const results = { success: 0, failed: 0, skipped: 0, errors: [] };
-    const existingProducts = await base44.entities.Product.list();
+    const existingProducts = await base44.entities.Product.filter({ environment: envFilter.environment });
     const existingSKUs = new Set(existingProducts.map(p => p.sku));
     
     for (const row of data) {
@@ -190,7 +190,7 @@ export default function DataImport() {
           continue;
         }
 
-        const created = await base44.entities.Product.create(product);
+        const created = await base44.entities.Product.create({ ...product, environment: envFilter.environment });
         await auditLog.createEntity('Product', product.sku, product, 'DataImport');
         if (row.Saldo !== undefined && String(row.Saldo).trim() !== '') {
           const target = parseFloat(String(row.Saldo).replace(',', '.'));
@@ -227,7 +227,7 @@ export default function DataImport() {
   // Import labels
   const importLabels = async (data) => {
     const results = { success: 0, failed: 0, skipped: 0, errors: [] };
-    const existingProducts = await base44.entities.Product.list();
+    const existingProducts = await base44.entities.Product.filter({ environment: envFilter.environment });
     const existingSKUs = new Set(existingProducts.map(p => p.sku));
     
     for (const row of data) {
@@ -275,7 +275,7 @@ export default function DataImport() {
           continue;
         }
 
-        const created = await base44.entities.Product.create(product);
+        const created = await base44.entities.Product.create({ ...product, environment: envFilter.environment });
         await auditLog.createEntity('Product', product.sku, product, 'DataImport');
         if (row.Saldo !== undefined && String(row.Saldo).trim() !== '') {
           const target = parseFloat(String(row.Saldo).replace(',', '.'));
@@ -312,7 +312,7 @@ export default function DataImport() {
   // Import inventory levels (overwrite to match file)
   const importInventoryLevels = async (data) => {
     const results = { success: 0, failed: 0, skipped: 0, errors: [] };
-    const products = await base44.entities.Product.list();
+    const products = await base44.entities.Product.filter({ environment: envFilter.environment });
     const productBySku = new Map(products.map(p => [p.sku, p]));
 
     for (const row of data) {
@@ -366,7 +366,7 @@ export default function DataImport() {
   // Import finished products
   const importFinishedProducts = async (data) => {
     const results = { success: 0, failed: 0, skipped: 0, errors: [] };
-    const existingProducts = await base44.entities.Product.list();
+    const existingProducts = await base44.entities.Product.filter({ environment: envFilter.environment });
     const existingSKUs = new Set(existingProducts.map(p => p.sku));
     
     for (const row of data) {
@@ -412,7 +412,7 @@ export default function DataImport() {
           continue;
         }
 
-        const created = await base44.entities.Product.create(product);
+        const created = await base44.entities.Product.create({ ...product, environment: envFilter.environment });
         await auditLog.createEntity('Product', product.sku, product, 'DataImport');
         if (row.Saldo !== undefined && String(row.Saldo).trim() !== '') {
           const target = parseFloat(String(row.Saldo).replace(',', '.'));
@@ -449,7 +449,7 @@ export default function DataImport() {
   // Import recipes/BOM
   const importRecipes = async (data) => {
     const results = { success: 0, failed: 0, errors: [] };
-    const products = await base44.entities.Product.list();
+    const products = await base44.entities.Product.filter({ environment: envFilter.environment });
     
     // Group by finished product
     const recipesByProduct = {};
