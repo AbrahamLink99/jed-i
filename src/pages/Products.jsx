@@ -140,12 +140,13 @@ export default function Products() {
   }, [products, activeTab, brandFilter, searchTerm]);
 
   const stockData = useMemo(() => {
+    const ledgerForEnv = ledger.filter(e => !e.environment || e.environment === envFilter.environment);
     const data = {};
     products.forEach(product => {
-      data[product.id] = getStockSummary(product, ledger, batches);
+      data[product.id] = getStockSummary(product, ledgerForEnv, batches);
     });
     return data;
-  }, [products, ledger, batches]);
+  }, [products, ledger, batches, envFilter.environment]);
 
   const handleEdit = (product) => {
     setEditingProduct(product);
