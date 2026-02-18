@@ -157,48 +157,30 @@ export default function DataImport() {
           notes: row.Anteckningar || row.Notes || '',
           active: true
         };
-
-        if (!product.sku || !product.name) {
-          results.errors.push(`Rad saknar SKU eller namn`);
-          results.failed++;
-          continue;
-        }
-
-        // saldo-hantering vid dubblett sker nedan
-        if (existingSKUs.has(product.sku)) {
-          const saldoStr = row.Saldo;
-          if (saldoStr !== undefined && String(saldoStr).trim() !== '') {
-            const productRef = existingProducts.find(p => p.sku === product.sku);
-            const target = parseFloat(String(saldoStr).replace(',', '.'));
-            if (!isNaN(target) && productRef) {
-              const ledgers = await base44.entities.InventoryLedger.filter({ product_id: productRef.id, environment: envFilter.environment }, '-created_date', 1000);
-              const onHand = (ledgers || []).reduce((sum, l) => (l.transaction_type === 'reservation' || l.transaction_type === 'release_reservation') ? sum : sum + (l.quantity || 0), 0);
-              const delta = Number((target - onHand).toFixed(6));
-              if (Math.abs(delta) >= 1e-9) {
-                await base44.entities.InventoryLedger.create({
-                  environment: envFilter.environment,
-                  product_id: productRef.id,
-                  product_sku: productRef.sku,
-                  product_name: productRef.name,
-                  transaction_type: 'adjustment',
-                  quantity: delta,
-                  reference_type: 'manual',
-                  notes: `Lagerimport (${new Date().toISOString().slice(0,10)})`
-                });
-                await auditLog.createEntity('InventoryLedger', productRef.sku, { delta, target }, 'DataImport');
-              }
-              results.success++;
-            } else {
-              results.skipped++;
-            }
-          } else {
-            results.skipped++;
-          }
-          continue;
-        }
-
-        await base44.entities.Product.create(product);
+...
+        const created = await base44.entities.Product.create(product);
         await auditLog.createEntity('Product', product.sku, product, 'DataImport');
+        if (row.Saldo !== undefined && String(row.Saldo).trim() !== '') {
+          const target = parseFloat(String(row.Saldo).replace(',', '.'));
+          if (!isNaN(target)) {
+            const ledgers = await base44.entities.InventoryLedger.filter({ product_id: created.id, environment: envFilter.environment }, '-created_date', 1000);
+            const onHand = (ledgers || []).reduce((sum, l) => (l.transaction_type === 'reservation' || l.transaction_type === 'release_reservation') ? sum : sum + (l.quantity || 0), 0);
+            const delta = Number((target - onHand).toFixed(6));
+            if (Math.abs(delta) >= 1e-9) {
+              await base44.entities.InventoryLedger.create({
+                environment: envFilter.environment,
+                product_id: created.id,
+                product_sku: product.sku,
+                product_name: product.name,
+                transaction_type: 'adjustment',
+                quantity: delta,
+                reference_type: 'manual',
+                notes: `Lagerimport (${new Date().toISOString().slice(0,10)})`
+              });
+              await auditLog.createEntity('InventoryLedger', product.sku, { delta, target }, 'DataImport');
+            }
+          }
+        }
         results.success++;
       } catch (error) {
         results.errors.push(`${row.SKU}: ${error.message}`);
@@ -228,47 +210,30 @@ export default function DataImport() {
           notes: row.Anteckningar || row.Notes || '',
           active: true
         };
-
-        if (!product.sku || !product.name) {
-          results.errors.push(`Rad saknar SKU eller namn`);
-          results.failed++;
-          continue;
-        }
-
-        if (existingSKUs.has(product.sku)) {
-          const saldoStr = row.Saldo;
-          if (saldoStr !== undefined && String(saldoStr).trim() !== '') {
-            const productRef = existingProducts.find(p => p.sku === product.sku);
-            const target = parseFloat(String(saldoStr).replace(',', '.'));
-            if (!isNaN(target) && productRef) {
-              const ledgers = await base44.entities.InventoryLedger.filter({ product_id: productRef.id, environment: envFilter.environment }, '-created_date', 1000);
-              const onHand = (ledgers || []).reduce((sum, l) => (l.transaction_type === 'reservation' || l.transaction_type === 'release_reservation') ? sum : sum + (l.quantity || 0), 0);
-              const delta = Number((target - onHand).toFixed(6));
-              if (Math.abs(delta) >= 1e-9) {
-                await base44.entities.InventoryLedger.create({
-                  environment: envFilter.environment,
-                  product_id: productRef.id,
-                  product_sku: productRef.sku,
-                  product_name: productRef.name,
-                  transaction_type: 'adjustment',
-                  quantity: delta,
-                  reference_type: 'manual',
-                  notes: `Lagerimport (${new Date().toISOString().slice(0,10)})`
-                });
-                await auditLog.createEntity('InventoryLedger', productRef.sku, { delta, target }, 'DataImport');
-              }
-              results.success++;
-            } else {
-              results.skipped++;
-            }
-          } else {
-            results.skipped++;
-          }
-          continue;
-        }
-
-        await base44.entities.Product.create(product);
+...
+        const created = await base44.entities.Product.create(product);
         await auditLog.createEntity('Product', product.sku, product, 'DataImport');
+        if (row.Saldo !== undefined && String(row.Saldo).trim() !== '') {
+          const target = parseFloat(String(row.Saldo).replace(',', '.'));
+          if (!isNaN(target)) {
+            const ledgers = await base44.entities.InventoryLedger.filter({ product_id: created.id, environment: envFilter.environment }, '-created_date', 1000);
+            const onHand = (ledgers || []).reduce((sum, l) => (l.transaction_type === 'reservation' || l.transaction_type === 'release_reservation') ? sum : sum + (l.quantity || 0), 0);
+            const delta = Number((target - onHand).toFixed(6));
+            if (Math.abs(delta) >= 1e-9) {
+              await base44.entities.InventoryLedger.create({
+                environment: envFilter.environment,
+                product_id: created.id,
+                product_sku: product.sku,
+                product_name: product.name,
+                transaction_type: 'adjustment',
+                quantity: delta,
+                reference_type: 'manual',
+                notes: `Lagerimport (${new Date().toISOString().slice(0,10)})`
+              });
+              await auditLog.createEntity('InventoryLedger', product.sku, { delta, target }, 'DataImport');
+            }
+          }
+        }
         results.success++;
       } catch (error) {
         results.errors.push(`${row.SKU}: ${error.message}`);
@@ -350,47 +315,30 @@ export default function DataImport() {
           notes: row.Anteckningar || row.Notes || '',
           active: true
         };
-
-        if (!product.sku || !product.name) {
-          results.errors.push(`Rad saknar SKU eller namn`);
-          results.failed++;
-          continue;
-        }
-
-        if (existingSKUs.has(product.sku)) {
-          const saldoStr = row.Saldo;
-          if (saldoStr !== undefined && String(saldoStr).trim() !== '') {
-            const productRef = existingProducts.find(p => p.sku === product.sku);
-            const target = parseFloat(String(saldoStr).replace(',', '.'));
-            if (!isNaN(target) && productRef) {
-              const ledgers = await base44.entities.InventoryLedger.filter({ product_id: productRef.id, environment: envFilter.environment }, '-created_date', 1000);
-              const onHand = (ledgers || []).reduce((sum, l) => (l.transaction_type === 'reservation' || l.transaction_type === 'release_reservation') ? sum : sum + (l.quantity || 0), 0);
-              const delta = Number((target - onHand).toFixed(6));
-              if (Math.abs(delta) >= 1e-9) {
-                await base44.entities.InventoryLedger.create({
-                  environment: envFilter.environment,
-                  product_id: productRef.id,
-                  product_sku: productRef.sku,
-                  product_name: productRef.name,
-                  transaction_type: 'adjustment',
-                  quantity: delta,
-                  reference_type: 'manual',
-                  notes: `Lagerimport (${new Date().toISOString().slice(0,10)})`
-                });
-                await auditLog.createEntity('InventoryLedger', productRef.sku, { delta, target }, 'DataImport');
-              }
-              results.success++;
-            } else {
-              results.skipped++;
-            }
-          } else {
-            results.skipped++;
-          }
-          continue;
-        }
-
-        await base44.entities.Product.create(product);
+...
+        const created = await base44.entities.Product.create(product);
         await auditLog.createEntity('Product', product.sku, product, 'DataImport');
+        if (row.Saldo !== undefined && String(row.Saldo).trim() !== '') {
+          const target = parseFloat(String(row.Saldo).replace(',', '.'));
+          if (!isNaN(target)) {
+            const ledgers = await base44.entities.InventoryLedger.filter({ product_id: created.id, environment: envFilter.environment }, '-created_date', 1000);
+            const onHand = (ledgers || []).reduce((sum, l) => (l.transaction_type === 'reservation' || l.transaction_type === 'release_reservation') ? sum : sum + (l.quantity || 0), 0);
+            const delta = Number((target - onHand).toFixed(6));
+            if (Math.abs(delta) >= 1e-9) {
+              await base44.entities.InventoryLedger.create({
+                environment: envFilter.environment,
+                product_id: created.id,
+                product_sku: product.sku,
+                product_name: product.name,
+                transaction_type: 'adjustment',
+                quantity: delta,
+                reference_type: 'manual',
+                notes: `Lagerimport (${new Date().toISOString().slice(0,10)})`
+              });
+              await auditLog.createEntity('InventoryLedger', product.sku, { delta, target }, 'DataImport');
+            }
+          }
+        }
         results.success++;
       } catch (error) {
         results.errors.push(`${row.SKU}: ${error.message}`);
@@ -655,12 +603,12 @@ export default function DataImport() {
           </div>
 
           <Tabs defaultValue="raw_materials" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="raw_materials">Råvaror</TabsTrigger>
               <TabsTrigger value="packaging">Flaskor</TabsTrigger>
               <TabsTrigger value="labels">Etiketter</TabsTrigger>
               <TabsTrigger value="finished_products">Färdiga</TabsTrigger>
-              <TabsTrigger value="recipes">Recept</TabsTrigger>
+
 
             </TabsList>
 
