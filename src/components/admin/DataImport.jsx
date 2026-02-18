@@ -375,9 +375,7 @@ export default function DataImport() {
         case 'recipes':
           results = await importRecipes(data);
           break;
-        case 'inventory':
-          results = await importInventoryLevels(data);
-          break;
+
         default:
           throw new Error('Okänd importtyp');
       }
@@ -406,8 +404,8 @@ export default function DataImport() {
 
     switch (type) {
       case 'raw_materials':
-        headers = 'SKU,Namn,Enhet,Leverantör,Kostnad,Anteckningar';
-        exampleRow = 'RAW001,Olivolja Extra Virgin,kg,Supplier AB,150.50,Ekologisk';
+        headers = 'SKU,Namn,Enhet,Leverantör,Kostnad,Anteckningar,Saldo';
+        exampleRow = 'RAW001,Olivolja Extra Virgin,kg,Supplier AB,150.50,Ekologisk,125.5';
         filename = 'mall_ravaror.csv';
         break;
       case 'packaging':
@@ -529,20 +527,20 @@ export default function DataImport() {
           </div>
 
           <Tabs defaultValue="raw_materials" className="w-full">
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="raw_materials">Råvaror</TabsTrigger>
               <TabsTrigger value="packaging">Flaskor</TabsTrigger>
               <TabsTrigger value="labels">Etiketter</TabsTrigger>
               <TabsTrigger value="finished_products">Färdiga</TabsTrigger>
               <TabsTrigger value="recipes">Recept</TabsTrigger>
-              <TabsTrigger value="inventory">Lagerstatus</TabsTrigger>
+
             </TabsList>
 
             <TabsContent value="raw_materials" className="space-y-3">
               <Alert>
                 <FileSpreadsheet className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>Format:</strong> SKU, Namn, Enhet, Leverantör, Kostnad, Anteckningar
+                  <strong>Format:</strong> SKU, Namn, Enhet, Leverantör, Kostnad, Anteckningar, Saldo
                 </AlertDescription>
               </Alert>
               <div className="flex gap-2">
