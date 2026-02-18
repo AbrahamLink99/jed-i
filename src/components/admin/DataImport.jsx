@@ -12,6 +12,7 @@ import { Upload, FileSpreadsheet, AlertCircle, CheckCircle, Trash2, Database, Do
 import { toast } from 'sonner';
 import { normalizeName, matchIngredient } from '../metics/NameNormalizer';
 import { auditLog } from '../auth/AuditLogger';
+import { useEnvironmentFilter } from '@/components/environment/useEnvironmentFilter';
 
 export default function DataImport() {
   const [file, setFile] = useState(null);
@@ -19,6 +20,7 @@ export default function DataImport() {
   const [progress, setProgress] = useState(0);
   const [importResults, setImportResults] = useState(null);
   const queryClient = useQueryClient();
+  const envFilter = useEnvironmentFilter();
 
   // Parse CSV file
   const parseCSV = (text) => {
@@ -173,6 +175,60 @@ export default function DataImport() {
     return results;
   };
 
+  // Import inventory levels (overwrite to match file)
+  const importInventoryLevels = async (data) => {
+    const results = { success: 0, failed: 0, skipped: 0, errors: [] };
+    const products = await base44.entities.Product.list();
+    const productBySku = new Map(products.map(p => [p.sku, p]));
+
+    for (const row of data) {
+      try {
+        const sku = row.SKU || row.Artikelnr || row.sku;
+        const targetStr = row.Saldo || row.Quantity || row.Kvantitet || row.OnHand;
+        const target = parseFloat(String(targetStr).replace(',', '.'));
+        if (!sku || isNaN(target)) {
+          results.failed++;
+          results.errors.push(`Rad saknar giltigt SKU/saldo: ${JSON.stringify(row)}`);
+          continue;
+        }
+        const product = productBySku.get(sku);
+        if (!product) {
+          results.failed++;
+          results.errors.push(`Produkt med SKU ${sku} hittades inte`);
+          continue;
+        }
+        // Fetch ledger for this product (current environment)
+        const ledgers = await base44.entities.InventoryLedger.filter({ product_id: product.id, environment: envFilter.environment }, '-created_date', 1000);
+        const onHand = (ledgers || []).reduce((sum, l) => {
+          return (l.transaction_type === 'reservation' || l.transaction_type === 'release_reservation') ? sum : sum + (l.quantity || 0);
+        }, 0);
+        const delta = Number((target - onHand).toFixed(6));
+        if (Math.abs(delta) < 1e-9) {
+          results.skipped++;
+          continue;
+        }
+        await base44.entities.InventoryLedger.create({
+          environment: envFilter.environment,
+          product_id: product.id,
+          product_sku: product.sku,
+          product_name: product.name,
+          transaction_type: 'adjustment',
+          quantity: delta,
+          reference_type: 'manual',
+          notes: `Lagerimport (${new Date().toISOString().slice(0,10)})`
+        });
+        await auditLog.createEntity('InventoryLedger', product.sku, { delta, target }, 'DataImport');
+        results.success++;
+      } catch (error) {
+        results.failed++;
+        results.errors.push(error.message);
+      }
+      setProgress((results.success + results.failed + results.skipped) / data.length * 100);
+    }
+
+    return results;
+  };
+
   // Import finished products
   const importFinishedProducts = async (data) => {
     const results = { success: 0, failed: 0, skipped: 0, errors: [] };
@@ -318,6 +374,9 @@ export default function DataImport() {
           break;
         case 'recipes':
           results = await importRecipes(data);
+          break;
+        case 'inventory':
+          results = await importInventoryLevels(data);
           break;
         default:
           throw new Error('Okänd importtyp');
@@ -465,12 +524,13 @@ export default function DataImport() {
           </div>
 
           <Tabs defaultValue="raw_materials" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="raw_materials">Råvaror</TabsTrigger>
               <TabsTrigger value="packaging">Flaskor</TabsTrigger>
               <TabsTrigger value="labels">Etiketter</TabsTrigger>
               <TabsTrigger value="finished_products">Färdiga</TabsTrigger>
               <TabsTrigger value="recipes">Recept</TabsTrigger>
+              <TabsTrigger value="inventory">Lagerstatus</TabsTrigger>
             </TabsList>
 
             <TabsContent value="raw_materials" className="space-y-3">
