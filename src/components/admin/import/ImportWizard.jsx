@@ -103,10 +103,96 @@ const systemFields = [
   { key: 'notes', label: 'Anteckningar', required: false },
 ];
 
-const profileKeys = [
-  { key: 'Artikelimport', label: 'Artikelimport' },
-  { key: 'Startlagerimport', label: 'Startlagerimport' },
+const importTypeOptions = [
+  { key: 'raw_material', label: 'Råvara' },
+  { key: 'packaging', label: 'Förpackning' },
+  { key: 'label', label: 'Etikett' },
+  { key: 'finished_product', label: 'Färdigvara' },
+  { key: 'recipe', label: 'Recept' },
+  { key: 'starting_inventory', label: 'Startsaldo' },
 ];
+
+function getFieldsForType(importType) {
+  switch (importType) {
+    case 'label':
+      return [
+        { key: 'sku', label: 'SKU', required: true },
+        { key: 'name', label: 'Namn', required: true },
+        { key: 'supplier', label: 'Leverantör', required: false },
+        { key: 'unit_cost', label: 'Kostnad (unit_cost)', required: false },
+        { key: 'on_hand_qty', label: 'Startsaldo (on_hand_qty)', required: false },
+        { key: 'min_level', label: 'Säkerhetslager (min_level)', required: false },
+      ];
+    case 'packaging':
+      return [
+        { key: 'sku', label: 'SKU', required: true },
+        { key: 'name', label: 'Namn', required: true },
+        { key: 'uom', label: 'Enhet (uom)', required: false },
+        { key: 'supplier', label: 'Leverantör', required: false },
+        { key: 'unit_cost', label: 'Kostnad (unit_cost)', required: false },
+        { key: 'on_hand_qty', label: 'Startsaldo (on_hand_qty)', required: false },
+        { key: 'min_level', label: 'Säkerhetslager (min_level)', required: false },
+        { key: 'notes', label: 'Anteckningar', required: false },
+      ];
+    case 'finished_product':
+      return [
+        { key: 'sku', label: 'SKU', required: true },
+        { key: 'name', label: 'Namn', required: true },
+        { key: 'uom', label: 'Enhet (uom)', required: false },
+        { key: 'unit_cost', label: 'Kostnad (unit_cost)', required: false },
+        { key: 'supplier', label: 'Leverantör', required: false },
+        { key: 'min_level', label: 'Säkerhetslager (min_level)', required: false },
+        { key: 'notes', label: 'Anteckningar', required: false },
+      ];
+    case 'starting_inventory':
+      return [
+        { key: 'sku', label: 'SKU', required: true },
+        { key: 'name', label: 'Namn', required: false },
+        { key: 'on_hand_qty', label: 'Startsaldo (on_hand_qty)', required: true },
+        { key: 'notes', label: 'Anteckningar', required: false },
+      ];
+    case 'recipe':
+      // Placeholder mapping for recipe uploads (future). Kept minimal.
+      return [
+        { key: 'sku', label: 'SKU (färdigvara)', required: true },
+        { key: 'name', label: 'Namn', required: true },
+        { key: 'notes', label: 'Anteckningar', required: false },
+      ];
+    case 'raw_material':
+    default:
+      return [
+        { key: 'sku', label: 'SKU', required: true },
+        { key: 'name', label: 'Namn', required: true },
+        { key: 'uom', label: 'Enhet (uom)', required: false },
+        { key: 'unit_cost', label: 'Kostnad (unit_cost)', required: false },
+        { key: 'supplier', label: 'Leverantör', required: false },
+        { key: 'on_hand_qty', label: 'Startsaldo (on_hand_qty)', required: false },
+        { key: 'min_level', label: 'Säkerhetslager (min_level)', required: false },
+        { key: 'notes', label: 'Anteckningar', required: false },
+      ];
+  }
+}
+
+function defaultItemType(importType) {
+  switch (importType) {
+    case 'label': return 'label';
+    case 'packaging': return 'packaging';
+    case 'finished_product': return 'finished_good';
+    case 'raw_material':
+    case 'starting_inventory':
+    default: return 'raw_material';
+  }
+}
+
+function defaultUom(importType) {
+  // 'st' desired in UI, stored as 'pcs'
+  switch (importType) {
+    case 'label': return 'st';
+    default: return 'st';
+  }
+}
+
+const profileStorageKey = (importType) => `importProfile:type:${importType}`;
 
 function StepHeader({ title, right }) {
   return (
@@ -128,6 +214,11 @@ export default function ImportWizard() {
   const [headers, setHeaders] = useState([]);
   const [rows, setRows] = useState([]);
 
+  // Import context
+  const [importType, setImportType] = useState('raw_material');
+  useEffect(() => { setMapping({}); }, [importType]);
+  const dynamicFields = useMemo(() => getFieldsForType(importType), [importType]);
+
   // Mapping state
   const [mapping, setMapping] = useState({}); // { sku: 'Column A', ... }
   const [selectedProfile, setSelectedProfile] = useState('');
@@ -138,25 +229,25 @@ export default function ImportWizard() {
   const [importResult, setImportResult] = useState(null);
 
   // Load profile
-  const loadProfile = (key) => {
-    if (!key) return;
-    const raw = localStorage.getItem('importProfile:' + key);
+  const loadProfile = () => {
+    const key = profileStorageKey(importType);
+    const raw = localStorage.getItem(key);
     if (!raw) {
-      toast.error('Ingen sparad profil hittades för ' + key);
+      toast.error('Ingen sparad profil hittades för denna importtyp');
       return;
     }
     const pf = JSON.parse(raw);
     setMapping(pf.mapping || {});
     setDelimiter(pf.delimiter || ',');
     setDecimalFormat(pf.decimalFormat || 'sv');
-    toast.success('Profil laddad: ' + key);
+    toast.success('Profil laddad');
   };
 
-  const saveProfile = (key) => {
-    if (!key) return;
+  const saveProfile = () => {
+    const key = profileStorageKey(importType);
     const pf = { mapping, delimiter, decimalFormat };
-    localStorage.setItem('importProfile:' + key, JSON.stringify(pf));
-    toast.success('Profil sparad: ' + key);
+    localStorage.setItem(key, JSON.stringify(pf));
+    toast.success('Profil sparad');
   };
 
   // File upload + parsing
@@ -174,7 +265,7 @@ export default function ImportWizard() {
     // Auto-map heuristics (only by name exact match, not values)
     const hdrLower = Object.fromEntries(parsed[0].map((h, i) => [String(h || '').toLowerCase().trim(), h]));
     const newMap = { ...mapping };
-    systemFields.forEach(f => {
+    dynamicFields.forEach(f => {
       if (!newMap[f.key]) {
         if (hdrLower[f.key]) newMap[f.key] = hdrLower[f.key];
         if (f.key === 'uom' && hdrLower['unit']) newMap[f.key] = hdrLower['unit'];
@@ -235,13 +326,21 @@ export default function ImportWizard() {
       // parse numerics
       const minLevel = isNaN(parseNumber(minLevelRaw, decimalFormat)) ? 0 : parseNumber(minLevelRaw, decimalFormat);
       let unitCost = parseNumber(unitCostRaw, decimalFormat);
-      if (isNaN(unitCost)) { unitCost = 0; warnings.push('unit_cost saknas eller ej numerisk'); }
       let onHand = parseNumber(onHandRaw, decimalFormat);
-      if (isNaN(onHand)) onHand = null;
+
+      if (importType === 'label') {
+        if (unitCostRaw && isNaN(unitCost)) errors.push('unit_cost ej numerisk');
+        if (!unitCostRaw || isNaN(unitCost)) unitCost = 0;
+        if (onHandRaw && isNaN(onHand)) errors.push('on_hand_qty ej numerisk');
+        if (isNaN(onHand)) onHand = null;
+      } else {
+        if (isNaN(unitCost)) { unitCost = 0; warnings.push('unit_cost saknas eller ej numerisk'); }
+        if (isNaN(onHand)) onHand = null;
+      }
 
       // defaults
-      const itemType = mapItemTypeToProduct(itemTypeRaw || 'raw_material');
-      const uom = normalizeUom(uomRaw || 'st');
+      const itemType = mapItemTypeToProduct(itemTypeRaw || defaultItemType(importType));
+      const uom = normalizeUom(uomRaw || defaultUom(importType));
 
       if (!sku) errors.push('SKU saknas');
       if (!name) errors.push('Namn saknas');
@@ -274,8 +373,8 @@ export default function ImportWizard() {
   };
 
   const canProceedMapping = useMemo(() => {
-    return systemFields.filter(f => f.required).every(f => mapping[f.key]);
-  }, [mapping]);
+    return dynamicFields.filter(f => f.required).every(f => mapping[f.key]);
+  }, [mapping, dynamicFields]);
 
   const doImport = async () => {
     if (!previewRows.length) {
@@ -297,8 +396,8 @@ export default function ImportWizard() {
       const all = rows.map((row) => {
         const sku = String(getVal(row, 'sku') || '').trim();
         const name = String(getVal(row, 'name') || '').trim();
-        const itemType = mapItemTypeToProduct(String(getVal(row, 'item_type') || 'raw_material'));
-        const uom = normalizeUom(String(getVal(row, 'uom') || 'st'));
+        const itemType = mapItemTypeToProduct(String(getVal(row, 'item_type') || defaultItemType(importType)));
+        const uom = normalizeUom(String(getVal(row, 'uom') || defaultUom(importType)));
         const supplier = String(getVal(row, 'supplier') || '').trim();
         const notes = String(getVal(row, 'notes') || '').trim();
         const minLevel = isNaN(parseNumber(getVal(row, 'min_level'), decimalFormat)) ? 0 : parseNumber(getVal(row, 'min_level'), decimalFormat);
@@ -404,7 +503,18 @@ export default function ImportWizard() {
             {/* STEP 1 */}
             <TabsContent value="1" className="space-y-4">
               <StepHeader title="Ladda upp CSV" right={
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-wrap justify-end">
+                  <div className="flex items-center gap-2">
+                    <Label>Importtyp</Label>
+                    <Select value={importType} onValueChange={setImportType}>
+                      <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {importTypeOptions.map((opt) => (
+                          <SelectItem key={opt.key} value={opt.key}>{opt.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <div className="flex items-center gap-2">
                     <Label>Avgränsare</Label>
                     <Select value={delimiter} onValueChange={(v) => { setDelimiter(v); reparse(); }}>
@@ -465,7 +575,8 @@ export default function ImportWizard() {
                     </Table>
                   </div>
 
-                  <div className="flex justify-end">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-slate-500">Vald importtyp: <span className="font-mono">{importType}</span></p>
                     <Button disabled={!headers.length} onClick={() => setStep(2)}>
                       <Upload className="w-4 h-4 mr-2" /> Fortsätt till mappning
                     </Button>
@@ -478,23 +589,13 @@ export default function ImportWizard() {
             <TabsContent value="2" className="space-y-4">
               <StepHeader title="Mappa kolumner till fält" right={
                 <div className="flex items-center gap-2">
-                  <Select value={selectedProfile} onValueChange={(v) => { setSelectedProfile(v); loadProfile(v); }}>
-                    <SelectTrigger className="w-48"><SelectValue placeholder="Välj profil" /></SelectTrigger>
-                    <SelectContent>
-                      {profileKeys.map(p => (<SelectItem key={p.key} value={p.key}>{p.label}</SelectItem>))}
-                    </SelectContent>
-                  </Select>
-                  <Select onValueChange={(v) => saveProfile(v)}>
-                    <SelectTrigger className="w-48"><SelectValue placeholder="Spara som profil" /></SelectTrigger>
-                    <SelectContent>
-                      {profileKeys.map(p => (<SelectItem key={p.key} value={p.key}>{p.label}</SelectItem>))}
-                    </SelectContent>
-                  </Select>
+                  <Button variant="outline" onClick={loadProfile}>Ladda profil</Button>
+                  <Button variant="outline" onClick={saveProfile}>Spara profil</Button>
                 </div>
               } />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {systemFields.map((f) => {
+                {dynamicFields.map((f) => {
                   const exampleValue = firstTenRows[0] ? getVal(firstTenRows[0], f.key) : '';
                   return (
                     <div key={f.key} className="space-y-2">
