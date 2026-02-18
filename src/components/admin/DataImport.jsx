@@ -430,6 +430,11 @@ export default function DataImport() {
         exampleRow = 'FG001,Premium Olivolja,RAW001,Olivolja,0.480';
         filename = 'mall_recept.csv';
         break;
+      case 'inventory':
+        headers = 'SKU,Saldo';
+        exampleRow = 'RAW001,125.5';
+        filename = 'mall_lagerstatus.csv';
+        break;
     }
 
     const csvContent = `${headers}\n${exampleRow}`;
@@ -624,6 +629,26 @@ export default function DataImport() {
                 <Button onClick={() => handleImport('recipes')} disabled={!file || importing}>
                   <Upload className="w-4 h-4 mr-2" />
                   Importera recept (BOM)
+                </Button>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="inventory" className="space-y-3">
+              <Alert>
+                <FileSpreadsheet className="h-4 w-4" />
+                <AlertDescription>
+                  <strong>Format:</strong> SKU, Saldo
+                  <br />Vid import skrivs saldot OM till exakt nivån i filen via en justeringspost i lagrets huvudbok.
+                </AlertDescription>
+              </Alert>
+              <div className="flex gap-2">
+                <Button onClick={() => downloadTemplate('inventory')} variant="outline">
+                  <Download className="w-4 h-4 mr-2" />
+                  Ladda ner mall
+                </Button>
+                <Button onClick={() => handleImport('inventory')} disabled={!file || importing}>
+                  <Upload className="w-4 h-4 mr-2" />
+                  Importera lagerstatus (skriv-över)
                 </Button>
               </div>
             </TabsContent>
