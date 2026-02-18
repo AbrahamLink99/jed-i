@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from "@/lib/utils";
-import DataImport from '@/components/admin/DataImport';
+import ImportWizard from '@/components/admin/import/ImportWizard';
 import InventoryCount from '@/components/admin/InventoryCount';
 import SandboxSeeder from '@/components/admin/SandboxSeeder';
 import ShopifyHistoricalImport from '@/components/admin/ShopifyHistoricalImport';
@@ -340,7 +340,7 @@ export default function AdminPage() {
           {/* Import Tab */}
           <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
             <TabsContent value="import">
-              <DataImport />
+              <ImportWizard />
             </TabsContent>
           </PermissionGate>
 

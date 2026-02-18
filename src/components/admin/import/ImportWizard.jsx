@@ -1,0 +1,633 @@
+import React, { useEffect, useMemo, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
+import { base44 } from "@/api/base44Client";
+import { useEnvironmentFilter } from "@/components/environment/useEnvironmentFilter";
+import { Upload, CheckCircle2, AlertTriangle } from "lucide-react";
+
+// --- Utils ---
+const allowedItemTypes = ["raw_material", "bulk", "finished", "packaging", "label"]; // input-accepted
+const mapItemTypeToProduct = (val) => {
+  const v = (val || "").toString().trim().toLowerCase();
+  if (v === "finished" || v === "finished_good") return "finished_good";
+  if (v === "packaging") return "packaging";
+  if (v === "label") return "label";
+  if (v === "bulk") return "raw_material"; // map bulk to raw_material in our schema
+  return "raw_material";
+};
+
+const normalizeUom = (val) => {
+  const v = (val || "").toString().trim().toLowerCase();
+  if (["st", "pcs", "pc", "styck", "stk"].includes(v)) return "pcs";
+  if (["kg", "kilogram"].includes(v)) return "kg";
+  if (["l", "liter"].includes(v)) return "liter";
+  if (["rulle", "roll"].includes(v)) return "roll";
+  return v || "pcs";
+};
+
+function parseCSV(text, delimiter) {
+  // Simple CSV parser with quote support for "," or ";"
+  const rows = [];
+  let current = [];
+  let field = '';
+  let inQuotes = false;
+  const d = delimiter === ';' ? ';' : ',';
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '"') {
+      if (inQuotes && text[i + 1] === '"') { // escaped quote
+        field += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (c === d && !inQuotes) {
+      current.push(field);
+      field = '';
+    } else if ((c === '\n' || c === '\r') && !inQuotes) {
+      if (c === '\r' && text[i + 1] === '\n') i++; // handle CRLF
+      current.push(field);
+      rows.push(current);
+      current = [];
+      field = '';
+    } else {
+      field += c;
+    }
+  }
+  if (field.length > 0 || current.length > 0) {
+    current.push(field);
+    rows.push(current);
+  }
+  // Trim trailing empty lines
+  return rows.filter(r => r.length && r.some(v => (v || '').trim() !== ''));
+}
+
+const parseNumber = (raw, decimalFormat) => {
+  if (raw === null || raw === undefined) return NaN;
+  let s = String(raw).trim();
+  if (!s) return NaN;
+  // remove currency
+  s = s.replace(/\b(kr|KR|Kr|sek|SEK|Sek)\b/g, '');
+  // remove spaces
+  s = s.replace(/\s+/g, '');
+  if (decimalFormat === 'sv') {
+    // dot thousands, comma decimal
+    s = s.replace(/\./g, '');
+    s = s.replace(/,/g, '.');
+  } else {
+    // comma thousands, dot decimal
+    s = s.replace(/,(?=\d{3}(\D|$))/g, '');
+  }
+  // keep only digits, dot, minus
+  s = s.replace(/[^0-9.-]/g, '');
+  const num = parseFloat(s);
+  return isNaN(num) ? NaN : num;
+};
+
+const systemFields = [
+  { key: 'sku', label: 'SKU', required: true },
+  { key: 'name', label: 'Namn', required: true },
+  { key: 'item_type', label: 'Typ (item_type)', required: false },
+  { key: 'uom', label: 'Enhet (uom)', required: false },
+  { key: 'on_hand_qty', label: 'Startsaldo (on_hand_qty)', required: false },
+  { key: 'unit_cost', label: 'Kostnad (unit_cost)', required: false },
+  { key: 'supplier', label: 'Leverantör', required: false },
+  { key: 'min_level', label: 'Säkerhetslager (min_level)', required: false },
+  { key: 'notes', label: 'Anteckningar', required: false },
+];
+
+const profileKeys = [
+  { key: 'Artikelimport', label: 'Artikelimport' },
+  { key: 'Startlagerimport', label: 'Startlagerimport' },
+];
+
+function StepHeader({ title, right }) {
+  return (
+    <div className="flex items-center justify-between mb-4">
+      <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
+      <div className="flex items-center gap-2">{right}</div>
+    </div>
+  );
+}
+
+export default function ImportWizard() {
+  const envFilter = useEnvironmentFilter();
+
+  // Step state
+  const [step, setStep] = useState(1);
+  const [delimiter, setDelimiter] = useState(',');
+  const [decimalFormat, setDecimalFormat] = useState('sv'); // 'sv' or 'dot'
+  const [fileName, setFileName] = useState('');
+  const [headers, setHeaders] = useState([]);
+  const [rows, setRows] = useState([]);
+
+  // Mapping state
+  const [mapping, setMapping] = useState({}); // { sku: 'Column A', ... }
+  const [selectedProfile, setSelectedProfile] = useState('');
+
+  // Import results
+  const [previewRows, setPreviewRows] = useState([]); // normalized with errors
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState(null);
+
+  // Load profile
+  const loadProfile = (key) => {
+    if (!key) return;
+    const raw = localStorage.getItem('importProfile:' + key);
+    if (!raw) {
+      toast.error('Ingen sparad profil hittades för ' + key);
+      return;
+    }
+    const pf = JSON.parse(raw);
+    setMapping(pf.mapping || {});
+    setDelimiter(pf.delimiter || ',');
+    setDecimalFormat(pf.decimalFormat || 'sv');
+    toast.success('Profil laddad: ' + key);
+  };
+
+  const saveProfile = (key) => {
+    if (!key) return;
+    const pf = { mapping, delimiter, decimalFormat };
+    localStorage.setItem('importProfile:' + key, JSON.stringify(pf));
+    toast.success('Profil sparad: ' + key);
+  };
+
+  // File upload + parsing
+  const onFile = async (file) => {
+    if (!file) return;
+    const text = await file.text();
+    setFileName(file.name);
+    const parsed = parseCSV(text, delimiter);
+    if (!parsed.length) {
+      toast.error('Filen verkar vara tom.');
+      return;
+    }
+    setHeaders(parsed[0]);
+    setRows(parsed.slice(1));
+    // Auto-map heuristics (only by name exact match, not values)
+    const hdrLower = Object.fromEntries(parsed[0].map((h, i) => [String(h || '').toLowerCase().trim(), h]));
+    const newMap = { ...mapping };
+    systemFields.forEach(f => {
+      if (!newMap[f.key]) {
+        if (hdrLower[f.key]) newMap[f.key] = hdrLower[f.key];
+        if (f.key === 'uom' && hdrLower['unit']) newMap[f.key] = hdrLower['unit'];
+        if (f.key === 'unit_cost' && hdrLower['cost']) newMap[f.key] = hdrLower['cost'];
+        if (f.key === 'on_hand_qty' && (hdrLower['on_hand'] || hdrLower['qty'])) newMap[f.key] = hdrLower['on_hand'] || hdrLower['qty'];
+      }
+    });
+    setMapping(newMap);
+    setStep(1);
+  };
+
+  // Re-parse when delimiter changes with same file content (best-effort)
+  const reparse = () => {
+    // Cannot re-read file content without storing it; prompt to re-upload if needed
+    toast.message('Ändrad avgränsare används på nästa uppladdning. Ladda upp filen igen om något ser konstigt ut.');
+  };
+
+  const headerIndex = useMemo(() => {
+    const map = {};
+    headers.forEach((h, i) => { map[String(h)] = i; });
+    return map;
+  }, [headers]);
+
+  const getVal = (row, fieldKey) => {
+    const col = mapping[fieldKey];
+    if (!col) return '';
+    const idx = headerIndex[col];
+    if (idx === undefined) return '';
+    return row[idx];
+  };
+
+  // Build preview rows with normalization + validation
+  const buildPreview = () => {
+    if (!headers.length) {
+      toast.error('Ladda upp en CSV först.');
+      return;
+    }
+    const mapped = rows.slice(0, 10).map((row, i) => {
+      const sku = String(getVal(row, 'sku') || '').trim();
+      const name = String(getVal(row, 'name') || '').trim();
+      const itemTypeRaw = String(getVal(row, 'item_type') || '').trim();
+      const uomRaw = String(getVal(row, 'uom') || '').trim();
+      const supplier = String(getVal(row, 'supplier') || '').trim();
+      const notes = String(getVal(row, 'notes') || '').trim();
+      const minLevelRaw = getVal(row, 'min_level');
+      const unitCostRaw = getVal(row, 'unit_cost');
+      const onHandRaw = getVal(row, 'on_hand_qty');
+
+      const errors = [];
+      const warnings = [];
+
+      // item_type validation (if provided)
+      if (itemTypeRaw) {
+        const ok = allowedItemTypes.includes(itemTypeRaw.toLowerCase());
+        if (!ok) errors.push('Ogiltig item_type: ' + itemTypeRaw);
+      }
+
+      // parse numerics
+      const minLevel = isNaN(parseNumber(minLevelRaw, decimalFormat)) ? 0 : parseNumber(minLevelRaw, decimalFormat);
+      let unitCost = parseNumber(unitCostRaw, decimalFormat);
+      if (isNaN(unitCost)) { unitCost = 0; warnings.push('unit_cost saknas eller ej numerisk'); }
+      let onHand = parseNumber(onHandRaw, decimalFormat);
+      if (isNaN(onHand)) onHand = null;
+
+      // defaults
+      const itemType = mapItemTypeToProduct(itemTypeRaw || 'raw_material');
+      const uom = normalizeUom(uomRaw || 'st');
+
+      if (!sku) errors.push('SKU saknas');
+      if (!name) errors.push('Namn saknas');
+
+      return {
+        _row: i + 1,
+        sku,
+        name,
+        item_type: itemType,
+        uom,
+        supplier,
+        notes,
+        min_level,
+        unit_cost: unitCost,
+        on_hand_qty: onHand,
+        _errors: errors,
+        _warnings: warnings,
+      };
+    });
+
+    // Uniqueness of SKU within preview set
+    const seen = new Set();
+    mapped.forEach(r => {
+      if (seen.has(r.sku)) r._errors.push('SKU ej unik i förhandsgranskning');
+      else seen.add(r.sku);
+    });
+
+    setPreviewRows(mapped);
+    setStep(3);
+  };
+
+  const canProceedMapping = useMemo(() => {
+    return systemFields.filter(f => f.required).every(f => mapping[f.key]);
+  }, [mapping]);
+
+  const doImport = async () => {
+    if (!previewRows.length) {
+      toast.error('Skapa en förhandsgranskning först.');
+      return;
+    }
+    const hasErrors = previewRows.some(r => r._errors.length);
+    if (hasErrors) {
+      toast.error('Åtgärda fel i förhandsgranskningen innan import.');
+      return;
+    }
+
+    setImporting(true);
+    const user = await base44.auth.me().catch(() => null);
+    let created = 0, updated = 0, adjusted = 0;
+
+    try {
+      // Process ALL rows (not only 10) with normalization again
+      const all = rows.map((row) => {
+        const sku = String(getVal(row, 'sku') || '').trim();
+        const name = String(getVal(row, 'name') || '').trim();
+        const itemType = mapItemTypeToProduct(String(getVal(row, 'item_type') || 'raw_material'));
+        const uom = normalizeUom(String(getVal(row, 'uom') || 'st'));
+        const supplier = String(getVal(row, 'supplier') || '').trim();
+        const notes = String(getVal(row, 'notes') || '').trim();
+        const minLevel = isNaN(parseNumber(getVal(row, 'min_level'), decimalFormat)) ? 0 : parseNumber(getVal(row, 'min_level'), decimalFormat);
+        let unitCost = parseNumber(getVal(row, 'unit_cost'), decimalFormat);
+        if (isNaN(unitCost)) unitCost = 0;
+        let onHand = parseNumber(getVal(row, 'on_hand_qty'), decimalFormat);
+        if (isNaN(onHand)) onHand = null;
+        return { sku, name, item_type: itemType, uom, supplier, notes, min_level: minLevel, unit_cost: unitCost, on_hand_qty: onHand };
+      }).filter(r => r.sku && r.name);
+
+      for (const r of all) {
+        // Create or update product by SKU in current environment
+        const existing = await base44.entities.Product.filter({ sku: r.sku, environment: envFilter.environment });
+        let product;
+        if (existing && existing.length) {
+          const p0 = existing[0];
+          product = await base44.entities.Product.update(p0.id, {
+            environment: envFilter.environment,
+            sku: r.sku,
+            name: r.name,
+            type: r.item_type,
+            unit: r.uom,
+            supplier: r.supplier || p0.supplier,
+            notes: r.notes || p0.notes,
+            safety_stock: r.min_level,
+            cost_per_unit: r.unit_cost,
+            active: true,
+          });
+          updated += 1;
+        } else {
+          product = await base44.entities.Product.create({
+            environment: envFilter.environment,
+            sku: r.sku,
+            name: r.name,
+            type: r.item_type,
+            unit: r.uom,
+            supplier: r.supplier || null,
+            notes: r.notes || null,
+            safety_stock: r.min_level,
+            cost_per_unit: r.unit_cost,
+            active: true,
+          });
+          created += 1;
+        }
+
+        // Inventory adjustment if provided
+        if (r.on_hand_qty !== null && !isNaN(r.on_hand_qty)) {
+          await base44.entities.InventoryLedger.create({
+            environment: envFilter.environment,
+            product_id: product.id || (existing && existing[0] && existing[0].id),
+            product_sku: r.sku,
+            product_name: r.name,
+            transaction_type: 'adjustment',
+            quantity: r.on_hand_qty,
+            reference_type: 'manual',
+            notes: 'Startsaldo vid import',
+          });
+          adjusted += 1;
+        }
+      }
+
+      // Audit log summary
+      await base44.entities.AuditLogEntry.create({
+        timestamp: new Date().toISOString(),
+        actor_email: user?.email || 'unknown',
+        actor_role: user?.role || 'admin',
+        action_type: 'CREATE',
+        entity_type: 'Product',
+        summary_message: `Import: ${fileName} → ${created} skapade, ${updated} uppdaterade, ${adjusted} lagerjusteringar`,
+        page_context: 'Admin > Import Wizard'
+      });
+
+      setImportResult({ created, updated, adjusted });
+      toast.success('Import klar');
+      setStep(4);
+    } catch (e) {
+      console.error(e);
+      toast.error('Import misslyckades: ' + e.message);
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  // UI helpers
+  const firstTenRows = useMemo(() => rows.slice(0, 10), [rows]);
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Import Wizard</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-8">
+          {/* Step tabs for clarity */}
+          <Tabs value={String(step)} onValueChange={(v) => setStep(Number(v))}>
+            <TabsList>
+              <TabsTrigger value="1">1. Fil</TabsTrigger>
+              <TabsTrigger value="2" disabled={!headers.length}>2. Mappning</TabsTrigger>
+              <TabsTrigger value="3" disabled={!headers.length}>3. Preview</TabsTrigger>
+              <TabsTrigger value="4" disabled={!importResult}>4. Import</TabsTrigger>
+            </TabsList>
+
+            {/* STEP 1 */}
+            <TabsContent value="1" className="space-y-4">
+              <StepHeader title="Ladda upp CSV" right={
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <Label>Avgränsare</Label>
+                    <Select value={delimiter} onValueChange={(v) => { setDelimiter(v); reparse(); }}>
+                      <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value=",">Comma (,)</SelectItem>
+                        <SelectItem value=";">Semikolon (;)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Label>Decimal</Label>
+                    <Select value={decimalFormat} onValueChange={setDecimalFormat}>
+                      <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="sv">Svensk ,</SelectItem>
+                        <SelectItem value="dot">Punkt .</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              } />
+
+              <div className="flex items-center gap-3">
+                <Input type="file" accept=".csv,text/csv" onChange={(e) => onFile(e.target.files?.[0])} />
+                <Button variant="outline" onClick={() => { setHeaders([]); setRows([]); setMapping({}); setPreviewRows([]); setImportResult(null); setStep(1); }}>Rensa</Button>
+              </div>
+              {fileName && <p className="text-sm text-slate-500">Fil: {fileName}</p>}
+
+              {headers.length > 0 && (
+                <div className="space-y-3">
+                  <p className="text-sm text-slate-600">Upptäckta kolumner:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {headers.map((h, i) => (
+                      <span key={i} className="px-2 py-1 rounded bg-slate-100 text-slate-700 text-xs font-mono">{h || '(tom)'}</span>
+                    ))}
+                  </div>
+
+                  <div className="border rounded-lg overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          {headers.map((h, i) => (<TableHead key={i} className="font-mono">{h || '(tom)'}</TableHead>))}
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {firstTenRows.map((r, ri) => (
+                          <TableRow key={ri}>
+                            {headers.map((_, ci) => (
+                              <TableCell key={ci} className="text-sm">{r[ci]}</TableCell>
+                            ))}
+                          </TableRow>
+                        ))}
+                        {firstTenRows.length === 0 && (
+                          <TableRow><TableCell colSpan={headers.length} className="text-center text-slate-500">Inga rader</TableCell></TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <Button disabled={!headers.length} onClick={() => setStep(2)}>
+                      <Upload className="w-4 h-4 mr-2" /> Fortsätt till mappning
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+
+            {/* STEP 2 */}
+            <TabsContent value="2" className="space-y-4">
+              <StepHeader title="Mappa kolumner till fält" right={
+                <div className="flex items-center gap-2">
+                  <Select value={selectedProfile} onValueChange={(v) => { setSelectedProfile(v); loadProfile(v); }}>
+                    <SelectTrigger className="w-48"><SelectValue placeholder="Välj profil" /></SelectTrigger>
+                    <SelectContent>
+                      {profileKeys.map(p => (<SelectItem key={p.key} value={p.key}>{p.label}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
+                  <Select onValueChange={(v) => saveProfile(v)}>
+                    <SelectTrigger className="w-48"><SelectValue placeholder="Spara som profil" /></SelectTrigger>
+                    <SelectContent>
+                      {profileKeys.map(p => (<SelectItem key={p.key} value={p.key}>{p.label}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              } />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {systemFields.map((f) => {
+                  const exampleValue = firstTenRows[0] ? getVal(firstTenRows[0], f.key) : '';
+                  return (
+                    <div key={f.key} className="space-y-2">
+                      <Label>{f.label} {f.required && <span className="text-red-600">*</span>}</Label>
+                      <Select value={mapping[f.key] || ''} onValueChange={(v) => setMapping({ ...mapping, [f.key]: v })}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Välj kolumn" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {headers.map((h, i) => (<SelectItem key={i} value={h}>{h || '(tom)'}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-slate-500">Exempel: <span className="font-mono">{String(exampleValue || '').slice(0, 40)}</span></p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {!canProceedMapping && (
+                <Alert>
+                  <AlertDescription>Fyll i obligatoriska fält (SKU och Namn).</AlertDescription>
+                </Alert>
+              )}
+
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setStep(1)}>Tillbaka</Button>
+                <Button onClick={buildPreview} disabled={!canProceedMapping}>Skapa preview</Button>
+              </div>
+            </TabsContent>
+
+            {/* STEP 3 */}
+            <TabsContent value="3" className="space-y-4">
+              <StepHeader title="Förhandsgranskning (10 rader)" />
+
+              <div className="border rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Rad</TableHead>
+                      <TableHead>SKU</TableHead>
+                      <TableHead>Namn</TableHead>
+                      <TableHead>Typ</TableHead>
+                      <TableHead>Enhet</TableHead>
+                      <TableHead>Min nivå</TableHead>
+                      <TableHead>Kostnad</TableHead>
+                      <TableHead>Startsaldo</TableHead>
+                      <TableHead>Fel/Varningar</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {previewRows.map((r, i) => (
+                      <TableRow key={i}>
+                        <TableCell>{r._row}</TableCell>
+                        <TableCell className="font-mono">{r.sku}</TableCell>
+                        <TableCell>{r.name}</TableCell>
+                        <TableCell>{r.item_type}</TableCell>
+                        <TableCell>{r.uom}</TableCell>
+                        <TableCell>{r.min_level}</TableCell>
+                        <TableCell>{r.unit_cost}</TableCell>
+                        <TableCell>{r.on_hand_qty ?? '-'}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-1">
+                            {r._errors.map((e, ei) => (
+                              <span key={ei} className="text-xs text-red-600">• {e}</span>
+                            ))}
+                            {r._warnings.map((w, wi) => (
+                              <span key={wi} className="text-xs text-amber-600">• {w}</span>
+                            ))}
+                            {!r._errors.length && !r._warnings.length && (
+                              <span className="text-xs text-emerald-600 flex items-center gap-1"><CheckCircle2 className="w-3 h-3"/> OK</span>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {previewRows.length === 0 && (
+                      <TableRow><TableCell colSpan={9} className="text-center text-slate-500">Ingen data</TableCell></TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <Alert className="max-w-xl">
+                  <AlertDescription>
+                    Regler: SKU unik inom import, numeriska fält parsas enligt decimal-val, item_type måste vara raw_material/bulk/finished/packaging/label.
+                  </AlertDescription>
+                </Alert>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setStep(2)}>Tillbaka</Button>
+                  <Button onClick={doImport} disabled={!previewRows.length || previewRows.some(r => r._errors.length)}>
+                    Importera
+                  </Button>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* STEP 4 */}
+            <TabsContent value="4" className="space-y-4">
+              <StepHeader title="Importresultat" />
+              {importResult && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="p-4 rounded-lg bg-emerald-50 text-emerald-700">
+                    <div className="text-sm">Skapade</div>
+                    <div className="text-2xl font-semibold">{importResult.created}</div>
+                  </div>
+                  <div className="p-4 rounded-lg bg-blue-50 text-blue-700">
+                    <div className="text-sm">Uppdaterade</div>
+                    <div className="text-2xl font-semibold">{importResult.updated}</div>
+                  </div>
+                  <div className="p-4 rounded-lg bg-amber-50 text-amber-700">
+                    <div className="text-sm">Lagerjusteringar</div>
+                    <div className="text-2xl font-semibold">{importResult.adjusted}</div>
+                  </div>
+                </div>
+              )}
+              {!importResult && (
+                <Alert>
+                  <AlertDescription>
+                    Ingen import har körts än.
+                  </AlertDescription>
+                </Alert>
+              )}
+              <div className="flex justify-end">
+                <Button onClick={() => { setStep(1); setHeaders([]); setRows([]); setMapping({}); setPreviewRows([]); setImportResult(null); }}>Ny import</Button>
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          {/* Small footnote */}
+          <p className="text-xs text-slate-500">Miljö: <span className="font-mono">{envFilter.environment}</span>. Artiklar skapas/uppdateras i vald miljö, och startsaldo loggas som lagerjustering.</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
