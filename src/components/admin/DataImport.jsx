@@ -459,18 +459,18 @@ export default function DataImport() {
         filename = 'mall_ravaror.csv';
         break;
       case 'packaging':
-        headers = 'SKU,Namn,Leverantör,Kostnad,Anteckningar';
-        exampleRow = 'PKG001,Glasflaska 500ml,Packaging AB,12.50,Standard flaska';
+        headers = 'SKU,Namn,Leverantör,Kostnad,Anteckningar,Saldo';
+        exampleRow = 'PKG001,Glasflaska 500ml,Packaging AB,12.50,Standard flaska,100';
         filename = 'mall_forpackningar.csv';
         break;
       case 'labels':
-        headers = 'SKU,Namn,Leverantör,Kostnad,Anteckningar';
-        exampleRow = 'LBL001,Etikett Premium,Label AB,2.50,Vattentålig';
+        headers = 'SKU,Namn,Leverantör,Kostnad,Anteckningar,Saldo';
+        exampleRow = 'LBL001,Etikett Premium,Label AB,2.50,Vattentålig,100';
         filename = 'mall_etiketter.csv';
         break;
       case 'finished_products':
-        headers = 'SKU,Namn,Anteckningar';
-        exampleRow = 'FG001,Premium Olivolja 500ml,Färdig produkt';
+        headers = 'SKU,Namn,Anteckningar,Saldo';
+        exampleRow = 'FG001,Premium Olivolja 500ml,Färdig produkt,250';
         filename = 'mall_fardigvaror.csv';
         break;
       case 'recipes':
@@ -605,7 +605,7 @@ export default function DataImport() {
               <Alert>
                 <FileSpreadsheet className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>Format:</strong> SKU, Namn, Leverantör, Kostnad, Anteckningar
+                  <strong>Format:</strong> SKU, Namn, Leverantör, Kostnad, Anteckningar, Saldo
                 </AlertDescription>
               </Alert>
               <div className="flex gap-2">
@@ -624,7 +624,7 @@ export default function DataImport() {
               <Alert>
                 <FileSpreadsheet className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>Format:</strong> SKU, Namn, Leverantör, Kostnad, Anteckningar
+                  <strong>Format:</strong> SKU, Namn, Leverantör, Kostnad, Anteckningar, Saldo
                 </AlertDescription>
               </Alert>
               <div className="flex gap-2">
@@ -643,7 +643,7 @@ export default function DataImport() {
               <Alert>
                 <FileSpreadsheet className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>Format:</strong> SKU, Namn, Anteckningar
+                  <strong>Format:</strong> SKU, Namn, Anteckningar, Saldo
                 </AlertDescription>
               </Alert>
               <div className="flex gap-2">
