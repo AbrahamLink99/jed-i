@@ -590,7 +590,7 @@ export default function DataImport() {
               <Alert>
                 <FileSpreadsheet className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>Format:</strong> SKU, Namn, Enhet, Leverantör, Kostnad, Anteckningar, Saldo
+                  <strong>Format:</strong> SKU, Namn, Enhet, Leverantör, Kostnad, Anteckningar, Saldo, Saldo
                 </AlertDescription>
               </Alert>
               <div className="flex gap-2">
