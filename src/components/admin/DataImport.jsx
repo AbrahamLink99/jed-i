@@ -182,6 +182,7 @@ export default function DataImport() {
         const created = await enqueue(() => base44.entities.Product.create({ ...product, environment: envFilter.environment }));
         skuIndex.set(product.sku, created);
         existingProducts.push(created);
+        existingSKUs.add(product.sku);
         await auditLog.createEntity('Product', product.sku, product, 'DataImport');
         // Sätt lagersaldo om angivet i mallen
         if (row.Saldo !== undefined && String(row.Saldo).trim() !== '') {
@@ -270,6 +271,7 @@ export default function DataImport() {
         const created = await enqueue(() => base44.entities.Product.create({ ...product, environment: envFilter.environment }));
         skuIndex.set(product.sku, created);
         existingProducts.push(created);
+        existingSKUs.add(product.sku);
         await auditLog.createEntity('Product', product.sku, product, 'DataImport');
         if (row.Saldo !== undefined && String(row.Saldo).trim() !== '') {
           const target = parseFloat(String(row.Saldo).replace(',', '.'));
@@ -357,6 +359,7 @@ export default function DataImport() {
         const created = await enqueue(() => base44.entities.Product.create({ ...product, environment: envFilter.environment }));
         skuIndex.set(product.sku, created);
         existingProducts.push(created);
+        existingSKUs.add(product.sku);
         await auditLog.createEntity('Product', product.sku, product, 'DataImport');
         if (row.Saldo !== undefined && String(row.Saldo).trim() !== '') {
           const target = parseFloat(String(row.Saldo).replace(',', '.'));
@@ -496,6 +499,7 @@ export default function DataImport() {
         const created = await enqueue(() => base44.entities.Product.create({ ...product, environment: envFilter.environment }));
         skuIndex.set(product.sku, created);
         existingProducts.push(created);
+        existingSKUs.add(product.sku);
         await auditLog.createEntity('Product', product.sku, product, 'DataImport');
         if (row.Saldo !== undefined && String(row.Saldo).trim() !== '') {
           const target = parseFloat(String(row.Saldo).replace(',', '.'));
@@ -532,7 +536,7 @@ export default function DataImport() {
   // Import recipes/BOM
   const importRecipes = async (data, productsList) => {
     const results = { success: 0, failed: 0, errors: [] };
-    const products = await base44.entities.Product.filter({ environment: envFilter.environment });
+    const products = productsList;
     
     // Group by finished product
     const recipesByProduct = {};
