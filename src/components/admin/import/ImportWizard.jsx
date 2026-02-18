@@ -493,7 +493,7 @@ export default function ImportWizard() {
             transaction_type: 'adjustment',
             quantity: r.on_hand_qty,
             reference_type: 'manual',
-            notes: 'Startsaldo vid import',
+            notes: 'Startsaldo vid import (' + (importType === 'raw_material' || importType === 'bulk' ? 'kg' : 'st') + ')',
           });
           adjusted += 1;
         }
