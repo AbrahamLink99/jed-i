@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
 import { useEnvironmentFilter } from "@/components/environment/useEnvironmentFilter";
-import { Upload, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Upload, CheckCircle2, AlertTriangle, Download } from "lucide-react";
 
 // --- Utils ---
 const allowedItemTypes = ["raw_material", "bulk", "finished", "packaging", "label"]; // input-accepted
@@ -280,6 +280,20 @@ export default function ImportWizard() {
   const reparse = () => {
     // Cannot re-read file content without storing it; prompt to re-upload if needed
     toast.message('Ändrad avgränsare används på nästa uppladdning. Ladda upp filen igen om något ser konstigt ut.');
+  };
+
+  const downloadTemplate = () => {
+    const headers = dynamicFields.map(f => f.key);
+    const csv = headers.join(delimiter) + '\n';
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mall_${importType}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   };
 
   const headerIndex = useMemo(() => {
@@ -575,6 +589,9 @@ export default function ImportWizard() {
                       </SelectContent>
                     </Select>
                   </div>
+                  <Button variant="outline" onClick={downloadTemplate}>
+                    <Download className="w-4 h-4 mr-1" /> Ladda ner mall
+                  </Button>
                 </div>
               } />
 
