@@ -45,7 +45,7 @@ export default function Inventory() {
 
   const { data: ledger = [] } = useQuery({
     queryKey: ['ledger', envFilter.environment],
-    queryFn: () => base44.entities.InventoryLedger.filter(envFilter, '-created_date', 500)
+    queryFn: () => base44.entities.InventoryLedger.filter(envFilter, '-created_date', 5000)
   });
 
   const adjustmentMutation = useMutation({
@@ -69,13 +69,15 @@ export default function Inventory() {
     }
   });
 
+  const ledgerForEnv = useMemo(() => ledger.filter(e => !e.environment || e.environment === envFilter.environment), [ledger, envFilter.environment]);
+
   const stockData = useMemo(() => {
     const data = {};
     products.forEach(product => {
-      data[product.id] = getStockSummary(product, ledger, batches);
+      data[product.id] = getStockSummary(product, ledgerForEnv, batches);
     });
     return data;
-  }, [products, ledger, batches]);
+  }, [products, ledgerForEnv, batches]);
 
   const filteredProducts = useMemo(() => {
     return products
@@ -91,7 +93,7 @@ export default function Inventory() {
       .sort((a, b) => a.sku?.localeCompare(b.sku));
   }, [products, typeFilter, searchTerm]);
 
-  const recentLedger = ledger.slice(0, 50);
+  const recentLedger = ledgerForEnv.slice(0, 50);
 
   return (
     <div className="min-h-screen bg-slate-50">
