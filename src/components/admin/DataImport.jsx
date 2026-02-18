@@ -22,6 +22,81 @@ export default function DataImport() {
   const queryClient = useQueryClient();
   const envFilter = useEnvironmentFilter();
 
+  // Concurrency and retry helpers
+  const MAX_CONCURRENCY = 3;
+  const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
+  const callWithRetry = async (fn, { retries = 4, baseMs = 500 } = {}) => {
+    let lastErr;
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        return await fn();
+      } catch (e) {
+        const is429 = e?.status === 429 || /rate limit/i.test(String(e?.message || ''));
+        if (!is429 || attempt === retries) {
+          lastErr = e;
+          break;
+        }
+        const jitter = Math.floor(Math.random() * 200);
+        const delay = baseMs * Math.pow(2, attempt) + jitter;
+        await sleep(delay);
+      }
+    }
+    throw lastErr;
+  };
+
+  // Simple request queue (max 3 concurrent)
+  const requestQueue = [];
+  let inFlight = 0;
+  const enqueue = (fn) => new Promise((resolve, reject) => {
+    const run = async () => {
+      inFlight++;
+      try {
+        const res = await callWithRetry(fn);
+        resolve(res);
+      } catch (e) {
+        reject(e);
+      } finally {
+        inFlight--;
+        if (requestQueue.length) {
+          const next = requestQueue.shift();
+          next();
+        }
+      }
+    };
+    if (inFlight < MAX_CONCURRENCY) {
+      run();
+    } else {
+      requestQueue.push(run);
+    }
+  });
+
+  // Wrappers for common API calls through the queue
+  const createLedger = (payload) => enqueue(() => base44.entities.InventoryLedger.create(payload));
+  const getLedgerEntries = (query, sort, limit, skip) => enqueue(() => base44.entities.InventoryLedger.filter(query, sort, limit, skip));
+  const createBOMItem = (payload) => enqueue(() => base44.entities.BOMItem.create(payload));
+
+  // Paginated fetch of all products for an environment
+  const fetchAllProductsPaginated = async (environment, pageSize = 200, maxPages = 50) => {
+    const all = [];
+    let offset = 0;
+    for (let page = 0; page < maxPages; page++) {
+      const batch = await base44.entities.Product.filter(
+        { environment },
+        undefined,
+        pageSize,
+        offset
+      );
+      if (!batch || batch.length === 0) break;
+      all.push(...batch);
+      if (batch.length < pageSize) break;
+      offset += pageSize;
+    }
+    // De-dup by id in case SDK ignores skip
+    const byId = new Map();
+    all.forEach((p) => byId.set(p.id, p));
+    return Array.from(byId.values());
+  };
+
   // Parse CSV file
   const parseCSV = (text) => {
     const lines = text.split('\n').filter(line => line.trim());
@@ -47,10 +122,10 @@ export default function DataImport() {
   };
 
   // Import raw materials
-  const importRawMaterials = async (data) => {
+  const importRawMaterials = async (data, products, skuIndex) => {
     const results = { success: 0, failed: 0, skipped: 0, errors: [] };
-    const existingProducts = await base44.entities.Product.filter({ environment: envFilter.environment });
-    const existingSKUs = new Set(existingProducts.map(p => p.sku));
+    const existingProducts = products;
+    const existingSKUs = new Set([...skuIndex.keys()]);
     
     for (const row of data) {
       try {
@@ -75,14 +150,14 @@ export default function DataImport() {
           // Uppdatera lager om Saldo angivits i filen
           const saldoStr = row.Saldo;
           if (saldoStr !== undefined && String(saldoStr).trim() !== '') {
-            const productRef = existingProducts.find(p => p.sku === product.sku);
+            const productRef = skuIndex.get(product.sku);
             const target = parseFloat(String(saldoStr).replace(',', '.'));
             if (!isNaN(target) && productRef) {
-              const ledgers = await base44.entities.InventoryLedger.filter({ product_id: productRef.id, environment: envFilter.environment }, '-created_date', 1000);
+              const ledgers = await getLedgerEntries({ product_id: productRef.id, environment: envFilter.environment }, '-created_date', 1000);
               const onHand = (ledgers || []).reduce((sum, l) => (l.transaction_type === 'reservation' || l.transaction_type === 'release_reservation') ? sum : sum + (l.quantity || 0), 0);
               const delta = Number((target - onHand).toFixed(6));
               if (Math.abs(delta) >= 1e-9) {
-                await base44.entities.InventoryLedger.create({
+                await createLedger({
                   environment: envFilter.environment,
                   product_id: productRef.id,
                   product_sku: productRef.sku,
@@ -104,17 +179,19 @@ export default function DataImport() {
           continue;
         }
 
-        const created = await base44.entities.Product.create({ ...product, environment: envFilter.environment });
+        const created = await enqueue(() => base44.entities.Product.create({ ...product, environment: envFilter.environment }));
+        skuIndex.set(product.sku, created);
+        existingProducts.push(created);
         await auditLog.createEntity('Product', product.sku, product, 'DataImport');
         // Sätt lagersaldo om angivet i mallen
         if (row.Saldo !== undefined && String(row.Saldo).trim() !== '') {
           const target = parseFloat(String(row.Saldo).replace(',', '.'));
           if (!isNaN(target)) {
-            const ledgers = await base44.entities.InventoryLedger.filter({ product_id: created.id, environment: envFilter.environment }, '-created_date', 1000);
+            const ledgers = await getLedgerEntries({ product_id: created.id, environment: envFilter.environment }, '-created_date', 1000);
             const onHand = (ledgers || []).reduce((sum, l) => (l.transaction_type === 'reservation' || l.transaction_type === 'release_reservation') ? sum : sum + (l.quantity || 0), 0);
             const delta = Number((target - onHand).toFixed(6));
             if (Math.abs(delta) >= 1e-9) {
-              await base44.entities.InventoryLedger.create({
+              await createLedger({
                 environment: envFilter.environment,
                 product_id: created.id,
                 product_sku: product.sku,
@@ -140,10 +217,10 @@ export default function DataImport() {
   };
 
   // Import bottles/packaging
-  const importPackaging = async (data) => {
+  const importPackaging = async (data, products, skuIndex) => {
     const results = { success: 0, failed: 0, skipped: 0, errors: [] };
-    const existingProducts = await base44.entities.Product.filter({ environment: envFilter.environment });
-    const existingSKUs = new Set(existingProducts.map(p => p.sku));
+    const existingProducts = products;
+    const existingSKUs = new Set([...skuIndex.keys()]);
     
     for (const row of data) {
       try {
@@ -161,14 +238,14 @@ export default function DataImport() {
         if (existingSKUs.has(product.sku)) {
           const saldoStr = row.Saldo;
           if (saldoStr !== undefined && String(saldoStr).trim() !== '') {
-            const productRef = existingProducts.find(p => p.sku === product.sku);
+            const productRef = skuIndex.get(product.sku);
             const target = parseFloat(String(saldoStr).replace(',', '.'));
             if (!isNaN(target) && productRef) {
-              const ledgers = await base44.entities.InventoryLedger.filter({ product_id: productRef.id, environment: envFilter.environment }, '-created_date', 1000);
+              const ledgers = await getLedgerEntries({ product_id: productRef.id, environment: envFilter.environment }, '-created_date', 1000);
               const onHand = (ledgers || []).reduce((sum, l) => (l.transaction_type === 'reservation' || l.transaction_type === 'release_reservation') ? sum : sum + (l.quantity || 0), 0);
               const delta = Number((target - onHand).toFixed(6));
               if (Math.abs(delta) >= 1e-9) {
-                await base44.entities.InventoryLedger.create({
+                await createLedger({
                   environment: envFilter.environment,
                   product_id: productRef.id,
                   product_sku: productRef.sku,
@@ -190,16 +267,18 @@ export default function DataImport() {
           continue;
         }
 
-        const created = await base44.entities.Product.create({ ...product, environment: envFilter.environment });
+        const created = await enqueue(() => base44.entities.Product.create({ ...product, environment: envFilter.environment }));
+        skuIndex.set(product.sku, created);
+        existingProducts.push(created);
         await auditLog.createEntity('Product', product.sku, product, 'DataImport');
         if (row.Saldo !== undefined && String(row.Saldo).trim() !== '') {
           const target = parseFloat(String(row.Saldo).replace(',', '.'));
           if (!isNaN(target)) {
-            const ledgers = await base44.entities.InventoryLedger.filter({ product_id: created.id, environment: envFilter.environment }, '-created_date', 1000);
+            const ledgers = await getLedgerEntries({ product_id: created.id, environment: envFilter.environment }, '-created_date', 1000);
             const onHand = (ledgers || []).reduce((sum, l) => (l.transaction_type === 'reservation' || l.transaction_type === 'release_reservation') ? sum : sum + (l.quantity || 0), 0);
             const delta = Number((target - onHand).toFixed(6));
             if (Math.abs(delta) >= 1e-9) {
-              await base44.entities.InventoryLedger.create({
+              await createLedger({
                 environment: envFilter.environment,
                 product_id: created.id,
                 product_sku: product.sku,
@@ -225,10 +304,10 @@ export default function DataImport() {
   };
 
   // Import labels
-  const importLabels = async (data) => {
+  const importLabels = async (data, products, skuIndex) => {
     const results = { success: 0, failed: 0, skipped: 0, errors: [] };
-    const existingProducts = await base44.entities.Product.filter({ environment: envFilter.environment });
-    const existingSKUs = new Set(existingProducts.map(p => p.sku));
+    const existingProducts = products;
+    const existingSKUs = new Set([...skuIndex.keys()]);
     
     for (const row of data) {
       try {
@@ -246,14 +325,14 @@ export default function DataImport() {
         if (existingSKUs.has(product.sku)) {
           const saldoStr = row.Saldo;
           if (saldoStr !== undefined && String(saldoStr).trim() !== '') {
-            const productRef = existingProducts.find(p => p.sku === product.sku);
+            const productRef = skuIndex.get(product.sku);
             const target = parseFloat(String(saldoStr).replace(',', '.'));
             if (!isNaN(target) && productRef) {
-              const ledgers = await base44.entities.InventoryLedger.filter({ product_id: productRef.id, environment: envFilter.environment }, '-created_date', 1000);
+              const ledgers = await getLedgerEntries({ product_id: productRef.id, environment: envFilter.environment }, '-created_date', 1000);
               const onHand = (ledgers || []).reduce((sum, l) => (l.transaction_type === 'reservation' || l.transaction_type === 'release_reservation') ? sum : sum + (l.quantity || 0), 0);
               const delta = Number((target - onHand).toFixed(6));
               if (Math.abs(delta) >= 1e-9) {
-                await base44.entities.InventoryLedger.create({
+                await createLedger({
                   environment: envFilter.environment,
                   product_id: productRef.id,
                   product_sku: productRef.sku,
@@ -275,16 +354,18 @@ export default function DataImport() {
           continue;
         }
 
-        const created = await base44.entities.Product.create({ ...product, environment: envFilter.environment });
+        const created = await enqueue(() => base44.entities.Product.create({ ...product, environment: envFilter.environment }));
+        skuIndex.set(product.sku, created);
+        existingProducts.push(created);
         await auditLog.createEntity('Product', product.sku, product, 'DataImport');
         if (row.Saldo !== undefined && String(row.Saldo).trim() !== '') {
           const target = parseFloat(String(row.Saldo).replace(',', '.'));
           if (!isNaN(target)) {
-            const ledgers = await base44.entities.InventoryLedger.filter({ product_id: created.id, environment: envFilter.environment }, '-created_date', 1000);
+            const ledgers = await getLedgerEntries({ product_id: created.id, environment: envFilter.environment }, '-created_date', 1000);
             const onHand = (ledgers || []).reduce((sum, l) => (l.transaction_type === 'reservation' || l.transaction_type === 'release_reservation') ? sum : sum + (l.quantity || 0), 0);
             const delta = Number((target - onHand).toFixed(6));
             if (Math.abs(delta) >= 1e-9) {
-              await base44.entities.InventoryLedger.create({
+              await createLedger({
                 environment: envFilter.environment,
                 product_id: created.id,
                 product_sku: product.sku,
@@ -332,7 +413,7 @@ export default function DataImport() {
           continue;
         }
         // Fetch ledger for this product (current environment)
-        const ledgers = await base44.entities.InventoryLedger.filter({ product_id: product.id, environment: envFilter.environment }, '-created_date', 1000);
+        const ledgers = await getLedgerEntries({ product_id: product.id, environment: envFilter.environment }, '-created_date', 1000);
         const onHand = (ledgers || []).reduce((sum, l) => {
           return (l.transaction_type === 'reservation' || l.transaction_type === 'release_reservation') ? sum : sum + (l.quantity || 0);
         }, 0);
@@ -341,7 +422,7 @@ export default function DataImport() {
           results.skipped++;
           continue;
         }
-        await base44.entities.InventoryLedger.create({
+        await createLedger({
           environment: envFilter.environment,
           product_id: product.id,
           product_sku: product.sku,
@@ -364,10 +445,10 @@ export default function DataImport() {
   };
 
   // Import finished products
-  const importFinishedProducts = async (data) => {
+  const importFinishedProducts = async (data, products, skuIndex) => {
     const results = { success: 0, failed: 0, skipped: 0, errors: [] };
-    const existingProducts = await base44.entities.Product.filter({ environment: envFilter.environment });
-    const existingSKUs = new Set(existingProducts.map(p => p.sku));
+    const existingProducts = products;
+    const existingSKUs = new Set([...skuIndex.keys()]);
     
     for (const row of data) {
       try {
@@ -383,14 +464,14 @@ export default function DataImport() {
         if (existingSKUs.has(product.sku)) {
           const saldoStr = row.Saldo;
           if (saldoStr !== undefined && String(saldoStr).trim() !== '') {
-            const productRef = existingProducts.find(p => p.sku === product.sku);
+            const productRef = skuIndex.get(product.sku);
             const target = parseFloat(String(saldoStr).replace(',', '.'));
             if (!isNaN(target) && productRef) {
-              const ledgers = await base44.entities.InventoryLedger.filter({ product_id: productRef.id, environment: envFilter.environment }, '-created_date', 1000);
+              const ledgers = await getLedgerEntries({ product_id: productRef.id, environment: envFilter.environment }, '-created_date', 1000);
               const onHand = (ledgers || []).reduce((sum, l) => (l.transaction_type === 'reservation' || l.transaction_type === 'release_reservation') ? sum : sum + (l.quantity || 0), 0);
               const delta = Number((target - onHand).toFixed(6));
               if (Math.abs(delta) >= 1e-9) {
-                await base44.entities.InventoryLedger.create({
+                await createLedger({
                   environment: envFilter.environment,
                   product_id: productRef.id,
                   product_sku: productRef.sku,
@@ -412,16 +493,18 @@ export default function DataImport() {
           continue;
         }
 
-        const created = await base44.entities.Product.create({ ...product, environment: envFilter.environment });
+        const created = await enqueue(() => base44.entities.Product.create({ ...product, environment: envFilter.environment }));
+        skuIndex.set(product.sku, created);
+        existingProducts.push(created);
         await auditLog.createEntity('Product', product.sku, product, 'DataImport');
         if (row.Saldo !== undefined && String(row.Saldo).trim() !== '') {
           const target = parseFloat(String(row.Saldo).replace(',', '.'));
           if (!isNaN(target)) {
-            const ledgers = await base44.entities.InventoryLedger.filter({ product_id: created.id, environment: envFilter.environment }, '-created_date', 1000);
+            const ledgers = await getLedgerEntries({ product_id: created.id, environment: envFilter.environment }, '-created_date', 1000);
             const onHand = (ledgers || []).reduce((sum, l) => (l.transaction_type === 'reservation' || l.transaction_type === 'release_reservation') ? sum : sum + (l.quantity || 0), 0);
             const delta = Number((target - onHand).toFixed(6));
             if (Math.abs(delta) >= 1e-9) {
-              await base44.entities.InventoryLedger.create({
+              await createLedger({
                 environment: envFilter.environment,
                 product_id: created.id,
                 product_sku: product.sku,
@@ -447,7 +530,7 @@ export default function DataImport() {
   };
 
   // Import recipes/BOM
-  const importRecipes = async (data) => {
+  const importRecipes = async (data, productsList) => {
     const results = { success: 0, failed: 0, errors: [] };
     const products = await base44.entities.Product.filter({ environment: envFilter.environment });
     
@@ -501,7 +584,7 @@ export default function DataImport() {
           }
 
           // Create BOM item
-          await base44.entities.BOMItem.create({
+          await createBOMItem({
             finished_product_id: finishedProduct.id,
             component_id: component.id,
             quantity_per_unit: comp.quantity
@@ -533,6 +616,9 @@ export default function DataImport() {
     try {
       const text = await file.text();
       const data = parseCSV(text);
+
+      const products = await fetchAllProductsPaginated(envFilter.environment);
+      const skuIndex = new Map(products.map(p => [p.sku, p]));
 
       let results;
       switch (importType) {
