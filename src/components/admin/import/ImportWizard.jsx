@@ -104,12 +104,11 @@ const systemFields = [
 ];
 
 const importTypeOptions = [
-  { key: 'raw_material', label: 'Råvara' },
-  { key: 'packaging', label: 'Förpackning' },
   { key: 'label', label: 'Etikett' },
-  { key: 'finished_product', label: 'Färdigvara' },
-  { key: 'recipe', label: 'Recept' },
-  { key: 'starting_inventory', label: 'Startsaldo' },
+  { key: 'packaging', label: 'Förpackning' },
+  { key: 'raw_material', label: 'Råvara' },
+  { key: 'bulk', label: 'Bulk' },
+  { key: 'finished', label: 'Färdigvara' },
 ];
 
 function getFieldsForType(importType) {
@@ -119,57 +118,47 @@ function getFieldsForType(importType) {
         { key: 'sku', label: 'SKU', required: true },
         { key: 'name', label: 'Namn', required: true },
         { key: 'supplier', label: 'Leverantör', required: false },
-        { key: 'unit_cost', label: 'Kostnad (unit_cost)', required: false },
-        { key: 'on_hand_qty', label: 'Startsaldo (on_hand_qty)', required: false },
-        { key: 'min_level', label: 'Säkerhetslager (min_level)', required: false },
+        { key: 'unit_cost', label: 'Kostnad (kr/st)', required: false },
+        { key: 'on_hand_qty', label: 'Startsaldo (st)', required: false },
+        { key: 'min_level', label: 'Säkerhetslager (st)', required: false },
       ];
     case 'packaging':
       return [
         { key: 'sku', label: 'SKU', required: true },
         { key: 'name', label: 'Namn', required: true },
-        { key: 'uom', label: 'Enhet (uom)', required: false },
         { key: 'supplier', label: 'Leverantör', required: false },
-        { key: 'unit_cost', label: 'Kostnad (unit_cost)', required: false },
-        { key: 'on_hand_qty', label: 'Startsaldo (on_hand_qty)', required: false },
-        { key: 'min_level', label: 'Säkerhetslager (min_level)', required: false },
-        { key: 'notes', label: 'Anteckningar', required: false },
-      ];
-    case 'finished_product':
-      return [
-        { key: 'sku', label: 'SKU', required: true },
-        { key: 'name', label: 'Namn', required: true },
-        { key: 'uom', label: 'Enhet (uom)', required: false },
-        { key: 'unit_cost', label: 'Kostnad (unit_cost)', required: false },
-        { key: 'supplier', label: 'Leverantör', required: false },
-        { key: 'min_level', label: 'Säkerhetslager (min_level)', required: false },
-        { key: 'notes', label: 'Anteckningar', required: false },
-      ];
-    case 'starting_inventory':
-      return [
-        { key: 'sku', label: 'SKU', required: true },
-        { key: 'name', label: 'Namn', required: false },
-        { key: 'on_hand_qty', label: 'Startsaldo (on_hand_qty)', required: true },
-        { key: 'notes', label: 'Anteckningar', required: false },
-      ];
-    case 'recipe':
-      // Placeholder mapping for recipe uploads (future). Kept minimal.
-      return [
-        { key: 'sku', label: 'SKU (färdigvara)', required: true },
-        { key: 'name', label: 'Namn', required: true },
-        { key: 'notes', label: 'Anteckningar', required: false },
+        { key: 'unit_cost', label: 'Kostnad (kr/st)', required: false },
+        { key: 'on_hand_qty', label: 'Startsaldo (st)', required: false },
+        { key: 'min_level', label: 'Säkerhetslager (st)', required: false },
       ];
     case 'raw_material':
-    default:
       return [
         { key: 'sku', label: 'SKU', required: true },
         { key: 'name', label: 'Namn', required: true },
-        { key: 'uom', label: 'Enhet (uom)', required: false },
-        { key: 'unit_cost', label: 'Kostnad (unit_cost)', required: false },
         { key: 'supplier', label: 'Leverantör', required: false },
-        { key: 'on_hand_qty', label: 'Startsaldo (on_hand_qty)', required: false },
-        { key: 'min_level', label: 'Säkerhetslager (min_level)', required: false },
-        { key: 'notes', label: 'Anteckningar', required: false },
+        { key: 'unit_cost', label: 'Kostnad (kr/kg)', required: false },
+        { key: 'on_hand_qty_kg', label: 'Startsaldo (kg)', required: false },
+        { key: 'min_level_kg', label: 'Säkerhetslager (kg)', required: false },
+        { key: 'lead_time_days', label: 'Ledtid (dagar)', required: false },
       ];
+    case 'bulk':
+      return [
+        { key: 'sku', label: 'SKU', required: true },
+        { key: 'name', label: 'Namn', required: true },
+        { key: 'on_hand_qty_kg', label: 'Startsaldo (kg)', required: false },
+        { key: 'min_level_kg', label: 'Säkerhetslager (kg)', required: false },
+      ];
+    case 'finished':
+      return [
+        { key: 'sku', label: 'SKU', required: true },
+        { key: 'name', label: 'Namn', required: true },
+        { key: 'variant_size_ml', label: 'Variantstorlek (ml)', required: false },
+        { key: 'unit_cost', label: 'Kostnad (kr/st)', required: false },
+        { key: 'on_hand_qty', label: 'Startsaldo (st)', required: false },
+        { key: 'min_level', label: 'Säkerhetslager (st)', required: false },
+      ];
+    default:
+      return [];
   }
 }
 
@@ -177,9 +166,9 @@ function defaultItemType(importType) {
   switch (importType) {
     case 'label': return 'label';
     case 'packaging': return 'packaging';
-    case 'finished_product': return 'finished_good';
+    case 'finished': return 'finished_good';
+    case 'bulk': return 'raw_material'; // mapped to raw_material in schema
     case 'raw_material':
-    case 'starting_inventory':
     default: return 'raw_material';
   }
 }
@@ -187,8 +176,14 @@ function defaultItemType(importType) {
 function defaultUom(importType) {
   // 'st' desired in UI, stored as 'pcs'
   switch (importType) {
-    case 'label': return 'st';
-    default: return 'st';
+    case 'raw_material':
+    case 'bulk':
+      return 'kg';
+    case 'label':
+    case 'packaging':
+    case 'finished':
+    default:
+      return 'st';
   }
 }
 
@@ -269,8 +264,12 @@ export default function ImportWizard() {
       if (!newMap[f.key]) {
         if (hdrLower[f.key]) newMap[f.key] = hdrLower[f.key];
         if (f.key === 'uom' && hdrLower['unit']) newMap[f.key] = hdrLower['unit'];
-        if (f.key === 'unit_cost' && hdrLower['cost']) newMap[f.key] = hdrLower['cost'];
-        if (f.key === 'on_hand_qty' && (hdrLower['on_hand'] || hdrLower['qty'])) newMap[f.key] = hdrLower['on_hand'] || hdrLower['qty'];
+        if (f.key === 'unit_cost' && (hdrLower['cost'] || hdrLower['unit_cost'])) newMap[f.key] = hdrLower['cost'] || hdrLower['unit_cost'];
+        if (f.key === 'on_hand_qty' && (hdrLower['on_hand'] || hdrLower['qty'] || hdrLower['stock'])) newMap[f.key] = hdrLower['on_hand'] || hdrLower['qty'] || hdrLower['stock'];
+        if (f.key === 'on_hand_qty_kg' && (hdrLower['on_hand_qty_kg'] || hdrLower['on_hand_kg'] || hdrLower['qty_kg'] || hdrLower['stock_kg'])) newMap[f.key] = hdrLower['on_hand_qty_kg'] || hdrLower['on_hand_kg'] || hdrLower['qty_kg'] || hdrLower['stock_kg'];
+        if (f.key === 'min_level_kg' && (hdrLower['min_level_kg'] || hdrLower['safety_stock_kg'])) newMap[f.key] = hdrLower['min_level_kg'] || hdrLower['safety_stock_kg'];
+        if (f.key === 'lead_time_days' && (hdrLower['lead_time_days'] || hdrLower['lead_time'])) newMap[f.key] = hdrLower['lead_time_days'] || hdrLower['lead_time'];
+        if (f.key === 'variant_size_ml' && (hdrLower['variant_size_ml'] || hdrLower['size_ml'])) newMap[f.key] = hdrLower['variant_size_ml'] || hdrLower['size_ml'];
       }
     });
     setMapping(newMap);
@@ -311,8 +310,12 @@ export default function ImportWizard() {
       const supplier = String(getVal(row, 'supplier') || '').trim();
       const notes = String(getVal(row, 'notes') || '').trim();
       const minLevelRaw = getVal(row, 'min_level');
+      const minLevelKgRaw = getVal(row, 'min_level_kg');
       const unitCostRaw = getVal(row, 'unit_cost');
       const onHandRaw = getVal(row, 'on_hand_qty');
+      const onHandKgRaw = getVal(row, 'on_hand_qty_kg');
+      const leadTimeRaw = getVal(row, 'lead_time_days');
+      const variantSizeRaw = getVal(row, 'variant_size_ml');
 
       const errors = [];
       const warnings = [];
@@ -324,18 +327,31 @@ export default function ImportWizard() {
       }
 
       // parse numerics
-      const minLevel = isNaN(parseNumber(minLevelRaw, decimalFormat)) ? 0 : parseNumber(minLevelRaw, decimalFormat);
+      const minLevelParsed = parseNumber(importType === 'raw_material' || importType === 'bulk' ? minLevelKgRaw : minLevelRaw, decimalFormat);
+      const minLevel = isNaN(minLevelParsed) ? 0 : minLevelParsed;
       let unitCost = parseNumber(unitCostRaw, decimalFormat);
-      let onHand = parseNumber(onHandRaw, decimalFormat);
+      let onHandParsed = parseNumber((importType === 'raw_material' || importType === 'bulk') ? onHandKgRaw : onHandRaw, decimalFormat);
+      let onHand = isNaN(onHandParsed) ? null : onHandParsed;
+      const leadTimeNum = parseNumber(leadTimeRaw, decimalFormat);
+      const leadTimeDays = isNaN(leadTimeNum) ? null : Math.round(leadTimeNum);
+      const variantSizeNum = parseNumber(variantSizeRaw, decimalFormat);
+      const variant_size_ml = isNaN(variantSizeNum) ? null : Math.round(variantSizeNum);
 
-      if (importType === 'label') {
+      if (importType === 'label' || importType === 'packaging' || importType === 'finished') {
         if (unitCostRaw && isNaN(unitCost)) errors.push('unit_cost ej numerisk');
         if (!unitCostRaw || isNaN(unitCost)) unitCost = 0;
-        if (onHandRaw && isNaN(onHand)) errors.push('on_hand_qty ej numerisk');
-        if (isNaN(onHand)) onHand = null;
       } else {
         if (isNaN(unitCost)) { unitCost = 0; warnings.push('unit_cost saknas eller ej numerisk'); }
-        if (isNaN(onHand)) onHand = null;
+      }
+      if (((importType === 'raw_material' || importType === 'bulk') && onHandKgRaw) || (importType !== 'raw_material' && importType !== 'bulk' && onHandRaw)) {
+        if (isNaN(onHandParsed)) errors.push('on_hand_qty ej numerisk');
+      }
+
+      if (importType === 'raw_material' && leadTimeRaw && (leadTimeDays === null || !Number.isInteger(leadTimeDays))) {
+        errors.push('lead_time_days måste vara heltal');
+      }
+      if (importType === 'finished' && variantSizeRaw && (variant_size_ml === null || !Number.isInteger(variant_size_ml))) {
+        errors.push('variant_size_ml måste vara heltal');
       }
 
       // defaults
@@ -353,9 +369,11 @@ export default function ImportWizard() {
         uom,
         supplier,
         notes,
-        min_level: minLevel,
+        min_level,
         unit_cost: unitCost,
         on_hand_qty: onHand,
+        lead_time_days: leadTimeDays,
+        variant_size_ml,
         _errors: errors,
         _warnings: warnings,
       };
@@ -391,6 +409,15 @@ export default function ImportWizard() {
     const user = await base44.auth.me().catch(() => null);
     let created = 0, updated = 0, adjusted = 0;
 
+    // Uniqueness check across entire file
+    const allSkusRaw = rows.map((row) => String(getVal(row, 'sku') || '').trim()).filter(Boolean);
+    const duplicateSku = allSkusRaw.find((sku, idx) => allSkusRaw.indexOf(sku) !== idx);
+    if (duplicateSku) {
+      toast.error('Dubblett-SKU i filen: ' + duplicateSku);
+      setImporting(false);
+      return;
+    }
+
     try {
       // Process ALL rows (not only 10) with normalization again
       const all = rows.map((row) => {
@@ -400,12 +427,21 @@ export default function ImportWizard() {
         const uom = normalizeUom(String(getVal(row, 'uom') || defaultUom(importType)));
         const supplier = String(getVal(row, 'supplier') || '').trim();
         const notes = String(getVal(row, 'notes') || '').trim();
-        const minLevel = isNaN(parseNumber(getVal(row, 'min_level'), decimalFormat)) ? 0 : parseNumber(getVal(row, 'min_level'), decimalFormat);
+        const minLevelRaw = getVal(row, 'min_level');
+        const minLevelKgRaw = getVal(row, 'min_level_kg');
+        const ml = parseNumber((importType === 'raw_material' || importType === 'bulk') ? minLevelKgRaw : minLevelRaw, decimalFormat);
+        const minLevel = isNaN(ml) ? 0 : ml;
         let unitCost = parseNumber(getVal(row, 'unit_cost'), decimalFormat);
         if (isNaN(unitCost)) unitCost = 0;
-        let onHand = parseNumber(getVal(row, 'on_hand_qty'), decimalFormat);
-        if (isNaN(onHand)) onHand = null;
-        return { sku, name, item_type: itemType, uom, supplier, notes, min_level: minLevel, unit_cost: unitCost, on_hand_qty: onHand };
+        const onHandRaw = getVal(row, 'on_hand_qty');
+        const onHandKgRaw = getVal(row, 'on_hand_qty_kg');
+        const oh = parseNumber((importType === 'raw_material' || importType === 'bulk') ? onHandKgRaw : onHandRaw, decimalFormat);
+        let onHand = isNaN(oh) ? null : oh;
+        const leadTimeNum = parseNumber(getVal(row, 'lead_time_days'), decimalFormat);
+        const lead_time_days = isNaN(leadTimeNum) ? undefined : Math.round(leadTimeNum);
+        const variantSizeNum = parseNumber(getVal(row, 'variant_size_ml'), decimalFormat);
+        const variant_size_ml = isNaN(variantSizeNum) ? undefined : Math.round(variantSizeNum);
+        return { sku, name, item_type: itemType, uom, supplier, notes, min_level: minLevel, unit_cost: unitCost, on_hand_qty: onHand, lead_time_days, variant_size_ml };
       }).filter(r => r.sku && r.name);
 
       for (const r of all) {
@@ -414,7 +450,7 @@ export default function ImportWizard() {
         let product;
         if (existing && existing.length) {
           const p0 = existing[0];
-          product = await base44.entities.Product.update(p0.id, {
+          const payload = {
             environment: envFilter.environment,
             sku: r.sku,
             name: r.name,
@@ -425,10 +461,12 @@ export default function ImportWizard() {
             safety_stock: r.min_level,
             cost_per_unit: r.unit_cost,
             active: true,
-          });
+          };
+          if (r.lead_time_days !== undefined) payload.lead_time_days = r.lead_time_days;
+          product = await base44.entities.Product.update(p0.id, payload);
           updated += 1;
         } else {
-          product = await base44.entities.Product.create({
+          const payload = {
             environment: envFilter.environment,
             sku: r.sku,
             name: r.name,
@@ -439,7 +477,9 @@ export default function ImportWizard() {
             safety_stock: r.min_level,
             cost_per_unit: r.unit_cost,
             active: true,
-          });
+          };
+          if (r.lead_time_days !== undefined) payload.lead_time_days = r.lead_time_days;
+          product = await base44.entities.Product.create(payload);
           created += 1;
         }
 
@@ -639,9 +679,11 @@ export default function ImportWizard() {
                       <TableHead>Namn</TableHead>
                       <TableHead>Typ</TableHead>
                       <TableHead>Enhet</TableHead>
-                      <TableHead>Min nivå</TableHead>
+                      <TableHead>Min nivå ({importType === 'raw_material' || importType === 'bulk' ? 'kg' : 'st'})</TableHead>
                       <TableHead>Kostnad</TableHead>
-                      <TableHead>Startsaldo</TableHead>
+                      <TableHead>Startsaldo ({importType === 'raw_material' || importType === 'bulk' ? 'kg' : 'st'})</TableHead>
+                      {importType === 'finished' && <TableHead>Variant (ml)</TableHead>}
+                      {importType === 'raw_material' && <TableHead>Ledtid (dagar)</TableHead>}
                       <TableHead>Fel/Varningar</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -656,6 +698,8 @@ export default function ImportWizard() {
                         <TableCell>{r.min_level}</TableCell>
                         <TableCell>{r.unit_cost}</TableCell>
                         <TableCell>{r.on_hand_qty ?? '-'}</TableCell>
+                        {importType === 'finished' && <TableCell>{r.variant_size_ml ?? '-'}</TableCell>}
+                        {importType === 'raw_material' && <TableCell>{r.lead_time_days ?? '-'}</TableCell>}
                         <TableCell>
                           <div className="flex flex-col gap-1">
                             {r._errors.map((e, ei) => (
