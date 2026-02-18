@@ -623,19 +623,19 @@ export default function DataImport() {
       let results;
       switch (importType) {
         case 'raw_materials':
-          results = await importRawMaterials(data);
+          results = await importRawMaterials(data, products, skuIndex);
           break;
         case 'packaging':
-          results = await importPackaging(data);
+          results = await importPackaging(data, products, skuIndex);
           break;
         case 'labels':
-          results = await importLabels(data);
+          results = await importLabels(data, products, skuIndex);
           break;
         case 'finished_products':
-          results = await importFinishedProducts(data);
+          results = await importFinishedProducts(data, products, skuIndex);
           break;
         case 'recipes':
-          results = await importRecipes(data);
+          results = await importRecipes(data, products);
           break;
 
         default:
