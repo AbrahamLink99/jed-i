@@ -254,7 +254,7 @@ export default function ImportWizard() {
         uom,
         supplier,
         notes,
-        min_level,
+        min_level: minLevel,
         unit_cost: unitCost,
         on_hand_qty: onHand,
         _errors: errors,
