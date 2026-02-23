@@ -10,10 +10,7 @@ const getInitialEnvironment = () => {
   } catch {}
   const stored = localStorage.getItem('app_environment');
   if (stored === 'production' || stored === 'sandbox') return stored; // honor previous user choice
-  try {
-    const host = window.location.host.toLowerCase();
-    if (host.includes('sandbox')) return 'sandbox'; // final fallback based on host naming
-  } catch {}
+  // Default to production regardless of preview/host naming
   return 'production';
 };
 

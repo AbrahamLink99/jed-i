@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
+import { useQueryClient } from '@tanstack/react-query';
 import { useEnvironmentFilter } from "@/components/environment/useEnvironmentFilter";
 import { Upload, CheckCircle2, AlertTriangle, Download } from "lucide-react";
 
@@ -200,6 +201,7 @@ function StepHeader({ title, right }) {
 
 export default function ImportWizard() {
   const envFilter = useEnvironmentFilter();
+  const queryClient = useQueryClient();
 
   // Step state
   const [step, setStep] = useState(1);
@@ -527,6 +529,7 @@ export default function ImportWizard() {
       setImportResult({ created, updated, adjusted });
       toast.success('Import klar');
       setStep(4);
+      queryClient.invalidateQueries({ queryKey: ['audit-logs'] });
     } catch (e) {
       console.error(e);
       toast.error('Import misslyckades: ' + e.message);
