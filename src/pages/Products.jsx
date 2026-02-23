@@ -191,51 +191,6 @@ export default function Products() {
     return arr.sort(compare);
   }, [products, stockData, activeTab, brandFilter, supplierFilter, stockFilter, searchTerm, sortBy, sortDir]);
 
-  const suppliers = useMemo(() => {
-    return Array.from(new Set(products.map(p => p.supplier).filter(Boolean))).sort();
-  }, [products]);
-
-  const filteredProducts = useMemo(() => {
-    const arr = products.filter(p => {
-      if (activeTab !== 'all' && p.type !== activeTab) return false;
-      if (brandFilter !== 'all' && (p.brand || 'own') !== brandFilter) return false;
-      if (supplierFilter !== 'all' && (p.supplier || '') !== supplierFilter) return false;
-      if (stockFilter !== 'all') {
-        const s = stockData[p.id] || { onHand: 0 };
-        if (stockFilter === 'out' && s.onHand > 0) return false;
-        if (stockFilter === 'below' && !(s.onHand < (p.safety_stock || 0))) return false;
-        if (stockFilter === 'in' && s.onHand <= 0) return false;
-      }
-      if (searchTerm) {
-        const search = searchTerm.toLowerCase();
-        return p.sku?.toLowerCase().includes(search) || p.name?.toLowerCase().includes(search);
-      }
-      return true;
-    });
-
-    const dir = sortDir === 'asc' ? 1 : -1;
-    const compare = (a, b) => {
-      switch (sortBy) {
-        case 'name':
-          return (a.name || '').localeCompare(b.name || '') * dir;
-        case 'stock': {
-          const sa = (stockData[a.id]?.onHand || 0);
-          const sb = (stockData[b.id]?.onHand || 0);
-          return (sa - sb) * dir;
-        }
-        case 'supplier':
-          return (a.supplier || '').localeCompare(b.supplier || '') * dir;
-        case 'cost':
-          return ((a.cost_per_unit || 0) - (b.cost_per_unit || 0)) * dir;
-        case 'sku':
-        default:
-          return (a.sku || '').localeCompare(b.sku || '') * dir;
-      }
-    };
-
-    return arr.sort(compare);
-  }, [products, stockData, activeTab, brandFilter, supplierFilter, stockFilter, searchTerm, sortBy, sortDir]);
-
   const handleEdit = (product) => {
     setEditingProduct(product);
     setShowForm(true);
@@ -411,11 +366,6 @@ export default function Products() {
                             + Batch
                           </Button>
                         )}
-                        <Link to={createPageUrl('ProductDetail') + `?productId=${product.id}`}>
-                          <Button variant="ghost" size="sm" className="text-slate-600">
-                            <Eye className="w-4 h-4 mr-1" /> Detaljer
-                          </Button>
-                        </Link>
                         <Link to={createPageUrl('ProductDetail') + `?productId=${product.id}`}>
                           <Button variant="ghost" size="sm" className="text-slate-600">
                             <Eye className="w-4 h-4 mr-1" /> Detaljer
