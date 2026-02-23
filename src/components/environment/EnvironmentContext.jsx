@@ -41,7 +41,8 @@ export function EnvironmentProvider({ children }) {
 export function useEnvironment() {
   const context = useContext(EnvironmentContext);
   if (!context) {
-    throw new Error('useEnvironment must be used within EnvironmentProvider');
+    // Fallback to a safe default so the app never crashes if the provider isn't mounted yet
+    return { environment: 'production', setEnvironment: () => {} };
   }
   return context;
 }
