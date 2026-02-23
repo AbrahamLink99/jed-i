@@ -1,5 +1,5 @@
 import React from 'react';
-import { useEnvironment } from './EnvironmentContext';
+import { useEnvironment } from '@/components/environment/EnvironmentContext';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FlaskConical } from 'lucide-react';
 

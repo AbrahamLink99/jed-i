@@ -1,5 +1,5 @@
 import React from 'react';
-import { useEnvironment } from './EnvironmentContext';
+import { useEnvironment } from '@/components/environment/EnvironmentContext';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FlaskConical, Building2 } from 'lucide-react';

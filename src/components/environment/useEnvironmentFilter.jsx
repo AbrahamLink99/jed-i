@@ -1,4 +1,4 @@
-import { useEnvironment } from './EnvironmentContext';
+import { useEnvironment } from '@/components/environment/EnvironmentContext';
 
 /**
  * Hook to get environment filter for queries
