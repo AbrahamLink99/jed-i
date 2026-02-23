@@ -55,10 +55,6 @@ export default function Products() {
   const [stockFilter, setStockFilter] = useState('all');
   const [sortBy, setSortBy] = useState('sku');
   const [sortDir, setSortDir] = useState('asc');
-  const [supplierFilter, setSupplierFilter] = useState('all');
-  const [stockFilter, setStockFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('sku');
-  const [sortDir, setSortDir] = useState('asc');
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [showBOM, setShowBOM] = useState(null);
@@ -327,61 +323,7 @@ export default function Products() {
                   <SelectItem value="desc">Fallande</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={supplierFilter} onValueChange={setSupplierFilter}>
-                <SelectTrigger className="w-full sm:w-[200px]">
-                  <SelectValue placeholder="Leverantör" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Alla leverantörer</SelectItem>
-                  {suppliers.map(s => (
-                    <SelectItem key={s} value={s}>{s}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={stockFilter} onValueChange={setStockFilter}>
-                <SelectTrigger className="w-full sm:w-[200px]">
-                  <SelectValue placeholder="Lagerstatus" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All lagerstatus</SelectItem>
-                  <SelectItem value="in">I lager</SelectItem>
-                  <SelectItem value="below">Under säkerhetslager</SelectItem>
-                  <SelectItem value="out">Slut</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Sortera efter" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sku">SKU</SelectItem>
-                  <SelectItem value="name">Namn</SelectItem>
-                  <SelectItem value="stock">Lager</SelectItem>
-                  <SelectItem value="supplier">Leverantör</SelectItem>
-                  <SelectItem value="cost">Kostnad</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={sortDir} onValueChange={setSortDir}>
-                <SelectTrigger className="w-full sm:w-[140px]">
-                  <SelectValue placeholder="Riktning" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="asc">Stigande</SelectItem>
-                  <SelectItem value="desc">Fallande</SelectItem>
-                </SelectContent>
-              </Select>
-              </div>
-              <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList>
-                <TabsTrigger value="all">Alla</TabsTrigger>
-                <TabsTrigger value="finished_good">Färdigvaror</TabsTrigger>
-                <TabsTrigger value="raw_material">Råvaror</TabsTrigger>
-                <TabsTrigger value="packaging">Förpackning</TabsTrigger>
-                <TabsTrigger value="label">Etiketter</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-        </Card>
+
 
         {/* Products Table */}
         <Card className="overflow-hidden">
