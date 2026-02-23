@@ -55,10 +55,6 @@ export default function Products() {
   const [stockFilter, setStockFilter] = useState('all');
   const [sortBy, setSortBy] = useState('sku');
   const [sortDir, setSortDir] = useState('asc');
-  const [supplierFilter, setSupplierFilter] = useState('all');
-  const [stockFilter, setStockFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('sku');
-  const [sortDir, setSortDir] = useState('asc');
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [showBOM, setShowBOM] = useState(null);
