@@ -6,9 +6,7 @@ import { FlaskConical } from 'lucide-react';
 export default function EnvironmentBanner() {
   const { environment } = useEnvironment();
 
-  if (environment === 'production') {
-    return null;
-  }
+  if (environment === 'production') return null;
 
   return (
     <Alert className="border-amber-500 bg-amber-50 mb-4">
