@@ -100,7 +100,7 @@ export default function ProductDetail() {
               <div><span className="text-slate-500">SKU</span><div className="font-medium">{product.sku}</div></div>
               <div><span className="text-slate-500">Namn</span><div className="font-medium">{product.name}</div></div>
               <div><span className="text-slate-500">Typ</span><div><Badge>{product.type}</Badge></div></div>
-              <div><span className="text-slate-500">Varumärke</span><div className="font-medium">{product.brand || 'own'}</div></div>
+              <div><span className="text-slate-500">Varumärke</span><div className="font-medium">{brandText}</div></div>
               <div><span className="text-slate-500">Enhet</span><div className="font-medium">{product.unit}</div></div>
               <div><span className="text-slate-500">Leverantör</span><div className="font-medium">{product.supplier || '-'}</div></div>
               <div><span className="text-slate-500">Kostnad</span><div className="font-medium">{product.cost_per_unit ? `${product.cost_per_unit} kr` : '-'}</div></div>
