@@ -323,7 +323,18 @@ export default function Products() {
                   <SelectItem value="desc">Fallande</SelectItem>
                 </SelectContent>
               </Select>
-
+            </div>
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList>
+                <TabsTrigger value="all">Alla</TabsTrigger>
+                <TabsTrigger value="finished_good">Färdigvaror</TabsTrigger>
+                <TabsTrigger value="raw_material">Råvaror</TabsTrigger>
+                <TabsTrigger value="packaging">Förpackning</TabsTrigger>
+                <TabsTrigger value="label">Etiketter</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </Card>
 
         {/* Products Table */}
         <Card className="overflow-hidden">
