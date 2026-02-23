@@ -51,6 +51,10 @@ export default function Products() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [brandFilter, setBrandFilter] = useState('all');
+  const [supplierFilter, setSupplierFilter] = useState('all');
+  const [stockFilter, setStockFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('sku');
+  const [sortDir, setSortDir] = useState('asc');
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [showBOM, setShowBOM] = useState(null);
@@ -138,7 +142,50 @@ export default function Products() {
     return data;
   }, [products, ledger, batches, envFilter.environment]);
 
+  const suppliers = useMemo(() => {
+    return Array.from(new Set(products.map(p => p.supplier).filter(Boolean))).sort();
+  }, [products]);
 
+  const filteredProducts = useMemo(() => {
+    const arr = products.filter(p => {
+      if (activeTab !== 'all' && p.type !== activeTab) return false;
+      if (brandFilter !== 'all' && (p.brand || 'own') !== brandFilter) return false;
+      if (supplierFilter !== 'all' && (p.supplier || '') !== supplierFilter) return false;
+      if (stockFilter !== 'all') {
+        const s = stockData[p.id] || { onHand: 0 };
+        if (stockFilter === 'out' && s.onHand > 0) return false;
+        if (stockFilter === 'below' && !(s.onHand < (p.safety_stock || 0))) return false;
+        if (stockFilter === 'in' && s.onHand <= 0) return false;
+      }
+      if (searchTerm) {
+        const search = searchTerm.toLowerCase();
+        return p.sku?.toLowerCase().includes(search) || p.name?.toLowerCase().includes(search);
+      }
+      return true;
+    });
+
+    const dir = sortDir === 'asc' ? 1 : -1;
+    const compare = (a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return (a.name || '').localeCompare(b.name || '') * dir;
+        case 'stock': {
+          const sa = (stockData[a.id]?.onHand || 0);
+          const sb = (stockData[b.id]?.onHand || 0);
+          return (sa - sb) * dir;
+        }
+        case 'supplier':
+          return (a.supplier || '').localeCompare(b.supplier || '') * dir;
+        case 'cost':
+          return ((a.cost_per_unit || 0) - (b.cost_per_unit || 0)) * dir;
+        case 'sku':
+        default:
+          return (a.sku || '').localeCompare(b.sku || '') * dir;
+      }
+    };
+
+    return arr.sort(compare);
+  }, [products, stockData, activeTab, brandFilter, supplierFilter, stockFilter, searchTerm, sortBy, sortDir]);
 
   const handleEdit = (product) => {
     setEditingProduct(product);
@@ -233,8 +280,51 @@ export default function Products() {
                   <SelectItem value="other">Övrigt</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <Select value={supplierFilter} onValueChange={setSupplierFilter}>
+                <SelectTrigger className="w-full sm:w-[200px]">
+                  <SelectValue placeholder="Leverantör" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Alla leverantörer</SelectItem>
+                  {suppliers.map(s => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={stockFilter} onValueChange={setStockFilter}>
+                <SelectTrigger className="w-full sm:w-[200px]">
+                  <SelectValue placeholder="Lagerstatus" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All lagerstatus</SelectItem>
+                  <SelectItem value="in">I lager</SelectItem>
+                  <SelectItem value="below">Under säkerhetslager</SelectItem>
+                  <SelectItem value="out">Slut</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Sortera efter" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sku">SKU</SelectItem>
+                  <SelectItem value="name">Namn</SelectItem>
+                  <SelectItem value="stock">Lager</SelectItem>
+                  <SelectItem value="supplier">Leverantör</SelectItem>
+                  <SelectItem value="cost">Kostnad</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={sortDir} onValueChange={setSortDir}>
+                <SelectTrigger className="w-full sm:w-[140px]">
+                  <SelectValue placeholder="Riktning" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="asc">Stigande</SelectItem>
+                  <SelectItem value="desc">Fallande</SelectItem>
+                </SelectContent>
+              </Select>
+              </div>
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList>
                 <TabsTrigger value="all">Alla</TabsTrigger>
                 <TabsTrigger value="finished_good">Färdigvaror</TabsTrigger>
