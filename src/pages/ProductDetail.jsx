@@ -27,6 +27,11 @@ export default function ProductDetail() {
 
   const product = products[0];
 
+  const brandText = React.useMemo(() => {
+    const map = { own: 'BRUNS', client_a: 'Kund A', client_b: 'Kund B', other: 'Övrigt' };
+    return map[product?.brand || 'own'] || '';
+  }, [product]);
+
   const { data: ledger = [] } = useQuery({
     queryKey: ['ledger-by-product', productId, envFilter.environment],
     queryFn: () => base44.entities.InventoryLedger.filter({ product_id: productId, environment: envFilter.environment }, '-created_date', 1000),
@@ -75,7 +80,7 @@ export default function ProductDetail() {
           </Link>
           <div className="text-right">
             <h1 className="text-2xl font-bold">{product.sku} – {product.name}</h1>
-            <p className="text-slate-500">{product.type} • {product.unit} • {product.brand || 'own'}</p>
+            <p className="text-slate-500">{product.type} • {product.unit} • {brandText}</p>
           </div>
         </div>
 

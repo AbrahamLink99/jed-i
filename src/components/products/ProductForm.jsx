@@ -6,7 +6,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { X } from 'lucide-react';
+import { base44 } from "@/api/base44Client";
 
 const productTypes = [
   { value: 'finished_good', label: 'Färdig artikel' },
@@ -16,7 +18,7 @@ const productTypes = [
 ];
 
 const brandOptions = [
-  { value: 'own', label: 'Eget varumärke' },
+  { value: 'own', label: 'BRUNS' },
   { value: 'client_a', label: 'Kund A' },
   { value: 'client_b', label: 'Kund B' },
   { value: 'other', label: 'Övrigt' }
@@ -45,14 +47,40 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }) {
     shopify_buffer: 0,
     notes: '',
     active: true,
+    tag_ids: [],
     ...product
   });
 
   useEffect(() => {
     if (product) {
-      setFormData({ ...formData, ...product });
+      setFormData(prev => ({ ...prev, ...product, tag_ids: product.tag_ids || [] }));
     }
   }, [product]);
+
+  const [availableTags, setAvailableTags] = useState([]);
+  const [newTagName, setNewTagName] = useState('');
+
+  useEffect(() => {
+    (async () => {
+      const res = await base44.entities.Tag.list();
+      setAvailableTags(res || []);
+    })();
+  }, []);
+
+  const toggleTag = (id, checked) => {
+    setFormData(prev => {
+      const set = new Set(prev.tag_ids || []);
+      if (checked) set.add(id); else set.delete(id);
+      return { ...prev, tag_ids: Array.from(set) };
+    });
+  };
+
+  const createTag = async () => {
+    if (!newTagName.trim()) return;
+    const t = await base44.entities.Tag.create({ name: newTagName.trim(), active: true });
+    setAvailableTags(prev => [...prev, t]);
+    setNewTagName('');
+  };
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -231,6 +259,32 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }) {
             </div>
           </div>
         )}
+
+        <div className="border-t pt-6">
+          <h3 className="font-medium text-slate-900 mb-4">Taggar</h3>
+          <div className="flex flex-wrap gap-4 mb-3">
+            {availableTags.length === 0 && (
+              <p className="text-sm text-slate-500">Inga taggar ännu.</p>
+            )}
+            {availableTags.map(tag => (
+              <label key={tag.id} className="flex items-center gap-2 text-sm">
+                <Checkbox
+                  checked={(formData.tag_ids || []).includes(tag.id)}
+                  onCheckedChange={(v) => toggleTag(tag.id, !!v)}
+                />
+                <span>{tag.name}</span>
+              </label>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <Input
+              placeholder="Ny tagg..."
+              value={newTagName}
+              onChange={(e) => setNewTagName(e.target.value)}
+            />
+            <Button type="button" variant="secondary" onClick={createTag}>Skapa</Button>
+          </div>
+        </div>
 
         <div className="space-y-2">
           <Label htmlFor="notes">Anteckningar</Label>

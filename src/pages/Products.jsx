@@ -34,7 +34,7 @@ const typeColors = {
 };
 
 const brandLabels = {
-  own: 'Eget',
+  own: 'BRUNS',
   client_a: 'Kund A',
   client_b: 'Kund B',
   other: 'Övrigt'
@@ -81,6 +81,11 @@ export default function Products() {
   const { data: batches = [] } = useQuery({
     queryKey: ['batches', envFilter.environment],
     queryFn: () => base44.entities.Batch.filter(envFilter)
+  });
+
+  const { data: tags = [] } = useQuery({
+    queryKey: ['tags'],
+    queryFn: () => base44.entities.Tag.list()
   });
 
   const createMutation = useMutation({
@@ -145,6 +150,12 @@ export default function Products() {
   const suppliers = useMemo(() => {
     return Array.from(new Set(products.map(p => p.supplier).filter(Boolean))).sort();
   }, [products]);
+
+  const tagsById = useMemo(() => {
+    const m = {};
+    (tags || []).forEach(t => { m[t.id] = t; });
+    return m;
+  }, [tags]);
 
   const filteredProducts = useMemo(() => {
     const arr = products.filter(p => {
@@ -273,11 +284,11 @@ export default function Products() {
                   <SelectValue placeholder="Varumärke" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Alla varumärken</SelectItem>
-                  <SelectItem value="own">Eget varumärke</SelectItem>
-                  <SelectItem value="client_a">Kund A</SelectItem>
-                  <SelectItem value="client_b">Kund B</SelectItem>
-                  <SelectItem value="other">Övrigt</SelectItem>
+                 <SelectItem value="all">Alla varumärken</SelectItem>
+                 <SelectItem value="own">BRUNS</SelectItem>
+                 <SelectItem value="client_a">Kund A</SelectItem>
+                 <SelectItem value="client_b">Kund B</SelectItem>
+                 <SelectItem value="other">Övrigt</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={supplierFilter} onValueChange={setSupplierFilter}>
@@ -364,6 +375,13 @@ export default function Products() {
                         <Badge variant="outline" className={`text-xs ${brandColors[product.brand || 'own']}`}>
                           {brandLabels[product.brand || 'own']}
                         </Badge>
+                        <div className="flex flex-wrap gap-1">
+                          {(product.tag_ids || []).map((tid) => (
+                            <Badge key={tid} variant="secondary" className="text-xs">
+                              {tagsById[tid]?.name || 'Tagg'}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>

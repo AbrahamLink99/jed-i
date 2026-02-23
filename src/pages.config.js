@@ -55,10 +55,10 @@ import Filling from './pages/Filling';
 import FinishedGoods from './pages/FinishedGoods';
 import Inventory from './pages/Inventory';
 import Planning from './pages/Planning';
+import ProductDetail from './pages/ProductDetail';
 import Production from './pages/Production';
 import Products from './pages/Products';
 import Recipes from './pages/Recipes';
-import ProductDetail from './pages/ProductDetail';
 import __Layout from './Layout.jsx';
 
 
@@ -71,10 +71,10 @@ export const PAGES = {
     "FinishedGoods": FinishedGoods,
     "Inventory": Inventory,
     "Planning": Planning,
+    "ProductDetail": ProductDetail,
     "Production": Production,
     "Products": Products,
     "Recipes": Recipes,
-    "ProductDetail": ProductDetail,
 }
 
 export const pagesConfig = {
