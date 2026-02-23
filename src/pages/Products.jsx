@@ -7,8 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, Package, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Search, Package, Edit2, Trash2, Eye } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import { cn } from "@/lib/utils";
 import ProductForm from '@/components/products/ProductForm';
 import BOMEditor from '@/components/products/BOMEditor';
@@ -48,6 +54,14 @@ export default function Products() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [brandFilter, setBrandFilter] = useState('all');
+  const [supplierFilter, setSupplierFilter] = useState('all');
+  const [stockFilter, setStockFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('sku');
+  const [sortDir, setSortDir] = useState('asc');
+  const [supplierFilter, setSupplierFilter] = useState('all');
+  const [stockFilter, setStockFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('sku');
+  const [sortDir, setSortDir] = useState('asc');
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [showBOM, setShowBOM] = useState(null);
@@ -124,20 +138,7 @@ export default function Products() {
     }
   });
 
-  const filteredProducts = useMemo(() => {
-    return products
-      .filter(p => {
-        if (activeTab !== 'all' && p.type !== activeTab) return false;
-        if (brandFilter !== 'all' && (p.brand || 'own') !== brandFilter) return false;
-        if (searchTerm) {
-          const search = searchTerm.toLowerCase();
-          return p.sku?.toLowerCase().includes(search) || 
-                 p.name?.toLowerCase().includes(search);
-        }
-        return true;
-      })
-      .sort((a, b) => a.sku?.localeCompare(b.sku));
-  }, [products, activeTab, brandFilter, searchTerm]);
+  /* moved: see below after stockData */
 
   const stockData = useMemo(() => {
     const ledgerForEnv = ledger.filter(e => !e.environment || e.environment === envFilter.environment);
@@ -147,6 +148,96 @@ export default function Products() {
     });
     return data;
   }, [products, ledger, batches, envFilter.environment]);
+
+  const suppliers = useMemo(() => {
+    return Array.from(new Set(products.map(p => p.supplier).filter(Boolean))).sort();
+  }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    const arr = products.filter(p => {
+      if (activeTab !== 'all' && p.type !== activeTab) return false;
+      if (brandFilter !== 'all' && (p.brand || 'own') !== brandFilter) return false;
+      if (supplierFilter !== 'all' && (p.supplier || '') !== supplierFilter) return false;
+      if (stockFilter !== 'all') {
+        const s = stockData[p.id] || { onHand: 0 };
+        if (stockFilter === 'out' && s.onHand > 0) return false;
+        if (stockFilter === 'below' && !(s.onHand < (p.safety_stock || 0))) return false;
+        if (stockFilter === 'in' && s.onHand <= 0) return false;
+      }
+      if (searchTerm) {
+        const search = searchTerm.toLowerCase();
+        return p.sku?.toLowerCase().includes(search) || p.name?.toLowerCase().includes(search);
+      }
+      return true;
+    });
+
+    const dir = sortDir === 'asc' ? 1 : -1;
+    const compare = (a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return (a.name || '').localeCompare(b.name || '') * dir;
+        case 'stock': {
+          const sa = (stockData[a.id]?.onHand || 0);
+          const sb = (stockData[b.id]?.onHand || 0);
+          return (sa - sb) * dir;
+        }
+        case 'supplier':
+          return (a.supplier || '').localeCompare(b.supplier || '') * dir;
+        case 'cost':
+          return ((a.cost_per_unit || 0) - (b.cost_per_unit || 0)) * dir;
+        case 'sku':
+        default:
+          return (a.sku || '').localeCompare(b.sku || '') * dir;
+      }
+    };
+
+    return arr.sort(compare);
+  }, [products, stockData, activeTab, brandFilter, supplierFilter, stockFilter, searchTerm, sortBy, sortDir]);
+
+  const suppliers = useMemo(() => {
+    return Array.from(new Set(products.map(p => p.supplier).filter(Boolean))).sort();
+  }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    const arr = products.filter(p => {
+      if (activeTab !== 'all' && p.type !== activeTab) return false;
+      if (brandFilter !== 'all' && (p.brand || 'own') !== brandFilter) return false;
+      if (supplierFilter !== 'all' && (p.supplier || '') !== supplierFilter) return false;
+      if (stockFilter !== 'all') {
+        const s = stockData[p.id] || { onHand: 0 };
+        if (stockFilter === 'out' && s.onHand > 0) return false;
+        if (stockFilter === 'below' && !(s.onHand < (p.safety_stock || 0))) return false;
+        if (stockFilter === 'in' && s.onHand <= 0) return false;
+      }
+      if (searchTerm) {
+        const search = searchTerm.toLowerCase();
+        return p.sku?.toLowerCase().includes(search) || p.name?.toLowerCase().includes(search);
+      }
+      return true;
+    });
+
+    const dir = sortDir === 'asc' ? 1 : -1;
+    const compare = (a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return (a.name || '').localeCompare(b.name || '') * dir;
+        case 'stock': {
+          const sa = (stockData[a.id]?.onHand || 0);
+          const sb = (stockData[b.id]?.onHand || 0);
+          return (sa - sb) * dir;
+        }
+        case 'supplier':
+          return (a.supplier || '').localeCompare(b.supplier || '') * dir;
+        case 'cost':
+          return ((a.cost_per_unit || 0) - (b.cost_per_unit || 0)) * dir;
+        case 'sku':
+        default:
+          return (a.sku || '').localeCompare(b.sku || '') * dir;
+      }
+    };
+
+    return arr.sort(compare);
+  }, [products, stockData, activeTab, brandFilter, supplierFilter, stockFilter, searchTerm, sortBy, sortDir]);
 
   const handleEdit = (product) => {
     setEditingProduct(product);
@@ -161,23 +252,7 @@ export default function Products() {
     }
   };
 
-  if (showForm) {
-    return (
-      <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
-        <div className="max-w-3xl mx-auto">
-          <ProductForm
-            product={editingProduct}
-            onSave={handleSave}
-            onCancel={() => {
-              setShowForm(false);
-              setEditingProduct(null);
-            }}
-            isLoading={createMutation.isPending || updateMutation.isPending}
-          />
-        </div>
-      </div>
-    );
-  }
+
 
   if (showBOM) {
     const product = products.find(p => p.id === showBOM);
@@ -339,6 +414,16 @@ export default function Products() {
                             + Batch
                           </Button>
                         )}
+                        <Link to={createPageUrl('ProductDetail') + `?productId=${product.id}`}>
+                          <Button variant="ghost" size="sm" className="text-slate-600">
+                            <Eye className="w-4 h-4 mr-1" /> Detaljer
+                          </Button>
+                        </Link>
+                        <Link to={createPageUrl('ProductDetail') + `?productId=${product.id}`}>
+                          <Button variant="ghost" size="sm" className="text-slate-600">
+                            <Eye className="w-4 h-4 mr-1" /> Detaljer
+                          </Button>
+                        </Link>
                         <Button 
                           variant="ghost" 
                           size="icon"
@@ -383,6 +468,21 @@ export default function Products() {
             onOpenChange={(open) => !open && setShowAddBatch(null)}
           />
         )}
+
+        {/* Quick Edit Dialog */}
+        <Dialog open={showForm} onOpenChange={(open) => { if (!open) { setShowForm(false); setEditingProduct(null); } }}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>{editingProduct ? `Redigera ${editingProduct.sku}` : 'Ny produkt'}</DialogTitle>
+            </DialogHeader>
+            <ProductForm
+              product={editingProduct}
+              onSave={handleSave}
+              onCancel={() => { setShowForm(false); setEditingProduct(null); }}
+              isLoading={createMutation.isPending || updateMutation.isPending}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
