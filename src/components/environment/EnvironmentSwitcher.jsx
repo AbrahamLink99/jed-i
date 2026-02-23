@@ -8,7 +8,11 @@ export default function EnvironmentSwitcher() {
   const { environment, setEnvironment } = useEnvironment();
 
   const toggleEnvironment = () => {
-    setEnvironment(environment === 'production' ? 'sandbox' : 'production');
+    const next = environment === 'production' ? 'sandbox' : 'production';
+    setEnvironment(next);
+    const url = new URL(window.location.href);
+    url.searchParams.set('env', next);
+    window.history.replaceState({}, '', url.toString());
   };
 
   return (
