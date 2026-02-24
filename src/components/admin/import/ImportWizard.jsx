@@ -226,6 +226,7 @@ export default function ImportWizard() {
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState(null);
   const [inlineError, setInlineError] = useState('');
+  const [duplicatesInfo, setDuplicatesInfo] = useState([]);
 
   // Load profile
   const loadProfile = () => {
@@ -397,11 +398,28 @@ export default function ImportWizard() {
       };
     });
 
-    // Uniqueness of SKU within preview set
+    // Uniqueness of SKU within preview set (first 10)
     const seen = new Set();
     mapped.forEach(r => {
       if (seen.has(r.sku)) r._errors.push('SKU ej unik i förhandsgranskning');
       else seen.add(r.sku);
+    });
+
+    // Detect duplicates across the ENTIRE file and mark them in preview + block import
+    const allSkus = rows.map((row) => String(getVal(row, 'sku') || '').trim()).filter(Boolean);
+    const skuCounts = allSkus.reduce((acc, s) => {
+      acc[s] = (acc[s] || 0) + 1;
+      return acc;
+    }, {});
+    const dups = Object.entries(skuCounts)
+      .filter(([_, count]) => count > 1)
+      .map(([sku, count]) => ({ sku, count }));
+    setDuplicatesInfo(dups);
+    const dupSet = new Set(dups.map(d => d.sku));
+    mapped.forEach(r => {
+      if (r.sku && dupSet.has(r.sku)) {
+        r._errors.push(`SKU dubblett i filen (${skuCounts[r.sku]} ggr)`);
+      }
     });
 
     setPreviewRows(mapped);
@@ -437,11 +455,14 @@ export default function ImportWizard() {
     const user = await base44.auth.me().catch(() => null);
     let created = 0, updated = 0, adjusted = 0;
 
-  // Uniqueness check across entire file
+  // Uniqueness check across entire file (block import + list all)
   const allSkusRaw = rows.map((row) => String(getVal(row, 'sku') || '').trim()).filter(Boolean);
-  const duplicateSku = allSkusRaw.find((sku, idx) => allSkusRaw.indexOf(sku) !== idx);
-  if (duplicateSku) {
-    const msg = 'Dubblett-SKU i filen: ' + duplicateSku;
+  const skuCountMap = allSkusRaw.reduce((acc, s) => { acc[s] = (acc[s] || 0) + 1; return acc; }, {});
+  const dupList = Object.entries(skuCountMap).filter(([_, c]) => c > 1);
+  if (dupList.length) {
+    const sample = dupList.slice(0, 10).map(([s, c]) => `${s}×${c}`).join(', ');
+    const extra = dupList.length > 10 ? ` …(+${dupList.length - 10} fler)` : '';
+    const msg = 'Dubblett-SKU i filen: ' + sample + extra;
     setInlineError(msg);
     toast.error(msg);
     setImporting(false);
@@ -627,7 +648,7 @@ export default function ImportWizard() {
 
               <div className="flex items-center gap-3">
                 <Input type="file" accept=".csv,text/csv" onChange={(e) => onFile(e.target.files?.[0])} />
-                <Button variant="outline" onClick={() => { setHeaders([]); setRows([]); setMapping({}); setPreviewRows([]); setImportResult(null); setStep(1); }}>Rensa</Button>
+                <Button variant="outline" onClick={() => { setHeaders([]); setRows([]); setMapping({}); setPreviewRows([]); setImportResult(null); setDuplicatesInfo([]); setStep(1); }}>Rensa</Button>
               </div>
               {fileName && <p className="text-sm text-slate-500">Fil: {fileName}</p>}
 
@@ -716,6 +737,14 @@ export default function ImportWizard() {
             {/* STEP 3 */}
             <TabsContent value="3" className="space-y-4">
               <StepHeader title="Förhandsgranskning (10 rader)" />
+              {duplicatesInfo.length > 0 && (
+                <Alert variant="destructive">
+                  <AlertDescription>
+                    Dubblett-SKU upptäckta i filen: {duplicatesInfo.slice(0, 10).map(d => `${d.sku}×${d.count}`).join(', ')}
+                    {duplicatesInfo.length > 10 ? ` …(+${duplicatesInfo.length - 10} fler)` : ''}
+                  </AlertDescription>
+                </Alert>
+              )}
 
               <div className="border rounded-lg overflow-hidden">
                 <Table>
@@ -778,14 +807,17 @@ export default function ImportWizard() {
                 <div className="flex flex-col items-end gap-1">
                   <div className="flex gap-2">
                     <Button variant="outline" onClick={() => setStep(2)}>Tillbaka</Button>
-                    <Button onClick={doImport} disabled={isSandboxHost || importing || !previewRows.length || previewRows.some(r => r._errors.length)}>
+                    <Button onClick={doImport} disabled={isSandboxHost || importing || !previewRows.length || previewRows.some(r => r._errors.length) || duplicatesInfo.length > 0}>
                       {importing ? 'Importerar...' : 'Importera'}
                     </Button>
                   </div>
                   {(isSandboxHost || !previewRows.length || previewRows.some(r => r._errors.length)) && (
                     <span className="text-xs text-slate-500">
                       {isSandboxHost ? 'Import är avstängt i sandbox‑förhandsvisning.' :
-                        (!previewRows.length ? 'Ladda upp och förhandsgranska CSV först.' : `${previewRows.filter(r => r._errors.length).length} rader har fel som måste åtgärdas.`)}
+                        (!previewRows.length ? 'Ladda upp och förhandsgranska CSV först.' :
+                          (duplicatesInfo.length > 0
+                            ? `Dubblett-SKU måste åtgärdas: ${duplicatesInfo.length} st.`
+                            : `${previewRows.filter(r => r._errors.length).length} rader har fel som måste åtgärdas.`))}
                     </span>
                   )}
                   {inlineError && (
