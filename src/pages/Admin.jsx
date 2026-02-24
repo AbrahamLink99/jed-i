@@ -11,6 +11,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader as AlertDH,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
@@ -70,36 +81,7 @@ export default function AdminPage() {
 
   const queryClient = useQueryClient();
 
-  React.useEffect(() => {
-    const runPurge = async () => {
-      if (!hasPermission(PERMISSIONS.USERS_MANAGE)) return;
-      if (localStorage.getItem('sandbox_purged_v1')) return;
-      const entities = ['Product','MixBatch','FinishedBatch','FillingReport','PackagingRecipe','InventoryAlert','Batch','PlanningScenario','InventoryLedger','BOMItem','BatchLot'];
-      let totalDeleted = 0;
-      for (const name of entities) {
-        try {
-          while (true) {
-            const batch = await base44.entities[name].filter({ environment: 'sandbox' }, 'id', 100);
-            if (!batch || batch.length === 0) break;
-            for (const rec of batch) {
-              await base44.entities[name].delete(rec.id);
-              totalDeleted++;
-            }
-          }
-        } catch (e) {
-          console.warn('Purge skip for', name, e?.message || e);
-        }
-      }
-      localStorage.setItem('sandbox_purged_v1', '1');
-      if (totalDeleted > 0) {
-        toast.success(`Rensade ${totalDeleted} sandbox-poster`);
-      } else {
-        toast.success('Inga sandbox-poster hittades');
-      }
-      queryClient.invalidateQueries();
-    };
-    runPurge();
-  }, [hasPermission, queryClient]);
+
 
   // Fetch users
   const { data: users = [] } = useQuery({
