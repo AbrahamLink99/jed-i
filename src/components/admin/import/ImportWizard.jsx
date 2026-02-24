@@ -454,23 +454,49 @@ export default function ImportWizard() {
     toast.message('Startar import...');
     const user = await base44.auth.me().catch(() => null);
     let created = 0, updated = 0, adjusted = 0;
+    const errors = [];
 
-  // Uniqueness check across entire file (block import + list all)
-  const allSkusRaw = rows.map((row) => String(getVal(row, 'sku') || '').trim()).filter(Boolean);
-  const skuCountMap = allSkusRaw.reduce((acc, s) => { acc[s] = (acc[s] || 0) + 1; return acc; }, {});
-  const dupList = Object.entries(skuCountMap).filter(([_, c]) => c > 1);
-  if (dupList.length) {
-    const sample = dupList.slice(0, 10).map(([s, c]) => `${s}×${c}`).join(', ');
-    const extra = dupList.length > 10 ? ` …(+${dupList.length - 10} fler)` : '';
-    const msg = 'Dubblett-SKU i filen: ' + sample + extra;
-    setInlineError(msg);
-    toast.error(msg);
-    setImporting(false);
-    return;
-  }
+    // Uniqueness check across entire file (block import + list all)
+    const allSkusRaw = rows.map((row) => String(getVal(row, 'sku') || '').trim()).filter(Boolean);
+    const skuCountMap = allSkusRaw.reduce((acc, s) => { acc[s] = (acc[s] || 0) + 1; return acc; }, {});
+    const dupList = Object.entries(skuCountMap).filter(([_, c]) => c > 1);
+    if (dupList.length) {
+      const sample = dupList.slice(0, 10).map(([s, c]) => `${s}×${c}`).join(', ');
+      const extra = dupList.length > 10 ? ` …(+${dupList.length - 10} fler)` : '';
+      const msg = 'Dubblett-SKU i filen: ' + sample + extra;
+      setInlineError(msg);
+      toast.error(msg);
+      setImporting(false);
+      return;
+    }
 
     try {
-      // Process ALL rows (not only 10) with normalization again
+      // Helpers
+      const chunk = (arr, size) => {
+        const out = [];
+        for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+        return out;
+      };
+      const runWithConcurrency = async (items, limit, handler) => {
+        const results = new Array(items.length);
+        let idx = 0;
+        await Promise.all(
+          Array.from({ length: Math.min(limit, items.length || 1) }).map(async () => {
+            while (true) {
+              const current = idx++;
+              if (current >= items.length) break;
+              try {
+                results[current] = await handler(items[current], current);
+              } catch (e) {
+                results[current] = { __error: e };
+              }
+            }
+          })
+        );
+        return results;
+      };
+
+      // Normalize ALL rows (not only first 10)
       const all = rows.map((row) => {
         const sku = String(getVal(row, 'sku') || '').trim();
         const name = String(getVal(row, 'name') || '').trim();
@@ -495,60 +521,101 @@ export default function ImportWizard() {
         return { sku, name, item_type: itemType, uom, supplier, notes, min_level: minLevel, unit_cost: unitCost, on_hand_qty: onHand, lead_time_days, variant_size_ml };
       }).filter(r => r.sku && r.name);
 
-      for (const r of all) {
-        // Create or update product by SKU in current environment
-        const existing = await base44.entities.Product.filter({ sku: r.sku, environment: envFilter.environment });
-        let product;
-        if (existing && existing.length) {
-          const p0 = existing[0];
-          const payload = {
-            environment: envFilter.environment,
-            sku: r.sku,
-            name: r.name,
-            type: r.item_type,
-            unit: r.uom,
-            supplier: r.supplier || p0.supplier,
-            notes: r.notes || p0.notes,
-            safety_stock: r.min_level,
-            cost_per_unit: r.unit_cost,
-            active: true,
-          };
-          if (r.lead_time_days !== undefined) payload.lead_time_days = r.lead_time_days;
-          product = await base44.entities.Product.update(p0.id, payload);
-          updated += 1;
-        } else {
-          const payload = {
-            environment: envFilter.environment,
-            sku: r.sku,
-            name: r.name,
-            type: r.item_type,
-            unit: r.uom,
-            supplier: r.supplier || null,
-            notes: r.notes || null,
-            safety_stock: r.min_level,
-            cost_per_unit: r.unit_cost,
-            active: true,
-          };
-          if (r.lead_time_days !== undefined) payload.lead_time_days = r.lead_time_days;
-          product = await base44.entities.Product.create(payload);
-          created += 1;
-        }
+      // Lookup existing products with concurrency 3
+      const skuToExisting = {};
+      await runWithConcurrency(all, 3, async (r) => {
+        const found = await base44.entities.Product.filter({ sku: r.sku, environment: envFilter.environment });
+        if (found && found.length) skuToExisting[r.sku] = found[0];
+      });
 
-        // Inventory adjustment if provided
+      const toUpdate = all.filter(r => skuToExisting[r.sku]);
+      const toCreate = all.filter(r => !skuToExisting[r.sku]);
+
+      // Updates with concurrency 3
+      await runWithConcurrency(toUpdate, 3, async (r) => {
+        const p0 = skuToExisting[r.sku];
+        const payload = {
+          environment: envFilter.environment,
+          sku: r.sku,
+          name: r.name,
+          type: r.item_type,
+          unit: r.uom,
+          supplier: r.supplier || p0.supplier,
+          notes: r.notes || p0.notes,
+          safety_stock: r.min_level,
+          cost_per_unit: r.unit_cost,
+          active: true,
+        };
+        if (r.lead_time_days !== undefined) payload.lead_time_days = r.lead_time_days;
+        try {
+          await base44.entities.Product.update(p0.id, payload);
+          updated += 1;
+        } catch (e) {
+          errors.push({ sku: r.sku, message: e?.message || String(e), phase: 'update' });
+        }
+      });
+
+      // Bulk create new in chunks of 25
+      const createdPairs = [];
+      for (const ch of chunk(toCreate, 25)) {
+        if (!ch.length) continue;
+        const payloads = ch.map((r) => {
+          const p = {
+            environment: envFilter.environment,
+            sku: r.sku,
+            name: r.name,
+            type: r.item_type,
+            unit: r.uom,
+            safety_stock: r.min_level,
+            cost_per_unit: r.unit_cost,
+            active: true,
+          };
+          if (r.supplier) p.supplier = r.supplier;
+          if (r.notes) p.notes = r.notes;
+          if (r.lead_time_days !== undefined) p.lead_time_days = r.lead_time_days;
+          return p;
+        });
+        try {
+          const res = await base44.entities.Product.bulkCreate(payloads);
+          const arr = Array.isArray(res) ? res : [];
+          arr.forEach((prod, idx) => {
+            createdPairs.push({ product: prod, row: ch[idx] });
+          });
+          created += arr.length;
+        } catch (e) {
+          ch.forEach((r) => errors.push({ sku: r.sku, message: 'Create failed (batch): ' + (e?.message || String(e)), phase: 'create' }));
+        }
+      }
+
+      // Ledger adjustments (concurrency 3) for both updated and created
+      const ledgerTasks = [];
+      toUpdate.forEach((r) => {
         if (r.on_hand_qty !== null && !isNaN(r.on_hand_qty)) {
+          ledgerTasks.push({ productId: skuToExisting[r.sku]?.id, sku: r.sku, name: r.name, qty: r.on_hand_qty });
+        }
+      });
+      createdPairs.forEach(({ product, row: r }) => {
+        if (r.on_hand_qty !== null && !isNaN(r.on_hand_qty)) {
+          ledgerTasks.push({ productId: product.id, sku: r.sku, name: r.name, qty: r.on_hand_qty });
+        }
+      });
+      await runWithConcurrency(ledgerTasks, 3, async (t) => {
+        try {
           await base44.entities.InventoryLedger.create({
             environment: envFilter.environment,
-            product_id: product.id || (existing && existing[0] && existing[0].id),
-            product_sku: r.sku,
-            product_name: r.name,
+            product_id: t.productId,
+            product_sku: t.sku,
+            product_name: t.name,
             transaction_type: 'adjustment',
-            quantity: r.on_hand_qty,
+            quantity: t.qty,
             reference_type: 'manual',
             notes: 'Startsaldo vid import (' + (importType === 'raw_material' || importType === 'bulk' ? 'kg' : 'st') + ')',
           });
           adjusted += 1;
+        } catch (e) {
+          errors.push({ sku: t.sku, message: e?.message || String(e), phase: 'ledger' });
         }
-      }
+      });
 
       // Audit log summary (non-blocking)
       try {
@@ -558,15 +625,19 @@ export default function ImportWizard() {
           actor_role: user?.role || 'admin',
           action_type: 'CREATE',
           entity_type: 'Product',
-          summary_message: `Import: ${fileName} → ${created} skapade, ${updated} uppdaterade, ${adjusted} lagerjusteringar`,
+          summary_message: `Import: ${fileName} → ${created} skapade, ${updated} uppdaterade, ${adjusted} lagerjusteringar, ${errors.length} fel`,
           page_context: 'Admin > Import Wizard'
         });
       } catch (logErr) {
         console.warn('AuditLogEntry failed', logErr);
       }
 
-      setImportResult({ created, updated, adjusted });
-      toast.success('Import klar');
+      setImportResult({ created, updated, adjusted, errors });
+      if (errors.length) {
+        toast.message(`Import klar med ${errors.length} fel`);
+      } else {
+        toast.success('Import klar');
+      }
       setStep(4);
       queryClient.invalidateQueries({ queryKey: ['audit-logs'] });
     } catch (e) {
@@ -831,19 +902,32 @@ export default function ImportWizard() {
             <TabsContent value="4" className="space-y-4">
               <StepHeader title="Importresultat" />
               {importResult && (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="p-4 rounded-lg bg-emerald-50 text-emerald-700">
-                    <div className="text-sm">Skapade</div>
-                    <div className="text-2xl font-semibold">{importResult.created}</div>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="p-4 rounded-lg bg-emerald-50 text-emerald-700">
+                      <div className="text-sm">Skapade</div>
+                      <div className="text-2xl font-semibold">{importResult.created}</div>
+                    </div>
+                    <div className="p-4 rounded-lg bg-blue-50 text-blue-700">
+                      <div className="text-sm">Uppdaterade</div>
+                      <div className="text-2xl font-semibold">{importResult.updated}</div>
+                    </div>
+                    <div className="p-4 rounded-lg bg-amber-50 text-amber-700">
+                      <div className="text-sm">Lagerjusteringar</div>
+                      <div className="text-2xl font-semibold">{importResult.adjusted}</div>
+                    </div>
                   </div>
-                  <div className="p-4 rounded-lg bg-blue-50 text-blue-700">
-                    <div className="text-sm">Uppdaterade</div>
-                    <div className="text-2xl font-semibold">{importResult.updated}</div>
-                  </div>
-                  <div className="p-4 rounded-lg bg-amber-50 text-amber-700">
-                    <div className="text-sm">Lagerjusteringar</div>
-                    <div className="text-2xl font-semibold">{importResult.adjusted}</div>
-                  </div>
+
+                  {importResult.errors?.length > 0 && (
+                    <div className="p-4 rounded-lg bg-red-50 text-red-700">
+                      <div className="text-sm mb-2">Fel ({importResult.errors.length}) 																	 																 								 							 		 							 				 							 		> första 20:</div>
+                      <ul className="list-disc pl-5 space-y-1 text-sm">
+                        {importResult.errors.slice(0, 20).map((e, i) => (
+                          <li key={i}><span className="font-mono">{e.sku || '-'}</span>: {e.message}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               )}
               {!importResult && (
