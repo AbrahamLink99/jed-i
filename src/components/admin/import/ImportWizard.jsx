@@ -225,6 +225,7 @@ export default function ImportWizard() {
   const [previewRows, setPreviewRows] = useState([]); // normalized with errors
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState(null);
+  const [inlineError, setInlineError] = useState('');
 
   // Load profile
   const loadProfile = () => {
@@ -412,13 +413,22 @@ export default function ImportWizard() {
   }, [mapping, dynamicFields]);
 
   const doImport = async () => {
+    setInlineError('');
+    if (isSandboxHost) {
+      toast.error('Import är avstängt i sandbox‑förhandsvisning.');
+      return;
+    }
     if (!previewRows.length) {
-      toast.error('Skapa en förhandsgranskning först.');
+      const msg = 'Skapa en förhandsgranskning först.';
+      setInlineError(msg);
+      toast.error(msg);
       return;
     }
     const hasErrors = previewRows.some(r => r._errors.length);
     if (hasErrors) {
-      toast.error('Åtgärda fel i förhandsgranskningen innan import.');
+      const msg = 'Åtgärda fel i förhandsgranskningen innan import.';
+      setInlineError(msg);
+      toast.error(msg);
       return;
     }
 
@@ -427,14 +437,16 @@ export default function ImportWizard() {
     const user = await base44.auth.me().catch(() => null);
     let created = 0, updated = 0, adjusted = 0;
 
-    // Uniqueness check across entire file
-    const allSkusRaw = rows.map((row) => String(getVal(row, 'sku') || '').trim()).filter(Boolean);
-    const duplicateSku = allSkusRaw.find((sku, idx) => allSkusRaw.indexOf(sku) !== idx);
-    if (duplicateSku) {
-      toast.error('Dubblett-SKU i filen: ' + duplicateSku);
-      setImporting(false);
-      return;
-    }
+  // Uniqueness check across entire file
+  const allSkusRaw = rows.map((row) => String(getVal(row, 'sku') || '').trim()).filter(Boolean);
+  const duplicateSku = allSkusRaw.find((sku, idx) => allSkusRaw.indexOf(sku) !== idx);
+  if (duplicateSku) {
+    const msg = 'Dubblett-SKU i filen: ' + duplicateSku;
+    setInlineError(msg);
+    toast.error(msg);
+    setImporting(false);
+    return;
+  }
 
     try {
       // Process ALL rows (not only 10) with normalization again
@@ -769,6 +781,9 @@ export default function ImportWizard() {
                       {isSandboxHost ? 'Import är avstängt i sandbox‑förhandsvisning.' :
                         (!previewRows.length ? 'Ladda upp och förhandsgranska CSV först.' : `${previewRows.filter(r => r._errors.length).length} rader har fel som måste åtgärdas.`)}
                     </span>
+                  )}
+                  {inlineError && (
+                    <span className="text-xs text-red-600">{inlineError}</span>
                   )}
                 </div>
               </div>
