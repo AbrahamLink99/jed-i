@@ -423,6 +423,7 @@ export default function ImportWizard() {
     }
 
     setImporting(true);
+    toast.message('Startar import...');
     const user = await base44.auth.me().catch(() => null);
     let created = 0, updated = 0, adjusted = 0;
 
@@ -750,17 +751,25 @@ export default function ImportWizard() {
                 </Table>
               </div>
 
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-4 flex-wrap">
                 <Alert className="max-w-xl">
                   <AlertDescription>
                     Regler: SKU unik inom import, numeriska fält parsas enligt decimal-val, item_type måste vara raw_material/bulk/finished/packaging/label.
                   </AlertDescription>
                 </Alert>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setStep(2)}>Tillbaka</Button>
-                  <Button onClick={doImport} disabled={isSandboxHost || importing || !previewRows.length || previewRows.some(r => r._errors.length)}>
-                    {importing ? 'Importerar...' : 'Importera'}
-                  </Button>
+                <div className="flex flex-col items-end gap-1">
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => setStep(2)}>Tillbaka</Button>
+                    <Button onClick={doImport} disabled={isSandboxHost || importing || !previewRows.length || previewRows.some(r => r._errors.length)}>
+                      {importing ? 'Importerar...' : 'Importera'}
+                    </Button>
+                  </div>
+                  {(isSandboxHost || !previewRows.length || previewRows.some(r => r._errors.length)) && (
+                    <span className="text-xs text-slate-500">
+                      {isSandboxHost ? 'Import är avstängt i sandbox‑förhandsvisning.' :
+                        (!previewRows.length ? 'Ladda upp och förhandsgranska CSV först.' : `${previewRows.filter(r => r._errors.length).length} rader har fel som måste åtgärdas.`)}
+                    </span>
+                  )}
                 </div>
               </div>
             </TabsContent>
