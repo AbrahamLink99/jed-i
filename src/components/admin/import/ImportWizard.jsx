@@ -529,16 +529,20 @@ export default function ImportWizard() {
         }
       }
 
-      // Audit log summary
-      await base44.entities.AuditLogEntry.create({
-        timestamp: new Date().toISOString(),
-        actor_email: user?.email || 'unknown',
-        actor_role: user?.role || 'admin',
-        action_type: 'CREATE',
-        entity_type: 'Product',
-        summary_message: `Import: ${fileName} → ${created} skapade, ${updated} uppdaterade, ${adjusted} lagerjusteringar`,
-        page_context: 'Admin > Import Wizard'
-      });
+      // Audit log summary (non-blocking)
+      try {
+        await base44.entities.AuditLogEntry.create({
+          timestamp: new Date().toISOString(),
+          actor_email: user?.email || 'unknown',
+          actor_role: user?.role || 'admin',
+          action_type: 'CREATE',
+          entity_type: 'Product',
+          summary_message: `Import: ${fileName} → ${created} skapade, ${updated} uppdaterade, ${adjusted} lagerjusteringar`,
+          page_context: 'Admin > Import Wizard'
+        });
+      } catch (logErr) {
+        console.warn('AuditLogEntry failed', logErr);
+      }
 
       setImportResult({ created, updated, adjusted });
       toast.success('Import klar');
@@ -546,7 +550,9 @@ export default function ImportWizard() {
       queryClient.invalidateQueries({ queryKey: ['audit-logs'] });
     } catch (e) {
       console.error(e);
-      toast.error('Import misslyckades: ' + e.message);
+      const msg = 'Import misslyckades: ' + (e?.message || String(e));
+      setInlineError(msg);
+      toast.error(msg);
     } finally {
       setImporting(false);
     }
