@@ -31,6 +31,7 @@ const navigation = [
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const isSandboxHost = typeof window !== 'undefined' && window.location.host.includes('preview-sandbox');
 
   React.useEffect(() => {
     const loadUser = async () => {
@@ -183,8 +184,21 @@ export default function Layout({ children, currentPageName }) {
 
         </header>
 
+        {isSandboxHost && (
+          <div className="fixed inset-0 z-[70] bg-transparent cursor-not-allowed" />
+        )}
+
         {/* Page content */}
         <main>
+          {isSandboxHost && (
+            <div className="p-4">
+              <Alert variant="destructive">
+                <AlertDescription>
+                  Sandbox-förhandsvisning är inaktiverad. Alla funktioner (inkl. import) är avstängda här. Öppna normal Preview för att använda appen.
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
 
           {children}
         </main>
