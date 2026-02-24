@@ -22,11 +22,11 @@ import { toast } from 'sonner';
 import { cn } from "@/lib/utils";
 import ImportWizard from '@/components/admin/import/ImportWizard';
 import InventoryCount from '@/components/admin/InventoryCount';
-import SandboxSeeder from '@/components/admin/SandboxSeeder';
+
 import ShopifyHistoricalImport from '@/components/admin/ShopifyHistoricalImport';
 import ShopifyConnection from '@/components/admin/ShopifyConnection';
 import SystemGuide from '@/components/admin/SystemGuide';
-import EnvironmentMigration from '@/components/admin/EnvironmentMigration';
+
 
 const roleColors = {
   admin: 'bg-purple-100 text-purple-700',
@@ -69,6 +69,37 @@ export default function AdminPage() {
   });
 
   const queryClient = useQueryClient();
+
+  React.useEffect(() => {
+    const runPurge = async () => {
+      if (!hasPermission(PERMISSIONS.USERS_MANAGE)) return;
+      if (localStorage.getItem('sandbox_purged_v1')) return;
+      const entities = ['Product','MixBatch','FinishedBatch','FillingReport','PackagingRecipe','InventoryAlert','Batch','PlanningScenario','InventoryLedger','BOMItem','BatchLot'];
+      let totalDeleted = 0;
+      for (const name of entities) {
+        try {
+          while (true) {
+            const batch = await base44.entities[name].filter({ environment: 'sandbox' }, 'id', 100);
+            if (!batch || batch.length === 0) break;
+            for (const rec of batch) {
+              await base44.entities[name].delete(rec.id);
+              totalDeleted++;
+            }
+          }
+        } catch (e) {
+          console.warn('Purge skip for', name, e?.message || e);
+        }
+      }
+      localStorage.setItem('sandbox_purged_v1', '1');
+      if (totalDeleted > 0) {
+        toast.success(`Rensade ${totalDeleted} sandbox-poster`);
+      } else {
+        toast.success('Inga sandbox-poster hittades');
+      }
+      queryClient.invalidateQueries();
+    };
+    runPurge();
+  }, [hasPermission, queryClient]);
 
   // Fetch users
   const { data: users = [] } = useQuery({
@@ -204,12 +235,7 @@ export default function AdminPage() {
                 Inventering
               </TabsTrigger>
             </PermissionGate>
-            <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
-              <TabsTrigger value="sandbox">
-                <Database className="w-4 h-4 mr-2" />
-                Sandbox
-              </TabsTrigger>
-            </PermissionGate>
+
             <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
               <TabsTrigger value="guide">
                 <FileText className="w-4 h-4 mr-2" />
@@ -359,13 +385,7 @@ export default function AdminPage() {
             </TabsContent>
           </PermissionGate>
 
-          {/* Sandbox Tab */}
-          <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
-            <TabsContent value="sandbox" className="space-y-6">
-              <EnvironmentMigration />
-              <SandboxSeeder />
-            </TabsContent>
-          </PermissionGate>
+
 
           {/* System Guide Tab */}
           <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>

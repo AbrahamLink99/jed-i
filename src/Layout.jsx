@@ -12,8 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { base44 } from '@/api/base44Client';
 import { EnvironmentProvider } from '@/components/environment/EnvironmentContext';
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import EnvironmentSwitcher from '@/components/environment/EnvironmentSwitcher';
-import EnvironmentBanner from '@/components/environment/EnvironmentBanner';
+
+
 
 const navigation = [
 { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
@@ -180,12 +180,12 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </div>
 
-          <EnvironmentSwitcher />
+
         </header>
 
         {/* Page content */}
         <main>
-          <EnvironmentBanner />
+
           {children}
         </main>
       </div>

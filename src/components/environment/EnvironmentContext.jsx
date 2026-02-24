@@ -2,23 +2,17 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const EnvironmentContext = createContext();
 
-const getInitialEnvironment = () => {
-  try {
-    const url = new URL(window.location.href);
-    const param = (url.searchParams.get('env') || '').toLowerCase();
-    if (param === 'production' || param === 'sandbox') return param; // explicit override via URL
-  } catch {}
-  const stored = localStorage.getItem('app_environment');
-  if (stored === 'production' || stored === 'sandbox') return stored; // honor previous user choice
-  // Default to production regardless of preview/host naming
-  return 'production';
-};
+const getInitialEnvironment = () => 'production';
 
 export function EnvironmentProvider({ children }) {
   const [environment, setEnvironment] = useState(getInitialEnvironment);
 
   useEffect(() => {
     localStorage.setItem('app_environment', environment);
+  }, [environment]);
+
+  useEffect(() => {
+    if (environment !== 'production') setEnvironment('production');
   }, [environment]);
 
   useEffect(() => {
