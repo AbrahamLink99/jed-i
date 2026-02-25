@@ -475,7 +475,7 @@ export default function Products() {
 
         {/* Quick Edit Dialog */}
         <Dialog open={showForm} onOpenChange={(open) => { if (!open) { setShowForm(false); setEditingProduct(null); } }}>
-          <DialogContent className="max-w-3xl">
+          <DialogContent className="max-w-3xl w-[95vw] sm:w-auto max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingProduct ? `Redigera ${editingProduct.sku}` : 'Ny produkt'}</DialogTitle>
             </DialogHeader>
