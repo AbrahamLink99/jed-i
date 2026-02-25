@@ -306,7 +306,7 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }) {
           <Label htmlFor="active">Aktiv</Label>
         </div>
 
-        <div className="flex justify-end gap-3 pt-4 border-t">
+        <div className="sticky bottom-0 z-10 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 flex justify-end gap-3 pt-4 border-t">
           <Button type="button" variant="outline" onClick={onCancel}>
             Avbryt
           </Button>
