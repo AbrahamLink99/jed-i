@@ -30,9 +30,7 @@ export function calculateAvailable(ledgerEntries, batches, product) {
     .filter(b => b.product_id === product.id && (b.status === 'blocked' || b.status === 'quarantined'))
     .reduce((sum, b) => sum + b.current_quantity, 0);
   
-  const buffer = product.shopify_buffer || 0;
-  
-  return Math.max(0, onHand - reserved - blockedQuantity - buffer);
+  return Math.max(0, onHand - reserved - blockedQuantity);
 }
 
 export function getStockSummary(product, ledgerEntries, batches) {

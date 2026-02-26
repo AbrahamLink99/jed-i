@@ -23,7 +23,7 @@ export default function BatchLinksTable({ batchLotId }) {
   if (links.length === 0) {
     return (
       <p className="text-sm text-slate-500 p-4 text-center border rounded-lg">
-        Ingen batch har länkats till Shopify-ordrar ännu
+        Ingen batch har länkats till ordrar ännu
       </p>
     );
   }
@@ -45,7 +45,7 @@ export default function BatchLinksTable({ batchLotId }) {
             <TableRow key={link.id}>
               <TableCell className="font-medium">
                 <div className="flex items-center gap-2">
-                  {link.shopify_order_number}
+                  {link.order_number}
                   <ExternalLink className="w-3 h-3 text-slate-400" />
                 </div>
               </TableCell>

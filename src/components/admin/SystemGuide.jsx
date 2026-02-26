@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Database, Workflow, AlertTriangle, Zap, ShoppingBag } from 'lucide-react';
+import { BookOpen, Database, Workflow, AlertTriangle, Zap } from 'lucide-react';
 
 export default function SystemGuide() {
   return (
@@ -46,10 +46,6 @@ export default function SystemGuide() {
                   <div className="p-3 bg-green-50 rounded-lg">
                     <h4 className="font-semibold text-green-900">Lagerhantering</h4>
                     <p className="text-sm text-green-700">Realtidsspårning med ledger-baserat system</p>
-                  </div>
-                  <div className="p-3 bg-orange-50 rounded-lg">
-                    <h4 className="font-semibold text-orange-900">Shopify-integration</h4>
-                    <p className="text-sm text-orange-700">Synkronisering av lager till webbshop</p>
                   </div>
                   <div className="p-3 bg-yellow-50 rounded-lg">
                     <h4 className="font-semibold text-yellow-900">Notiser & Varningar</h4>
@@ -115,10 +111,6 @@ export default function SystemGuide() {
                     <p className="text-sm text-slate-600">Automatiska notiser för lagerbrist. Fält: product_id, severity, type, status, suggested_order_qty</p>
                   </div>
                   
-                  <div className="border-l-4 border-slate-500 pl-4 py-2">
-                    <h4 className="font-semibold text-slate-900">ShopifyConnection</h4>
-                    <p className="text-sm text-slate-600">OAuth-anslutning till Shopify. Fält: shop_domain, access_token, scopes, status</p>
-                  </div>
                 </div>
               </AccordionContent>
             </AccordionItem>
@@ -189,22 +181,6 @@ export default function SystemGuide() {
                   </ol>
                 </div>
                 
-                <div className="p-4 bg-slate-50 rounded-lg space-y-2">
-                  <h4 className="font-semibold text-slate-900">5️⃣ Shopify-synkronisering</h4>
-                  <ol className="text-sm space-y-1 ml-4 list-decimal text-slate-700">
-                    <li>Admin → Shopify-flik → Anslut butik (OAuth)</li>
-                    <li>System sparar ShopifyConnection med access_token</li>
-                    <li>Synk inventory → Backend-funktion:
-                      <ul className="ml-4 mt-1 space-y-1">
-                        <li>• Hämtar alla variants från Shopify</li>
-                        <li>• Matchar SKU med Products</li>
-                        <li>• Beräknar tillgängligt saldo från InventoryLedger</li>
-                        <li>• Drar av shopify_buffer</li>
-                        <li>• Uppdaterar inventory_quantity via Shopify API</li>
-                      </ul>
-                    </li>
-                  </ol>
-                </div>
               </AccordionContent>
             </AccordionItem>
 
@@ -216,22 +192,6 @@ export default function SystemGuide() {
               </AccordionTrigger>
               <AccordionContent className="space-y-3">
                 <div className="space-y-2">
-                  <div className="p-3 border rounded-lg">
-                    <h4 className="font-semibold text-sm">shopifyOAuthStart</h4>
-                    <p className="text-xs text-slate-600">Startar OAuth-flödet, redirectar till Shopify för autentisering</p>
-                  </div>
-                  <div className="p-3 border rounded-lg">
-                    <h4 className="font-semibold text-sm">shopifyOAuthCallback</h4>
-                    <p className="text-xs text-slate-600">Tar emot OAuth-callback, hämtar access token, sparar ShopifyConnection</p>
-                  </div>
-                  <div className="p-3 border rounded-lg">
-                    <h4 className="font-semibold text-sm">shopifyInventorySync</h4>
-                    <p className="text-xs text-slate-600">Synkar lagersaldo från JED-I till Shopify för alla matchade SKUs</p>
-                  </div>
-                  <div className="p-3 border rounded-lg">
-                    <h4 className="font-semibold text-sm">shopifyHistoricalImport</h4>
-                    <p className="text-xs text-slate-600">Importerar historisk försäljningsdata från Shopify för analys</p>
-                  </div>
                   <div className="p-3 border rounded-lg">
                     <h4 className="font-semibold text-sm">computeFillingReportPreview</h4>
                     <p className="text-xs text-slate-600">Beräknar bulk & komponentförbrukning innan tappning (preview)</p>
@@ -276,13 +236,6 @@ export default function SystemGuide() {
                   </AlertDescription>
                 </Alert>
                 
-                <Alert variant="destructive">
-                  <AlertDescription>
-                    <strong>Shopify OAuth Error</strong><br/>
-                    <span className="text-sm">OAuth-flödet misslyckades eller access token ogiltigt.</span><br/>
-                    <span className="text-xs">✅ Lösning: Kontrollera SHOPIFY_CLIENT_ID och SHOPIFY_CLIENT_SECRET i secrets, återanslut butiken</span>
-                  </AlertDescription>
-                </Alert>
                 
                 <Alert>
                   <AlertDescription>
@@ -339,10 +292,6 @@ export default function SystemGuide() {
                   <p className="text-sm text-purple-700">Använd alltid transaktioner (inbound, production, adjustment). Ledger är immutable för spårbarhet.</p>
                 </div>
                 
-                <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                  <h4 className="font-semibold text-orange-900">Synka Shopify regelbundet</h4>
-                  <p className="text-sm text-orange-700">Kör inventory sync efter större produktioner eller inköp för att hålla webshopen uppdaterad.</p>
-                </div>
                 
                 <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <h4 className="font-semibold text-yellow-900">Bevaka notiser</h4>

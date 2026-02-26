@@ -27,15 +27,15 @@ import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import { 
   Shield, Users, FileText, AlertCircle, CheckCircle, 
-  UserPlus, Search, Calendar, Hash, Database, Activity, ClipboardList, Download, Trash2
+  UserPlus, Search, Calendar, Hash, Database, Activity, ClipboardList, Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from "@/lib/utils";
 import ImportWizard from '@/components/admin/import/ImportWizard';
 import InventoryCount from '@/components/admin/InventoryCount';
 
-import ShopifyHistoricalImport from '@/components/admin/ShopifyHistoricalImport';
-import ShopifyConnection from '@/components/admin/ShopifyConnection';
+
+
 import SystemGuide from '@/components/admin/SystemGuide';
 
 
@@ -236,12 +236,7 @@ export default function AdminPage() {
                 Import
               </TabsTrigger>
             </PermissionGate>
-            <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
-              <TabsTrigger value="shopify">
-                <Download className="w-4 h-4 mr-2" />
-                Shopify
-              </TabsTrigger>
-            </PermissionGate>
+
             <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
               <TabsTrigger value="inventory">
                 <ClipboardList className="w-4 h-4 mr-2" />
@@ -407,13 +402,7 @@ export default function AdminPage() {
             </TabsContent>
           </PermissionGate>
 
-          {/* Shopify Historical Import Tab */}
-          <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
-            <TabsContent value="shopify" className="space-y-6">
-              <ShopifyConnection />
-              <ShopifyHistoricalImport />
-            </TabsContent>
-          </PermissionGate>
+
 
           {/* Inventory Count Tab */}
           <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>

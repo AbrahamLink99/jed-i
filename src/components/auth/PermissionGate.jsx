@@ -25,8 +25,7 @@ const ROLE_PERMISSIONS = {
     'purchase.createPO',
     'purchase.receivePO',
     'alerts.acknowledgeOrdered',
-    'auditlog.read',
-    'shopify.manage'
+    'auditlog.read'
   ],
   production: [
     'products.read',
@@ -141,7 +140,6 @@ export const PERMISSIONS = {
   
   // Integrations
   INTEGRATIONS_MANAGE: 'integrations.manage',
-  SHOPIFY_MANAGE: 'shopify.manage',
   
   // Products
   PRODUCTS_READ: 'products.read',

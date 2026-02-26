@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,9 +6,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
-import { X, Package, Calendar, Hash, ArrowDownLeft, ArrowUpRight, Link as LinkIcon } from 'lucide-react';
-import BatchOrderLinkDialog from './BatchOrderLinkDialog';
-import BatchLinksTable from './BatchLinksTable';
+import { X, Package, Calendar, Hash, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+
+
 
 const statusColors = {
   available: 'bg-emerald-100 text-emerald-700',
@@ -43,7 +43,7 @@ export default function BatchDetail({
   onStatusChange,
   isUpdating 
 }) {
-  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+
 
   if (!batch) return null;
 
@@ -116,16 +116,9 @@ export default function BatchDetail({
             <SelectItem value="depleted">Slut</SelectItem>
           </SelectContent>
         </Select>
-        <Button onClick={() => setLinkDialogOpen(true)}>
-          <LinkIcon className="w-4 h-4 mr-2" />
-          Länka till Shopify-order
-        </Button>
+
       </div>
 
-      <div className="mb-6">
-        <h3 className="font-medium text-slate-900 mb-3">Shopify-orderlänkar</h3>
-        <BatchLinksTable batchLotId={batch.id} />
-      </div>
 
       <div>
         <h3 className="font-medium text-slate-900 mb-3">Lagerhistorik</h3>
@@ -174,11 +167,7 @@ export default function BatchDetail({
         )}
       </div>
 
-      <BatchOrderLinkDialog 
-        batch={batch}
-        open={linkDialogOpen}
-        onClose={() => setLinkDialogOpen(false)}
-      />
+
     </Card>
   );
 }

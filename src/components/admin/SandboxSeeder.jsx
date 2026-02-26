@@ -37,9 +37,9 @@ export default function SandboxSeeder() {
         { environment: 'sandbox', sku: 'TEST-LBL-002', name: 'Etikett Mild Schampo', type: 'label', unit: 'roll', safety_stock: 10, lead_time_days: 10, moq: 50, supplier: 'Etikett Print', cost_per_unit: 180, active: true },
         
         // Finished goods - Färdiga schampon
-        { environment: 'sandbox', sku: 'TEST-FG-001', name: 'Volym Schampo 250ml', type: 'finished_good', brand: 'own', unit: 'pcs', safety_stock: 200, shopify_buffer: 20, active: true },
-        { environment: 'sandbox', sku: 'TEST-FG-002', name: 'Volym Schampo 500ml', type: 'finished_good', brand: 'own', unit: 'pcs', safety_stock: 150, shopify_buffer: 15, active: true },
-        { environment: 'sandbox', sku: 'TEST-FG-003', name: 'Mild Schampo 250ml', type: 'finished_good', brand: 'own', unit: 'pcs', safety_stock: 180, shopify_buffer: 18, active: true },
+        { environment: 'sandbox', sku: 'TEST-FG-001', name: 'Volym Schampo 250ml', type: 'finished_good', brand: 'own', unit: 'pcs', safety_stock: 200, active: true },
+        { environment: 'sandbox', sku: 'TEST-FG-002', name: 'Volym Schampo 500ml', type: 'finished_good', brand: 'own', unit: 'pcs', safety_stock: 150, active: true },
+        { environment: 'sandbox', sku: 'TEST-FG-003', name: 'Mild Schampo 250ml', type: 'finished_good', brand: 'own', unit: 'pcs', safety_stock: 180, active: true },
         
         // Mix products (för tappning) - Schampoblandningar
         { environment: 'sandbox', sku: 'TEST-MIX-VOLYM', name: 'Schampoblandning Volym', type: 'raw_material', unit: 'kg', active: true },

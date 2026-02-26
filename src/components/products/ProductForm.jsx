@@ -44,7 +44,7 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }) {
     order_multiple: 1,
     supplier: '',
     cost_per_unit: 0,
-    shopify_buffer: 0,
+
     notes: '',
     active: true,
     tag_ids: [],
@@ -241,24 +241,7 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }) {
           </div>
         </div>
 
-        {formData.type === 'finished_good' && (
-          <div className="border-t pt-6">
-            <h3 className="font-medium text-slate-900 mb-4">Shopify-inställningar</h3>
-            <div className="space-y-2">
-              <Label htmlFor="shopify_buffer">Buffert (dras från tillgängligt)</Label>
-              <Input
-                id="shopify_buffer"
-                type="number"
-                min="0"
-                value={formData.shopify_buffer || ''}
-                onChange={(e) => handleChange('shopify_buffer', e.target.value === '' ? 0 : parseFloat(e.target.value))}
-              />
-              <p className="text-sm text-slate-500">
-                Antal enheter som alltid hålls tillbaka från "Available to sell"
-              </p>
-            </div>
-          </div>
-        )}
+
 
         <div className="border-t pt-6">
           <h3 className="font-medium text-slate-900 mb-4">Taggar</h3>
