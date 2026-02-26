@@ -27,7 +27,7 @@ import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import { 
   Shield, Users, FileText, AlertCircle, CheckCircle, 
-  UserPlus, Search, Calendar, Hash, Database, Activity, ClipboardList, Trash2
+  UserPlus, Search, Calendar, Hash, Database, Activity, ClipboardList
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from "@/lib/utils";
@@ -73,7 +73,7 @@ export default function AdminPage() {
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('readonly');
-  const [purging, setPurging] = useState(false);
+
   const [auditFilter, setAuditFilter] = useState({
     actionType: 'all',
     entityType: 'all',
@@ -126,35 +126,7 @@ export default function AdminPage() {
     }
   });
 
-  const handlePurge = async () => {
-    setPurging(true);
-    try {
-      const entities = ['Product','MixBatch','FinishedBatch','FillingReport','PackagingRecipe','InventoryAlert','Batch','PlanningScenario','InventoryLedger','BOMItem','BatchLot'];
-      let totalDeleted = 0;
-      for (const name of entities) {
-        try {
-          while (true) {
-            const batch = await base44.entities[name].filter({ environment: 'sandbox' }, 'id', 100);
-            if (!batch || batch.length === 0) break;
-            for (const rec of batch) {
-              await base44.entities[name].delete(rec.id);
-              totalDeleted++;
-            }
-          }
-        } catch (e) {
-          console.warn('Purge skip for', name, e?.message || e);
-        }
-      }
-      if (totalDeleted > 0) {
-        toast.success(`Rensade ${totalDeleted} sandbox-poster`);
-      } else {
-        toast.success('Inga sandbox-poster hittades');
-      }
-      queryClient.invalidateQueries();
-    } finally {
-      setPurging(false);
-    }
-  };
+
 
   // Check audit log integrity
   const checkAuditIntegrity = () => {
@@ -376,27 +348,6 @@ export default function AdminPage() {
             <TabsContent value="import" className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-slate-900">Import</h2>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive" className="gap-2" disabled={purging}>
-                      <Trash2 className="w-4 h-4" /> {purging ? 'Rensar...' : 'Rensa testdata'}
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDH>
-                      <AlertDialogTitle>Rensa testdata (sandbox)</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Detta tar bort ALLA poster märkta som environment = 'sandbox' i hela systemet. Åtgärden går inte att ångra.
-                      </AlertDialogDescription>
-                    </AlertDH>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Avbryt</AlertDialogCancel>
-                      <AlertDialogAction onClick={handlePurge} className="bg-red-600 hover:bg-red-700">
-                        Jag förstår, rensa
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
               </div>
               <ImportWizard />
             </TabsContent>

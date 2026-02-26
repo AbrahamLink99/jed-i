@@ -202,7 +202,6 @@ function StepHeader({ title, right }) {
 export default function ImportWizard() {
   const envFilter = useEnvironmentFilter();
   const queryClient = useQueryClient();
-  const isSandboxHost = typeof window !== 'undefined' && window.location.host.includes('preview-sandbox');
 
   // Step state
   const [step, setStep] = useState(1);
@@ -660,13 +659,6 @@ export default function ImportWizard() {
           <CardTitle>Import Wizard</CardTitle>
         </CardHeader>
         <CardContent className="space-y-8">
-          {isSandboxHost && (
-            <Alert variant="destructive">
-              <AlertDescription>
-                Den här förhandsvisningen körs på en sandbox‑domän och kan inte spara data. Öppna appen via vanlig Preview (utan “preview-sandbox”) och försök igen.
-              </AlertDescription>
-            </Alert>
-          )}
           {/* Step tabs for clarity */}
           <Tabs value={String(step)} onValueChange={(v) => setStep(Number(v))}>
             <TabsList>
@@ -878,7 +870,7 @@ export default function ImportWizard() {
                 <div className="flex flex-col items-end gap-1">
                   <div className="flex gap-2">
                     <Button variant="outline" onClick={() => setStep(2)}>Tillbaka</Button>
-                    <Button onClick={doImport} disabled={isSandboxHost || importing || !previewRows.length || previewRows.some(r => r._errors.length) || duplicatesInfo.length > 0}>
+                    <Button onClick={doImport} disabled={importing || !previewRows.length || previewRows.some(r => r._errors.length) || duplicatesInfo.length > 0}>
                       {importing ? 'Importerar...' : 'Importera'}
                     </Button>
                   </div>

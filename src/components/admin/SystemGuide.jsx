@@ -53,12 +53,7 @@ export default function SystemGuide() {
                   </div>
                 </div>
                 
-                <Alert>
-                  <Zap className="h-4 w-4" />
-                  <AlertDescription>
-                    <strong>Miljöer:</strong> Systemet har två miljöer - <Badge>production</Badge> för verklig data och <Badge variant="outline">sandbox</Badge> för test.
-                  </AlertDescription>
-                </Alert>
+                <p className="text-sm text-slate-600">All data sparas i production-miljön.</p>
               </AccordionContent>
             </AccordionItem>
 
@@ -277,15 +272,7 @@ export default function SystemGuide() {
                 ✅ Best Practices
               </AccordionTrigger>
               <AccordionContent className="space-y-3">
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <h4 className="font-semibold text-green-900">Använd sandbox för test</h4>
-                  <p className="text-sm text-green-700">Testa nya funktioner i sandbox-miljön innan production. Använd environment-switcher i header.</p>
-                </div>
                 
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <h4 className="font-semibold text-blue-900">Seed sandbox regelbundet</h4>
-                  <p className="text-sm text-blue-700">Admin → Sandbox → "Skapa Sandbox Testdata" skapar komplett testdata för alla funktioner.</p>
-                </div>
                 
                 <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
                   <h4 className="font-semibold text-purple-900">Aldrig redigera InventoryLedger manuellt</h4>
@@ -326,10 +313,6 @@ export default function SystemGuide() {
                   <div className="p-3 border rounded">
                     <p className="text-sm"><strong>Exportera data:</strong></p>
                     <p className="text-xs text-slate-600">Admin → Lagerinventering → Exportera till CSV</p>
-                  </div>
-                  <div className="p-3 border rounded">
-                    <p className="text-sm"><strong>Återställ sandbox:</strong></p>
-                    <p className="text-xs text-slate-600">Admin → Sandbox → "Rensa Sandbox" → "Skapa Testdata"</p>
                   </div>
                 </div>
               </AccordionContent>
