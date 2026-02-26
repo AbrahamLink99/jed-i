@@ -431,7 +431,7 @@ export default function ImportWizard() {
 
   const doImport = async () => {
     setInlineError('');
-    if (isSandboxHost) {
+    if (false) {
       toast.error('Import är avstängt i sandbox‑förhandsvisning.');
       return;
     }
@@ -874,9 +874,9 @@ export default function ImportWizard() {
                       {importing ? 'Importerar...' : 'Importera'}
                     </Button>
                   </div>
-                  {(isSandboxHost || !previewRows.length || previewRows.some(r => r._errors.length)) && (
+                  {(false || !previewRows.length || previewRows.some(r => r._errors.length)) && (
                     <span className="text-xs text-slate-500">
-                      {isSandboxHost ? 'Import är avstängt i sandbox‑förhandsvisning.' :
+                      {false ? 'Import är avstängt i sandbox‑förhandsvisning.' :
                         (!previewRows.length ? 'Ladda upp och förhandsgranska CSV först.' :
                           (duplicatesInfo.length > 0
                             ? `Dubblett-SKU måste åtgärdas: ${duplicatesInfo.length} st.`
