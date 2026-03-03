@@ -375,7 +375,7 @@ export default function Products() {
                         <span className="font-medium">{product.name}</span>
                         <span className="text-xs text-slate-500 font-mono">{product.sku}</span>
                         <div className="mt-1 flex flex-wrap gap-1">
-                          <Badge variant="outline" className={\`text-xs \${brandColors[product.brand || 'own']}\`}>{brandLabels[product.brand || 'own']}</Badge>
+                          <Badge variant="outline" className={`text-xs ${brandColors[product.brand || 'own']}`}>{brandLabels[product.brand || 'own']}</Badge>
                           {(product.tag_ids || []).map((tid) => (
                             <Badge key={tid} variant="secondary" className="text-xs">{tagsById[tid]?.name || 'Tagg'}</Badge>
                           ))}
