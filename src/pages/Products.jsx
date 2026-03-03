@@ -269,74 +269,79 @@ export default function Products() {
         </div>
 
         {/* Filters */}
-        <Card className="p-4 mb-6">
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <Input
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Sök SKU eller namn..."
-                  className="pl-10"
-                />
-              </div>
-              <Select value={brandFilter} onValueChange={setBrandFilter}>
-                <SelectTrigger className="w-full sm:w-[200px]">
-                  <SelectValue placeholder="Varumärke" />
-                </SelectTrigger>
-                <SelectContent>
-                 <SelectItem value="all">Alla varumärken</SelectItem>
-                 <SelectItem value="own">BRUNS</SelectItem>
-                 <SelectItem value="client_a">Kund A</SelectItem>
-                 <SelectItem value="client_b">Kund B</SelectItem>
-                 <SelectItem value="other">Övrigt</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={supplierFilter} onValueChange={setSupplierFilter}>
-                <SelectTrigger className="w-full sm:w-[200px]">
-                  <SelectValue placeholder="Leverantör" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Alla leverantörer</SelectItem>
-                  {suppliers.map(s => (
-                    <SelectItem key={s} value={s}>{s}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={stockFilter} onValueChange={setStockFilter}>
-                <SelectTrigger className="w-full sm:w-[200px]">
-                  <SelectValue placeholder="Lagerstatus" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All lagerstatus</SelectItem>
-                  <SelectItem value="in">I lager</SelectItem>
-                  <SelectItem value="below">Under säkerhetslager</SelectItem>
-                  <SelectItem value="out">Slut</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Sortera efter" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sku">SKU</SelectItem>
-                  <SelectItem value="name">Namn</SelectItem>
-                  <SelectItem value="stock">Lager</SelectItem>
-                  <SelectItem value="supplier">Leverantör</SelectItem>
-                  <SelectItem value="cost">Kostnad</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={sortDir} onValueChange={setSortDir}>
-                <SelectTrigger className="w-full sm:w-[140px]">
-                  <SelectValue placeholder="Riktning" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="asc">Stigande</SelectItem>
-                  <SelectItem value="desc">Fallande</SelectItem>
-                </SelectContent>
-              </Select>
+        <div className="mb-6">
+          <div className="bg-white rounded-full px-3 py-2 shadow flex items-center gap-2 overflow-x-auto">
+            <div className="relative flex-1 min-w-[220px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Input
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Sök SKU eller namn..."
+                className="pl-9 rounded-full bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+              />
             </div>
+
+            <Select value={brandFilter} onValueChange={setBrandFilter}>
+              <SelectTrigger className="min-w-[160px] rounded-full bg-transparent border-none focus:ring-0 focus:outline-none">
+                <SelectValue placeholder="Varumärke" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alla varumärken</SelectItem>
+                <SelectItem value="own">BRUNS</SelectItem>
+                <SelectItem value="client_a">Kund A</SelectItem>
+                <SelectItem value="client_b">Kund B</SelectItem>
+                <SelectItem value="other">Övrigt</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={supplierFilter} onValueChange={setSupplierFilter}>
+              <SelectTrigger className="min-w-[180px] rounded-full bg-transparent border-none focus:ring-0 focus:outline-none">
+                <SelectValue placeholder="Leverantör" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alla leverantörer</SelectItem>
+                {suppliers.map(s => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={stockFilter} onValueChange={setStockFilter}>
+              <SelectTrigger className="min-w-[200px] rounded-full bg-transparent border-none focus:ring-0 focus:outline-none">
+                <SelectValue placeholder="Lagerstatus" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All lagerstatus</SelectItem>
+                <SelectItem value="in">I lager</SelectItem>
+                <SelectItem value="below">Under säkerhetslager</SelectItem>
+                <SelectItem value="out">Slut</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="min-w-[160px] rounded-full bg-transparent border-none focus:ring-0 focus:outline-none">
+                <SelectValue placeholder="Sortera efter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="sku">SKU</SelectItem>
+                <SelectItem value="name">Namn</SelectItem>
+                <SelectItem value="stock">Lager</SelectItem>
+                <SelectItem value="supplier">Leverantör</SelectItem>
+                <SelectItem value="cost">Kostnad</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={sortDir} onValueChange={setSortDir}>
+              <SelectTrigger className="min-w-[130px] rounded-full bg-transparent border-none focus:ring-0 focus:outline-none">
+                <SelectValue placeholder="Riktning" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="asc">Stigande</SelectItem>
+                <SelectItem value="desc">Fallande</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="mt-3">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList>
                 <TabsTrigger value="all">Alla</TabsTrigger>
@@ -347,7 +352,7 @@ export default function Products() {
               </TabsList>
             </Tabs>
           </div>
-        </Card>
+        </div>
 
         {/* Products Table */}
         <Card className="overflow-hidden">
@@ -372,7 +377,7 @@ export default function Products() {
                   <TableRow key={product.id}>
                     <TableCell>
                       <div className="flex flex-col">
-                        <span className="font-medium">{product.name}</span>
+                        <span className="font-semibold">{product.name}</span>
                         <span className="text-xs text-slate-500 font-mono">{product.sku}</span>
                         <div className="mt-1 flex flex-wrap gap-1">
                           <Badge variant="outline" className={`text-xs ${brandColors[product.brand || 'own']}`}>{brandLabels[product.brand || 'own']}</Badge>
@@ -426,7 +431,7 @@ export default function Products() {
                             <Eye className="w-4 h-4 mr-1" /> Detaljer
                           </Button>
                         </Link>
-                        <Button variant="ghost" size="icon" onClick={() => setAdjustProduct(product)} title="Justera lager">
+                        <Button variant="ghost" size="icon" className="text-slate-400 hover:text-slate-600" onClick={() => setAdjustProduct(product)} title="Justera lager">
                           <ArrowUpDown className="w-4 h-4" />
                         </Button>
                         <Button 
