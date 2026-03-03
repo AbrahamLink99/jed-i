@@ -371,25 +371,25 @@ export default function Products() {
                 return (
                   <TableRow key={product.id}>
                     <TableCell>
-                      <div className=\"flex flex-col\">
-                        <span className=\"font-medium\">{product.name}<\/span>
-                        <span className=\"text-xs text-slate-500 font-mono\">{product.sku}<\/span>
-                        <div className=\"mt-1 flex flex-wrap gap-1\">
-                          <Badge variant=\"outline\" className={\`text-xs \${brandColors[product.brand || 'own']}\`}>{brandLabels[product.brand || 'own']}<\/Badge>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{product.name}</span>
+                        <span className="text-xs text-slate-500 font-mono">{product.sku}</span>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          <Badge variant="outline" className={\`text-xs \${brandColors[product.brand || 'own']}\`}>{brandLabels[product.brand || 'own']}</Badge>
                           {(product.tag_ids || []).map((tid) => (
-                            <Badge key={tid} variant=\"secondary\" className=\"text-xs\">{tagsById[tid]?.name || 'Tagg'}<\/Badge>
+                            <Badge key={tid} variant="secondary" className="text-xs">{tagsById[tid]?.name || 'Tagg'}</Badge>
                           ))}
-                        <\/div>
-                      <\/div>
-                    <\/TableCell>
+                        </div>
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <Badge className={cn(typeColors[product.type], "font-normal")}>
                         {typeLabels[product.type]}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge className=\"bg-slate-900 text-white rounded-full\">{stock.onHand?.toLocaleString('sv-SE')} {product.unit}<\/Badge>
-                    <\/TableCell>
+                      <Badge className="bg-slate-900 text-white rounded-full">{stock.onHand?.toLocaleString('sv-SE')} {product.unit}</Badge>
+                    </TableCell>
                     <TableCell className="text-slate-500">
                       {(stock.available ?? 0).toLocaleString('sv-SE')} {product.unit}
                     </TableCell>
@@ -426,7 +426,7 @@ export default function Products() {
                             <Eye className="w-4 h-4 mr-1" /> Detaljer
                           </Button>
                         </Link>
-                        <Button variant=\"ghost\" size=\"icon\" onClick={() => setAdjustProduct(product)} title=\"Justera lager\">\n                          <ArrowUpDown className=\"w-4 h-4\" \/>\n                        <\/Button>
+                        <Button variant="ghost" size="icon" onClick={() => setAdjustProduct(product)} title="Justera lager">\n                          <ArrowUpDown className="w-4 h-4" />\n                        </Button>
                         <Button 
                           variant="ghost" 
                           size="icon"
