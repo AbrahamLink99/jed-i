@@ -52,7 +52,8 @@ const ROLE_PERMISSIONS = {
     'inventory.receive',
     'purchase.createPO',
     'purchase.receivePO',
-    'alerts.acknowledgeOrdered'
+    'alerts.acknowledgeOrdered',
+    'sales.import'
   ],
   readonly: [
     'products.read',
