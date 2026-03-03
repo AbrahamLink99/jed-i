@@ -91,7 +91,7 @@ export default function AdjustStockDialog({ product, stockSummary, open, onOpenC
           <div className="space-y-2">
             <Label>Antal</Label>
             <Input type="number" step="1" value={qty} onChange={(e) => setQty(e.target.value)} />
-            <p className="text-xs text-slate-500">För Skrot/Utleverans blir antalet automatiskt negativt.</p>
+            <p className="text-xs text-slate-500">Positivt tal ökar lagret, negativt tal minskar lagret.</p>
           </div>
 
           <div className="space-y-2">
