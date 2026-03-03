@@ -53,7 +53,6 @@ import Batches from './pages/Batches';
 import Dashboard from './pages/Dashboard';
 import Filling from './pages/Filling';
 import FinishedGoods from './pages/FinishedGoods';
-import Inventory from './pages/Inventory';
 import Planning from './pages/Planning';
 import ProductDetail from './pages/ProductDetail';
 import Production from './pages/Production';
@@ -69,7 +68,6 @@ export const PAGES = {
     "Dashboard": Dashboard,
     "Filling": Filling,
     "FinishedGoods": FinishedGoods,
-    "Inventory": Inventory,
     "Planning": Planning,
     "ProductDetail": ProductDetail,
     "Production": Production,

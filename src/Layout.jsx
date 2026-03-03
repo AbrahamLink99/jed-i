@@ -4,7 +4,7 @@ import { createPageUrl } from '@/utils';
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, Package, Factory, Boxes,
-  Warehouse, Calculator, Menu, X,
+  Calculator, Menu, X,
   ChevronRight, Bell, Shield, LogOut, ChefHat, Droplets } from
 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,6 @@ const navigation = [
 { name: 'Tappning', icon: Droplets, page: 'Filling' },
 { name: 'Färdigvaror', icon: Package, page: 'FinishedGoods' },
 { name: 'Batcher', icon: Boxes, page: 'Batches' },
-{ name: 'Lager', icon: Warehouse, page: 'Inventory' },
 { name: 'Planering', icon: Calculator, page: 'Planning' }];
 
 
