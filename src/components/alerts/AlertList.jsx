@@ -6,12 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle, CheckCircle2, Clock, Package } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Clock, Package, MoreHorizontal } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from "@/lib/utils";
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import AcknowledgeOrderDialog from './AcknowledgeOrderDialog';
 import DeprioritizeDialog from './DeprioritizeDialog';
+import ReceiveDialog from './ReceiveDialog';
 import { evaluateInventoryAlerts } from './AlertEvaluator';
 import { useEnvironmentFilter } from '@/components/environment/useEnvironmentFilter';
 
@@ -40,6 +42,7 @@ export default function AlertList({ compact = false, productTypeFilter = 'all', 
   const [selectedAlert, setSelectedAlert] = useState(null);
   const [evaluating, setEvaluating] = useState(false);
   const [deprioritizeTarget, setDeprioritizeTarget] = useState(null);
+  const [receiveTarget, setReceiveTarget] = useState(null);
 
   const updateAlertMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.InventoryAlert.update(id, data),
@@ -183,6 +186,8 @@ export default function AlertList({ compact = false, productTypeFilter = 'all', 
             showOrderInfo
             isLoading={isLoading}
             onDeprioritize={(alert) => setDeprioritizeTarget(alert)}
+            onReceive={(alert) => setReceiveTarget(alert)}
+            onReopen={(alert) => updateAlertMutation.mutate({ id: alert.id, data: { status: 'OPEN', ordered_at: null, ordered_by: null, order_reference: null, notes: null } })}
           />
         </TabsContent>
 
@@ -219,11 +224,20 @@ export default function AlertList({ compact = false, productTypeFilter = 'all', 
           onConfirm={(reason) => updateAlertMutation.mutate({ id: deprioritizeTarget.id, data: { status: 'DEPRIORITIZED', deprioritized_reason: reason || '' } })}
         />
       )}
+
+      {receiveTarget && (
+        <ReceiveDialog
+          alert={receiveTarget}
+          open={!!receiveTarget}
+          onOpenChange={(open) => !open && setReceiveTarget(null)}
+          onConfirm={() => updateAlertMutation.mutate({ id: receiveTarget.id, data: { status: 'CLOSED', resolved_by: 'user', resolved_at: new Date().toISOString() } })}
+        />
+      )}
     </div>
   );
 }
 
-function AlertTable({ alerts, onAcknowledge, onDeprioritize, onReactivate, showOrderInfo, isLoading }) {
+function AlertTable({ alerts, onAcknowledge, onDeprioritize, onReactivate, onReceive, onReopen, showOrderInfo, isLoading }) {
   if (isLoading) {
     return (
       <Card className="p-8 text-center">
@@ -321,12 +335,27 @@ function AlertTable({ alerts, onAcknowledge, onDeprioritize, onReactivate, showO
                     {onAcknowledge && alert.status === 'OPEN' && (
                       <Button size="sm" onClick={() => onAcknowledge(alert)}>Markera som beställt</Button>
                     )}
-                    {alert.status !== 'DEPRIORITIZED' && alert.status !== 'CLOSED' && onDeprioritize && (
-                      <Button size="sm" variant="outline" onClick={() => onDeprioritize(alert)}>Ej prioriterad</Button>
-                    )}
-                    {alert.status === 'DEPRIORITIZED' && onReactivate && (
-                      <Button size="sm" variant="secondary" onClick={() => onReactivate(alert)}>Återaktivera</Button>
-                    )}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {alert.status === 'ORDERED_ACKNOWLEDGED' && (
+                          <>
+                            <DropdownMenuItem onClick={() => onReceive && onReceive(alert)}>Inleverans mottagen</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onReopen && onReopen(alert)}>Återöppna</DropdownMenuItem>
+                          </>
+                        )}
+                        {alert.status !== 'DEPRIORITIZED' && alert.status !== 'CLOSED' && onDeprioritize && (
+                          <DropdownMenuItem onClick={() => onDeprioritize(alert)}>Markera som ej prioriterad</DropdownMenuItem>
+                        )}
+                        {alert.status === 'DEPRIORITIZED' && onReactivate && (
+                          <DropdownMenuItem onClick={() => onReactivate(alert)}>Återaktivera</DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </TableCell>
               </TableRow>
