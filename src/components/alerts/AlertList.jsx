@@ -49,6 +49,7 @@ export default function AlertList({ compact = false, productTypeFilter = 'all', 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory_alerts'] });
       setDeprioritizeTarget(null);
+      setReceiveTarget(null);
     },
   });
 
