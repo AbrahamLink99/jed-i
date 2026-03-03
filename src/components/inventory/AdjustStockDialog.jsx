@@ -43,14 +43,19 @@ export default function AdjustStockDialog({ product, stockSummary, open, onOpenC
         notes: notes || `Manuell ${type}`
       });
 
-      await evaluateInventoryAlerts();
-
       toast.success('Lager justerat');
       onSaved && onSaved();
       onOpenChange(false);
       setQty("");
       setNotes("");
       setType("inbound");
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      try {
+        await evaluateInventoryAlerts();
+      } catch (err) {
+        toast.message('Lager sparat, men notiser kunde inte uppdateras automatiskt.');
+      }
     } catch (e) {
       toast.error('Kunde inte spara: ' + (e?.message || String(e)));
     } finally {

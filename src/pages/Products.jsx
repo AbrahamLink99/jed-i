@@ -77,7 +77,7 @@ export default function Products() {
 
   const { data: ledger = [] } = useQuery({
     queryKey: ['ledger', envFilter.environment],
-    queryFn: () => base44.entities.InventoryLedger.filter(envFilter, '-created_date', 5000)
+    queryFn: () => base44.entities.InventoryLedger.filter(envFilter, '-created_date', 1000)
   });
 
   const { data: batches = [] } = useQuery({
