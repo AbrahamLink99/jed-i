@@ -51,7 +51,7 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <EnvironmentProvider>
-      <div className="min-h-screen">
+      <div className="group min-h-screen">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen &&
       <div
@@ -116,7 +116,7 @@ export default function Layout({ children, currentPageName }) {
       </aside>
 
       {/* Main content */}
-      <div className="lg:pl-[52px]">
+      <div className="lg:pl-[52px] lg:group-hover:pl-[200px] transition-[padding] duration-200 ease-in-out">
         {/* Page content */}
         <main>
 
