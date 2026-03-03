@@ -25,7 +25,8 @@ const ROLE_PERMISSIONS = {
     'purchase.createPO',
     'purchase.receivePO',
     'alerts.acknowledgeOrdered',
-    'auditlog.read'
+    'auditlog.read',
+    'sales.import'
   ],
   production: [
     'products.read',
@@ -173,7 +174,10 @@ export const PERMISSIONS = {
   ALERTS_ACKNOWLEDGE: 'alerts.acknowledgeOrdered',
   
   // Audit Log
-  AUDITLOG_READ: 'auditlog.read'
+  AUDITLOG_READ: 'auditlog.read',
+
+  // Sales Import
+  SALES_IMPORT: 'sales.import'
 };
 
 export default PermissionGate;

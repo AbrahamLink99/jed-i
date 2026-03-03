@@ -17,14 +17,13 @@ import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import { 
   Shield, Users, FileText, AlertCircle, CheckCircle, 
-  UserPlus, Search, Calendar, Hash, Database, Activity, ClipboardList
+  UserPlus, Search, Calendar, Hash, Database, Activity, ClipboardList, ShoppingCart
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from "@/lib/utils";
 import ImportWizard from '@/components/admin/import/ImportWizard';
 import InventoryCount from '@/components/admin/InventoryCount';
-
-
+import SalesImport from '@/components/admin/SalesImport.jsx';
 
 import SystemGuide from '@/components/admin/SystemGuide';
 
@@ -199,6 +198,13 @@ export default function AdminPage() {
               </TabsTrigger>
             </PermissionGate>
 
+            <PermissionGate permission={PERMISSIONS.SALES_IMPORT}>
+              <TabsTrigger value="sales">
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                Försäljning
+              </TabsTrigger>
+            </PermissionGate>
+
             <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
               <TabsTrigger value="inventory">
                 <ClipboardList className="w-4 h-4 mr-2" />
@@ -343,7 +349,15 @@ export default function AdminPage() {
             </TabsContent>
           </PermissionGate>
 
-
+          {/* Sales Import Tab */}
+          <PermissionGate permission={PERMISSIONS.SALES_IMPORT}>
+            <TabsContent value="sales" className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-slate-900">Försäljning</h2>
+              </div>
+              <SalesImport />
+            </TabsContent>
+          </PermissionGate>
 
           {/* Inventory Count Tab */}
           <PermissionGate permission={PERMISSIONS.USERS_MANAGE}>
