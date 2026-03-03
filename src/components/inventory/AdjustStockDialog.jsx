@@ -24,13 +24,13 @@ export default function AdjustStockDialog({ product, stockSummary, open, onOpenC
   const handleSave = async () => {
     const parsed = Number(qty);
     if (!product?.id) return;
-    if (!Number.isFinite(parsed) || parsed <= 0) {
-      toast.error("Ange ett positivt antal");
+    if (!Number.isFinite(parsed)) {
+      toast.error("Ange ett tal");
       return;
     }
     setSaving(true);
     try {
-      const adjustedQty = (type === 'shipment' || type === 'scrap') ? -Math.abs(parsed) : Math.abs(parsed);
+      const adjustedQty = parsed;
 
       await base44.entities.InventoryLedger.create({
         environment: 'production',
@@ -89,8 +89,8 @@ export default function AdjustStockDialog({ product, stockSummary, open, onOpenC
           </div>
 
           <div className="space-y-2">
-            <Label>Antal (positivt tal)</Label>
-            <Input type="number" min="0" step="1" value={qty} onChange={(e) => setQty(e.target.value)} />
+            <Label>Antal</Label>
+            <Input type="number" step="1" value={qty} onChange={(e) => setQty(e.target.value)} />
             <p className="text-xs text-slate-500">För Skrot/Utleverans blir antalet automatiskt negativt.</p>
           </div>
 
