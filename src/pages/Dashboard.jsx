@@ -5,8 +5,9 @@ import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Package, Activity } from 'lucide-react';
+import { Bell, Package, Activity, ArrowUpRight } from 'lucide-react';
 import { getStockSummary } from '@/components/inventory/StockCalculations';
+import { cn } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
 export default function DashboardPage() {
@@ -82,29 +83,54 @@ export default function DashboardPage() {
 
         {/* Top KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="p-6 bg-[#E8F02A]">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm font-medium text-slate-900">Aktiva notiser</div>
-                <div className="text-4xl font-bold text-slate-900 mt-1">{activeAlerts}</div>
+          <Card className="relative overflow-hidden p-6 bg-[#E8F02A]">
+            {/* Diagonal stripe overlay */}
+            <svg className="absolute inset-0 opacity-15 pointer-events-none" width="100%" height="100%">
+              <defs>
+                <pattern id="diagStripes" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+                  <rect width="4" height="8" fill="#000000" opacity="0.15" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#diagStripes)" />
+            </svg>
+            {/* Big decorative number */}
+            <div className="absolute -right-2 -bottom-6 text-black/10 text-[120px] font-extrabold leading-none select-none">
+              {activeAlerts}
+            </div>
+            <div className="relative">
+              <div className="text-sm font-medium text-slate-900">Aktiva notiser</div>
+              <div className="mt-1 text-[4rem] leading-none font-extrabold text-slate-900">{activeAlerts}</div>
+              <div className="mt-2 flex items-center gap-1 text-slate-700 text-xs">
+                <ArrowUpRight className="w-3.5 h-3.5" />
+                <span>+0 sedan igår</span>
               </div>
             </div>
           </Card>
 
-          <Card className="p-6 bg-[#F4833D] text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm font-medium">Artiklar under säkerhetslager</div>
-                <div className="text-4xl font-bold mt-1">{underSafetyCount}</div>
+          <Card className="relative overflow-hidden p-6 bg-[#F4833D] text-white">
+            <div className="absolute -right-2 -bottom-6 text-white/10 text-[120px] font-extrabold leading-none select-none">
+              {underSafetyCount}
+            </div>
+            <div className="relative">
+              <div className="text-sm font-medium">Artiklar under säkerhetslager</div>
+              <div className="mt-1 text-[4rem] leading-none font-extrabold">{underSafetyCount}</div>
+              <div className="mt-2 flex items-center gap-1 text-white/80 text-xs">
+                <ArrowUpRight className="w-3.5 h-3.5" />
+                <span>+0 sedan igår</span>
               </div>
             </div>
           </Card>
 
-          <Card className="p-6 bg-[#1A1A1A] text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm font-medium">Pågående batcher</div>
-                <div className="text-4xl font-bold mt-1">{ongoingBatches}</div>
+          <Card className="relative overflow-hidden p-6 bg-[#1A1A1A] text-white">
+            <div className="absolute -right-2 -bottom-6 text-white/10 text-[120px] font-extrabold leading-none select-none">
+              {ongoingBatches}
+            </div>
+            <div className="relative">
+              <div className="text-sm font-medium">Pågående batcher</div>
+              <div className="mt-1 text-[4rem] leading-none font-extrabold">{ongoingBatches}</div>
+              <div className="mt-2 flex items-center gap-1 text-white/70 text-xs">
+                <ArrowUpRight className="w-3.5 h-3.5" />
+                <span>+0 sedan igår</span>
               </div>
             </div>
           </Card>
@@ -116,37 +142,36 @@ export default function DashboardPage() {
             <div className="p-6">
               <h2 className="text-lg font-semibold text-slate-900">Lägst i förhållande till säkerhetslager</h2>
             </div>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Artikel</TableHead>
-                  <TableHead>SKU</TableHead>
-                  <TableHead>I lager</TableHead>
-                  <TableHead>Säkerhetslager</TableHead>
-                  <TableHead>Kvot</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {lowestRelative.map(({ product, onHand, safety, ratio }) => (
-                  <TableRow key={product.id}>
-                    <TableCell>{product.name}</TableCell>
-                    <TableCell className="text-slate-500 font-mono">{product.sku}</TableCell>
-                    <TableCell>{onHand?.toLocaleString('sv-SE')} {product.unit}</TableCell>
-                    <TableCell>{safety?.toLocaleString('sv-SE')} {product.unit}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="text-xs">
-                        {(ratio).toFixed(2)}x
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {lowestRelative.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-slate-500">Inga artiklar under säkerhetslager</TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+            <div className="px-6 pb-6 space-y-3">
+              {lowestRelative.map(({ product, onHand, safety, ratio }) => {
+                const statusColor = onHand === 0 ? '#EF4444' : (onHand < safety ? '#F59E0B' : '#E2E8F0');
+                const barColor = onHand === 0 ? 'bg-red-500' : (onHand < safety ? 'bg-amber-500' : 'bg-green-500');
+                const pct = Math.max(0, Math.min(1, safety ? onHand / safety : 1));
+                return (
+                  <div key={product.id} className="bg-white rounded-[10px] p-3 border border-slate-200" style={{ borderLeftWidth: 4, borderLeftColor: statusColor }}>
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <div className="font-semibold">{product.name}</div>
+                        <div className="text-xs text-slate-500 font-mono">{product.sku}</div>
+                      </div>
+                      <div className="min-w-[160px] text-right">
+                        <div className="text-sm font-medium">{onHand?.toLocaleString('sv-SE')} {product.unit}</div>
+                        <div className="text-xs text-slate-500">Säkerhet: {safety?.toLocaleString('sv-SE')} {product.unit}</div>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex items-center gap-3">
+                      <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                        <div className={cn('h-1.5 rounded-full', barColor)} style={{ width: `${(pct*100).toFixed(0)}%` }} />
+                      </div>
+                      <Badge variant="outline" className="text-xs">{(ratio).toFixed(2)}x</Badge>
+                    </div>
+                  </div>
+                );
+              })}
+              {lowestRelative.length === 0 && (
+                <div className="text-sm text-slate-500 px-2">Inga artiklar under säkerhetslager</div>
+              )}
+            </div>
           </Card>
 
           <Card className="p-0">

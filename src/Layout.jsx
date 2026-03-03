@@ -62,11 +62,11 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-16 bg-white transform transition-transform duration-200 ease-in-out lg:translate-x-0 shadow-sm",
+        "fixed inset-y-0 left-0 z-50 w-[52px] bg-white border-r border-[#E8E6E1] transform transition-transform duration-200 ease-in-out lg:translate-x-0 shadow-sm",
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="flex items-center justify-center h-16 border-b border-slate-200">
-          <div className="w-8 h-8 rounded-md bg-black" />
+          <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center font-extrabold text-sm leading-none">L</div>
         </div>
 
         <nav className="p-2 space-y-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
@@ -109,7 +109,7 @@ export default function Layout({ children, currentPageName }) {
       </aside>
 
       {/* Main content */}
-      <div className="lg:pl-16">
+      <div className="lg:pl-[52px]">
         {/* Page content */}
         <main>
 
