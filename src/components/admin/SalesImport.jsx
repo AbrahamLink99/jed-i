@@ -66,8 +66,13 @@ export default function SalesImport() {
   const getVal = (row, fieldKey) => {
     const col = mapping[fieldKey];
     if (!col) return '';
-    const idx = headerIndex[col];
-    if (idx === undefined) return '';
+    let idx;
+    if (String(col).startsWith('__idx_')) {
+      idx = parseInt(String(col).slice(6), 10);
+    } else {
+      idx = headerIndex[col];
+    }
+    if (idx === undefined || Number.isNaN(idx)) return '';
     return row[idx];
   };
 
@@ -228,7 +233,11 @@ export default function SalesImport() {
                   <Select value={mapping.sku} onValueChange={(v) => setMapping(m => ({ ...m, sku: v }))}>
                     <SelectTrigger><SelectValue placeholder="Välj kolumn" /></SelectTrigger>
                     <SelectContent>
-                      {headers.map((h, i) => (<SelectItem key={i} value={h}>{h || '(tom)'}</SelectItem>))}
+                      {headers.map((h, i) => {
+                      const v = (h && String(h).trim() !== '') ? String(h) : `__idx_${i}`;
+                      const label = (h && String(h).trim() !== '') ? h : `(kolumn ${i + 1})`;
+                      return (<SelectItem key={i} value={v}>{label}</SelectItem>);
+                      })}
                     </SelectContent>
                   </Select>
                 </div>
@@ -237,7 +246,11 @@ export default function SalesImport() {
                   <Select value={mapping.qty} onValueChange={(v) => setMapping(m => ({ ...m, qty: v }))}>
                     <SelectTrigger><SelectValue placeholder="Välj kolumn" /></SelectTrigger>
                     <SelectContent>
-                      {headers.map((h, i) => (<SelectItem key={i} value={h}>{h || '(tom)'}</SelectItem>))}
+                      {headers.map((h, i) => {
+                      const v = (h && String(h).trim() !== '') ? String(h) : `__idx_${i}`;
+                      const label = (h && String(h).trim() !== '') ? h : `(kolumn ${i + 1})`;
+                      return (<SelectItem key={i} value={v}>{label}</SelectItem>);
+                      })}
                     </SelectContent>
                   </Select>
                 </div>
