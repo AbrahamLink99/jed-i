@@ -332,9 +332,6 @@ function AlertTable({ alerts, onAcknowledge, onDeprioritize, onReactivate, onRec
                 )}
                 <TableCell>
                   <div className="flex items-center justify-end gap-2">
-                    {onAcknowledge && alert.status === 'OPEN' && (
-                      <Button size="sm" onClick={() => onAcknowledge(alert)}>Markera som beställt</Button>
-                    )}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -342,6 +339,9 @@ function AlertTable({ alerts, onAcknowledge, onDeprioritize, onReactivate, onRec
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        {alert.status === 'OPEN' && onAcknowledge && (
+                          <DropdownMenuItem onClick={() => onAcknowledge(alert)}>Markera som beställt</DropdownMenuItem>
+                        )}
                         {alert.status === 'ORDERED_ACKNOWLEDGED' && (
                           <>
                             <DropdownMenuItem onClick={() => onReceive && onReceive(alert)}>Inleverans mottagen</DropdownMenuItem>
