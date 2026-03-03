@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import ProductForm from '@/components/products/ProductForm';
 import BOMEditor from '@/components/products/BOMEditor';
 import AddBatchDialog from '@/components/finishedgoods/AddBatchDialog';
+import AdjustStockDialog from '@/components/inventory/AdjustStockDialog.jsx';
 import { getStockSummary } from '@/components/inventory/StockCalculations';
 import { useEnvironmentFilter } from '@/components/environment/useEnvironmentFilter';
 
@@ -59,6 +60,7 @@ export default function Products() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [showBOM, setShowBOM] = useState(null);
   const [showAddBatch, setShowAddBatch] = useState(null);
+  const [adjustProduct, setAdjustProduct] = useState(null);
 
   const queryClient = useQueryClient();
   const envFilter = useEnvironmentFilter();
@@ -356,6 +358,7 @@ export default function Products() {
                 <TableHead>Namn</TableHead>
                 <TableHead>Typ</TableHead>
                 <TableHead>I lager</TableHead>
+                <TableHead>Tillgängligt</TableHead>
                 <TableHead>Säkerhet</TableHead>
                 <TableHead>Ledtid</TableHead>
                 <TableHead className="text-right">Åtgärder</TableHead>
@@ -396,6 +399,9 @@ export default function Products() {
                       {stock.onHand?.toLocaleString('sv-SE')} {product.unit}
                     </TableCell>
                     <TableCell className="text-slate-500">
+                      {(stock.available ?? 0).toLocaleString('sv-SE')} {product.unit}
+                    </TableCell>
+                    <TableCell className="text-slate-500">
                       {product.safety_stock?.toLocaleString('sv-SE') || '-'}
                     </TableCell>
                     <TableCell className="text-slate-500">
@@ -428,6 +434,14 @@ export default function Products() {
                             <Eye className="w-4 h-4 mr-1" /> Detaljer
                           </Button>
                         </Link>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setAdjustProduct(product)}
+                          className="text-slate-700"
+                        >
+                          Justera lager
+                        </Button>
                         <Button 
                           variant="ghost" 
                           size="icon"
@@ -470,6 +484,19 @@ export default function Products() {
             product={showAddBatch}
             open={!!showAddBatch}
             onOpenChange={(open) => !open && setShowAddBatch(null)}
+          />
+        )}
+
+        {/* Adjust Stock Dialog */}
+        {adjustProduct && (
+          <AdjustStockDialog
+            product={adjustProduct}
+            stockSummary={stockData[adjustProduct.id]}
+            open={!!adjustProduct}
+            onOpenChange={(open) => !open && setAdjustProduct(null)}
+            onSaved={() => {
+              queryClient.invalidateQueries({ queryKey: ['ledger'] });
+            }}
           />
         )}
 
