@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, Package, Edit2, Trash2, Eye } from 'lucide-react';
+import { Plus, Search, Package, Edit2, Trash2, Eye, ArrowUpDown } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Link } from 'react-router-dom';
@@ -354,8 +354,7 @@ export default function Products() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>SKU</TableHead>
-                <TableHead>Namn</TableHead>
+                <TableHead>Artikel</TableHead>
                 <TableHead>Typ</TableHead>
                 <TableHead>I lager</TableHead>
                 <TableHead>Tillgängligt</TableHead>
@@ -371,33 +370,26 @@ export default function Products() {
                 
                 return (
                   <TableRow key={product.id}>
-                    <TableCell className="font-mono font-medium">{product.sku}</TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        {product.name}
-                        <Badge variant="outline" className={`text-xs ${brandColors[product.brand || 'own']}`}>
-                          {brandLabels[product.brand || 'own']}
-                        </Badge>
-                        <div className="flex flex-wrap gap-1">
+                      <div className=\"flex flex-col\">
+                        <span className=\"font-medium\">{product.name}<\/span>
+                        <span className=\"text-xs text-slate-500 font-mono\">{product.sku}<\/span>
+                        <div className=\"mt-1 flex flex-wrap gap-1\">
+                          <Badge variant=\"outline\" className={\`text-xs \${brandColors[product.brand || 'own']}\`}>{brandLabels[product.brand || 'own']}<\/Badge>
                           {(product.tag_ids || []).map((tid) => (
-                            <Badge key={tid} variant="secondary" className="text-xs">
-                              {tagsById[tid]?.name || 'Tagg'}
-                            </Badge>
+                            <Badge key={tid} variant=\"secondary\" className=\"text-xs\">{tagsById[tid]?.name || 'Tagg'}<\/Badge>
                           ))}
-                        </div>
-                      </div>
-                    </TableCell>
+                        <\/div>
+                      <\/div>
+                    <\/TableCell>
                     <TableCell>
                       <Badge className={cn(typeColors[product.type], "font-normal")}>
                         {typeLabels[product.type]}
                       </Badge>
                     </TableCell>
-                    <TableCell className={cn(
-                      "font-semibold",
-                      stock.belowSafety && "text-amber-600"
-                    )}>
-                      {stock.onHand?.toLocaleString('sv-SE')} {product.unit}
-                    </TableCell>
+                    <TableCell>
+                      <Badge className=\"bg-slate-900 text-white rounded-full\">{stock.onHand?.toLocaleString('sv-SE')} {product.unit}<\/Badge>
+                    <\/TableCell>
                     <TableCell className="text-slate-500">
                       {(stock.available ?? 0).toLocaleString('sv-SE')} {product.unit}
                     </TableCell>
@@ -434,14 +426,7 @@ export default function Products() {
                             <Eye className="w-4 h-4 mr-1" /> Detaljer
                           </Button>
                         </Link>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => setAdjustProduct(product)}
-                          className="text-slate-700"
-                        >
-                          Justera lager
-                        </Button>
+                        <Button variant=\"ghost\" size=\"icon\" onClick={() => setAdjustProduct(product)} title=\"Justera lager\">\n                          <ArrowUpDown className=\"w-4 h-4\" \/>\n                        <\/Button>
                         <Button 
                           variant="ghost" 
                           size="icon"

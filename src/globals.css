@@ -48,7 +48,7 @@
   --card-foreground: 222 47% 11%;
   --popover: 0 0% 100%;
   --popover-foreground: 222 47% 11%;
-  --primary: 189 94% 43%;
+  --primary: 0 0% 0%;
   --primary-foreground: 0 0% 100%;
   --secondary: 210 40% 96%;
   --secondary-foreground: 222 47% 11%;
@@ -61,7 +61,7 @@
   --border: 214 32% 91%;
   --input: 214 32% 91%;
   --ring: 189 94% 43%;
-  --radius: 0.5rem;
+  --radius: 1rem;
   --chart-1: 189 94% 43%;
   --chart-2: 160 60% 45%;
   --chart-3: 30 80% 55%;
@@ -75,8 +75,9 @@
   }
 
   body {
-    @apply bg-slate-50 text-slate-900 antialiased;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    background-color: #F2F0EB;
+    @apply text-slate-900 antialiased;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -92,7 +93,8 @@
 @layer components {
   /* Modern card style */
   .analytics-card {
-    @apply bg-white border border-slate-200 rounded-lg shadow-sm;
+    @apply bg-white rounded-2xl shadow;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   }
 
   /* KPI Card */
@@ -123,26 +125,13 @@
     @apply text-slate-500 flex items-center gap-1 text-sm font-medium;
   }
 
-  /* Table improvements */
-  table {
-    @apply w-full border-collapse;
-  }
-
-  thead {
-    @apply bg-slate-50 border-b border-slate-200;
-  }
-
-  tbody tr {
-    @apply border-b border-slate-100 hover:bg-slate-50 transition-colors;
-  }
-
-  th {
-    @apply text-left text-xs font-semibold text-slate-600 uppercase tracking-wider px-4 py-3;
-  }
-
-  td {
-    @apply px-4 py-3 text-sm text-slate-700;
-  }
+  /* Table style - airy, zebra, no borders */
+  table { @apply w-full; border-collapse: separate; border-spacing: 0; }
+  thead { @apply bg-white; }
+  tbody tr { @apply transition-colors; }
+  tbody tr:nth-child(even) { background-color: #FAFAF8; }
+  th { @apply text-left text-xs font-semibold text-slate-700 uppercase tracking-wider px-5 py-3; }
+  td { @apply px-5 py-4 text-sm text-slate-800; }
 }
 
 /* Recharts customization */

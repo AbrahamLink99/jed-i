@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import { useEnvironmentFilter } from '@/components/environment/useEnvironmentFilter';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getDashboardMetrics } from '../components/dashboard/dashboardMetrics';
-import KpiCard from '@/components/dashboard/KpiCard';
-import TrendChart from '@/components/dashboard/TrendChart';
-import HistogramChart from '@/components/dashboard/HistogramChart';
-import RootCauseTable from '@/components/dashboard/RootCauseTable';
-import { AlertCircle, Info } from 'lucide-react';
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { Card, CardContent } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Bell, Package, Activity } from 'lucide-react';
+import { getStockSummary } from '@/components/inventory/StockCalculations';
 
 export default function DashboardPage() {
   const [period, setPeriod] = useState('30');
