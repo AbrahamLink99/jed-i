@@ -426,7 +426,9 @@ export default function Products() {
                             <Eye className="w-4 h-4 mr-1" /> Detaljer
                           </Button>
                         </Link>
-                        <Button variant="ghost" size="icon" onClick={() => setAdjustProduct(product)} title="Justera lager">\n                          <ArrowUpDown className="w-4 h-4" />\n                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => setAdjustProduct(product)} title="Justera lager">
+                          <ArrowUpDown className="w-4 h-4" />
+                        </Button>
                         <Button 
                           variant="ghost" 
                           size="icon"
