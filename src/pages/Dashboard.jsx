@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Bell, Package, Activity, ArrowUpRight } from 'lucide-react';
 import { getStockSummary } from '@/components/inventory/StockCalculations';
 import { cn } from "@/lib/utils";
-import { cn } from "@/lib/utils";
 
 export default function DashboardPage() {
   const envFilter = useEnvironmentFilter();
@@ -85,7 +84,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card className="relative overflow-hidden p-6 bg-[#E8F02A]">
             {/* Diagonal stripe overlay */}
-            <svg className="absolute inset-0 opacity-15 pointer-events-none" width="100%" height="100%">
+            <svg className="absolute inset-0 pointer-events-none" width="100%" height="100%">
               <defs>
                 <pattern id="diagStripes" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
                   <rect width="4" height="8" fill="#000000" opacity="0.15" />
@@ -178,18 +177,29 @@ export default function DashboardPage() {
             <div className="p-6">
               <h2 className="text-lg font-semibold text-slate-900">Senaste transaktioner</h2>
             </div>
-            <div className="px-6 pb-6 space-y-4">
-              {recentLedger.map((e) => (
-                <div key={e.id} className="flex items-start justify-between">
-                  <div>
-                    <div className="text-sm font-medium">{e.product_name || e.product_sku}</div>
-                    <div className="text-xs text-slate-500">{e.transaction_type} • {new Date(e.created_date).toLocaleString('sv-SE')}</div>
+            <div className="px-6 pb-6">
+              {recentLedger.map((e, i) => {
+                const positive = (e.quantity || 0) > 0;
+                return (
+                  <div key={e.id} className={cn('py-3 flex items-center justify-between', i > 0 && 'border-t border-slate-200')}>
+                    <div className="flex items-center gap-3">
+                      <div className={cn('h-2.5 w-2.5 rounded-full', positive ? 'bg-green-500' : 'bg-red-500')} />
+                      <div>
+                        <div className="text-sm font-medium">{e.product_name || e.product_sku}</div>
+                        <div className="text-xs text-slate-500">{new Date(e.created_date).toLocaleString('sv-SE')}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Badge className={cn('text-xs', positive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700')}>
+                        {e.transaction_type}
+                      </Badge>
+                      <div className={cn('text-sm font-semibold text-right min-w-[60px]', positive ? 'text-green-600' : 'text-red-600')}>
+                        {positive ? '+' : ''}{e.quantity}
+                      </div>
+                    </div>
                   </div>
-                  <div className={cn("text-sm font-semibold", e.quantity < 0 ? 'text-red-600' : 'text-green-600')}>
-                    {e.quantity > 0 ? '+' : ''}{e.quantity}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
               {recentLedger.length === 0 && (
                 <div className="text-sm text-slate-500">Inga transaktioner ännu</div>
               )}
