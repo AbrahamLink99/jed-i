@@ -33,7 +33,7 @@ const statusLabels = {
   CLOSED: 'Stängd'
 };
 
-export default function AlertList({ compact = false }) {
+export default function AlertList({ compact = false, productTypeFilter = 'all', stockFilter = 'all' }) {
   const queryClient = useQueryClient();
   const envFilter = useEnvironmentFilter();
   const [selectedAlert, setSelectedAlert] = useState(null);
@@ -42,6 +42,19 @@ export default function AlertList({ compact = false }) {
   const { data: alerts = [], isLoading } = useQuery({
     queryKey: ['inventory_alerts', envFilter.environment],
     queryFn: () => base44.entities.InventoryAlert.filter(envFilter, '-created_date')
+  });
+
+  // Apply external filters
+  const filteredAlertsAll = alerts.filter(a => {
+    const matchType = productTypeFilter === 'all' || a.product_type === productTypeFilter;
+    const avail = typeof a.current_available_qty === 'number' ? a.current_available_qty : (a.current_available_qty ? Number(a.current_available_qty) : 0);
+    const matchStock = (
+      stockFilter === 'all' ||
+      (stockFilter === 'out' && avail <= 0) ||
+      (stockFilter === 'below_safety' && a.type === 'BELOW_SAFETY') ||
+      (stockFilter === 'low_stock' && a.type === 'LOW_STOCK')
+    );
+    return matchType && matchStock;
   });
 
   const handleEvaluate = async () => {
@@ -56,9 +69,9 @@ export default function AlertList({ compact = false }) {
     }
   };
 
-  const openAlerts = alerts.filter(a => a.status === 'OPEN');
-  const acknowledgedAlerts = alerts.filter(a => a.status === 'ORDERED_ACKNOWLEDGED');
-  const closedAlerts = alerts.filter(a => a.status === 'CLOSED');
+  const openAlerts = filteredAlertsAll.filter(a => a.status === 'OPEN');
+  const acknowledgedAlerts = filteredAlertsAll.filter(a => a.status === 'ORDERED_ACKNOWLEDGED');
+  const closedAlerts = filteredAlertsAll.filter(a => a.status === 'CLOSED');
 
   if (compact) {
     return (
