@@ -44,6 +44,11 @@ export default function Layout({ children, currentPageName }) {
     loadUser();
   }, []);
 
+  const navItems = React.useMemo(
+    () => (user?.role === 'admin' ? [...navigation, { name: 'Admin', icon: Shield, page: 'Admin' }] : navigation),
+    [user]
+  );
+
   return (
     <EnvironmentProvider>
       <div className="min-h-screen bg-slate-50">
@@ -60,102 +65,52 @@ export default function Layout({ children, currentPageName }) {
         "fixed inset-y-0 left-0 z-50 w-16 bg-white transform transition-transform duration-200 ease-in-out lg:translate-x-0 shadow-sm",
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        <div className="flex items-center justify-between h-16 px-6 border-b border-slate-200">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-600 to-cyan-700 flex items-center justify-center shadow-sm">
-              <Factory className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-bold text-slate-900">Lagermaster</span>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden"
-            onClick={() => setSidebarOpen(false)}>
-
-            <X className="w-5 h-5" />
-          </Button>
+        <div className="flex items-center justify-center h-16 border-b border-slate-200">
+          <div className="w-8 h-8 rounded-md bg-black" />
         </div>
 
-        <nav className="p-3 space-y-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
-          {navigation.map((item) => {
+        <nav className="p-2 space-y-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+          {navItems.map((item) => {
             const isActive = currentPageName === item.page;
             return (
               <Link
                 key={item.page}
                 to={createPageUrl(item.page)}
+                title={item.name}
                 onClick={() => setSidebarOpen(false)}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
-                  isActive ?
-                  "bg-cyan-50 text-cyan-900 shadow-sm" :
-                  "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
-                )}>
-
-                <item.icon className={cn(
-                  "w-4 h-4",
-                  isActive ? "text-cyan-600" : "text-slate-500"
-                )} />
-                {item.name}
-                {isActive &&
-                <ChevronRight className="w-4 h-4 ml-auto text-cyan-600" />
-                }
-              </Link>);
-
+                  "flex items-center justify-center h-12 w-12 mx-auto rounded-full transition-colors",
+                  isActive ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"
+                )}
+              >
+                <item.icon className={cn("w-5 h-5")}/>
+              </Link>
+            );
           })}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-slate-200 bg-slate-50 space-y-2">
-          {user?.role === 'admin' &&
-          <Link
-            to={createPageUrl('Admin')}
-            onClick={() => setSidebarOpen(false)}
-            className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
-              currentPageName === 'Admin' ?
-              "bg-cyan-50 text-cyan-900 shadow-sm" :
-              "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
-            )}>
-
-              <Shield className={cn(
-              "w-4 h-4",
-              currentPageName === 'Admin' ? "text-cyan-600" : "text-slate-500"
-              )} />
-              Admin
-            </Link>
-          }
-          {user &&
-          <div className="px-3 py-2 space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-600">Inloggad som:</span>
-                <Badge variant="secondary" className="text-xs">
-                  {user.role || 'user'}
-                </Badge>
-              </div>
-              <p className="text-sm font-medium text-slate-900 truncate">
-                {user.email}
-              </p>
+        <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-slate-200 bg-white">
+          {user && (
+            <div className="flex items-center justify-center">
               <Button
-              variant="outline"
-              size="sm"
-              className="w-full"
-              onClick={() => base44.auth.logout()}>
-
-                <LogOut className="w-4 h-4 mr-2" />
-                Logga ut
+                variant="ghost"
+                size="icon"
+                className="rounded-full bg-slate-100"
+                title="Logga ut"
+                onClick={() => base44.auth.logout()}
+              >
+                <span className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-xs">
+                  {user.email?.[0]?.toUpperCase() || 'U'}
+                </span>
               </Button>
             </div>
-          }
-          <div className="text-xs text-slate-500 text-center">
-            Lagermaster v1.0
-          </div>
+          )}
         </div>
       </aside>
 
       {/* Main content */}
-      <div className="lg:pl-64">
-        {/* Top bar */}
-        <header className="sticky top-0 z-30 h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-6 shadow-sm">
+      <div className="lg:pl-16">
+        {/* Top bar removed */}
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
@@ -180,8 +135,6 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </div>
 
-
-        </header>
 
 
         {/* Page content */}
