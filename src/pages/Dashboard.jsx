@@ -2,11 +2,12 @@ import React, { useMemo } from 'react';
 import { useEnvironmentFilter } from '@/components/environment/useEnvironmentFilter';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Bell, Package, Activity } from 'lucide-react';
 import { getStockSummary } from '@/components/inventory/StockCalculations';
+import { cn } from "@/lib/utils";
 
 export default function DashboardPage() {
   const envFilter = useEnvironmentFilter();
@@ -159,7 +160,7 @@ export default function DashboardPage() {
                     <div className="text-sm font-medium">{e.product_name || e.product_sku}</div>
                     <div className="text-xs text-slate-500">{e.transaction_type} • {new Date(e.created_date).toLocaleString('sv-SE')}</div>
                   </div>
-                  <div className="text-sm font-semibold {e.quantity < 0 ? 'text-red-600' : 'text-green-600'}">
+                  <div className={cn("text-sm font-semibold", e.quantity < 0 ? 'text-red-600' : 'text-green-600')}>
                     {e.quantity > 0 ? '+' : ''}{e.quantity}
                   </div>
                 </div>
