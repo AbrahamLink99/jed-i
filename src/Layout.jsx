@@ -51,7 +51,7 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <EnvironmentProvider>
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen &&
       <div
@@ -110,33 +110,6 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Main content */}
       <div className="lg:pl-16">
-        {/* Top bar removed */}
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon" 
-              className="lg:hidden"
-              onClick={() => setSidebarOpen(true)}>
-              <Menu className="w-5 h-5" />
-            </Button>
-
-            <div className="flex items-center gap-3">
-              {navigation.find((n) => n.page === currentPageName)?.icon &&
-              <div className="p-2 rounded-lg bg-cyan-50">
-                  {React.createElement(
-                  navigation.find((n) => n.page === currentPageName)?.icon || LayoutDashboard,
-                  { className: "w-5 h-5 text-cyan-600" }
-                )}
-                </div>
-              }
-              <h1 className="text-slate-900 font-semibold text-lg">
-                {navigation.find((n) => n.page === currentPageName)?.name || currentPageName}
-              </h1>
-            </div>
-          </div>
-
-
-
         {/* Page content */}
         <main>
 
