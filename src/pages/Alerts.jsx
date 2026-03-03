@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 export default function AlertsPage() {
   const [productType, setProductType] = useState('all');
   const [stockMode, setStockMode] = useState('all');
+  const [statusMode, setStatusMode] = useState('active');
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -39,9 +40,23 @@ export default function AlertsPage() {
               </SelectContent>
             </Select>
           </div>
+        <div className="space-y-1">
+          <Label>Status</Label>
+          <Select value={statusMode} onValueChange={setStatusMode}>
+            <SelectTrigger className="w-56">
+              <SelectValue placeholder="Alla aktiva" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="active">Alla aktiva</SelectItem>
+              <SelectItem value="deprioritized">Ej prioriterad</SelectItem>
+              <SelectItem value="closed">Stängda</SelectItem>
+              <SelectItem value="all">Alla</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         </div>
 
-        <AlertList productTypeFilter={productType} stockFilter={stockMode} />
+        <AlertList productTypeFilter={productType} stockFilter={stockMode} statusFilter={statusMode} />
       </div>
     </div>
   );

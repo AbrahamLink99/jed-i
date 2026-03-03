@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import AcknowledgeOrderDialog from './AcknowledgeOrderDialog';
+import DeprioritizeDialog from './DeprioritizeDialog';
 import { evaluateInventoryAlerts } from './AlertEvaluator';
 import { useEnvironmentFilter } from '@/components/environment/useEnvironmentFilter';
 
@@ -33,11 +34,20 @@ const statusLabels = {
   CLOSED: 'Stängd'
 };
 
-export default function AlertList({ compact = false, productTypeFilter = 'all', stockFilter = 'all' }) {
+export default function AlertList({ compact = false, productTypeFilter = 'all', stockFilter = 'all', statusFilter = 'active' }) {
   const queryClient = useQueryClient();
   const envFilter = useEnvironmentFilter();
   const [selectedAlert, setSelectedAlert] = useState(null);
   const [evaluating, setEvaluating] = useState(false);
+  const [deprioritizeTarget, setDeprioritizeTarget] = useState(null);
+
+  const updateAlertMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.InventoryAlert.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['inventory_alerts'] });
+      setDeprioritizeTarget(null);
+    },
+  });
 
   const { data: alerts = [], isLoading } = useQuery({
     queryKey: ['inventory_alerts', envFilter.environment],
@@ -45,7 +55,7 @@ export default function AlertList({ compact = false, productTypeFilter = 'all', 
   });
 
   // Apply external filters
-  const filteredAlertsAll = alerts.filter(a => {
+  const baseFiltered = alerts.filter(a => {
     const matchType = productTypeFilter === 'all' || a.product_type === productTypeFilter;
     const avail = typeof a.current_available_qty === 'number' ? a.current_available_qty : (a.current_available_qty ? Number(a.current_available_qty) : 0);
     const matchStock = (
@@ -55,6 +65,13 @@ export default function AlertList({ compact = false, productTypeFilter = 'all', 
       (stockFilter === 'low_stock' && a.type === 'LOW_STOCK')
     );
     return matchType && matchStock;
+  });
+
+  const filteredAlertsAll = baseFiltered.filter(a => {
+    if (statusFilter === 'active') return a.status === 'OPEN' || a.status === 'ORDERED_ACKNOWLEDGED';
+    if (statusFilter === 'deprioritized') return a.status === 'DEPRIORITIZED';
+    if (statusFilter === 'closed') return a.status === 'CLOSED';
+    return true; // 'all'
   });
 
   const handleEvaluate = async () => {
@@ -71,6 +88,7 @@ export default function AlertList({ compact = false, productTypeFilter = 'all', 
 
   const openAlerts = filteredAlertsAll.filter(a => a.status === 'OPEN');
   const acknowledgedAlerts = filteredAlertsAll.filter(a => a.status === 'ORDERED_ACKNOWLEDGED');
+  const deprioritizedAlerts = filteredAlertsAll.filter(a => a.status === 'DEPRIORITIZED');
   const closedAlerts = filteredAlertsAll.filter(a => a.status === 'CLOSED');
 
   if (compact) {
@@ -133,7 +151,8 @@ export default function AlertList({ compact = false, productTypeFilter = 'all', 
         </Button>
       </div>
 
-      <Tabs defaultValue="open" className="space-y-4">
+      {(() => { const defaultTab = statusFilter === 'deprioritized' ? 'deprioritized' : (statusFilter === 'closed' ? 'closed' : 'open'); return (
+      <Tabs defaultValue={defaultTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="open">
             Öppna ({openAlerts.length})
@@ -144,6 +163,9 @@ export default function AlertList({ compact = false, productTypeFilter = 'all', 
           <TabsTrigger value="closed">
             Stängda ({closedAlerts.length})
           </TabsTrigger>
+          <TabsTrigger value="deprioritized">
+            Ej prioriterade ({deprioritizedAlerts.length})
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="open">
@@ -151,6 +173,7 @@ export default function AlertList({ compact = false, productTypeFilter = 'all', 
             alerts={openAlerts} 
             onAcknowledge={setSelectedAlert}
             isLoading={isLoading}
+            onDeprioritize={(alert) => setDeprioritizeTarget(alert)}
           />
         </TabsContent>
 
@@ -159,6 +182,15 @@ export default function AlertList({ compact = false, productTypeFilter = 'all', 
             alerts={acknowledgedAlerts}
             showOrderInfo
             isLoading={isLoading}
+            onDeprioritize={(alert) => setDeprioritizeTarget(alert)}
+          />
+        </TabsContent>
+
+        <TabsContent value="deprioritized">
+          <AlertTable 
+            alerts={deprioritizedAlerts}
+            isLoading={isLoading}
+            onReactivate={(alert) => updateAlertMutation.mutate({ id: alert.id, data: { status: 'OPEN', deprioritized_reason: null } })}
           />
         </TabsContent>
 
@@ -169,7 +201,7 @@ export default function AlertList({ compact = false, productTypeFilter = 'all', 
             isLoading={isLoading}
           />
         </TabsContent>
-      </Tabs>
+        </Tabs> ); })()}
 
       {selectedAlert && (
         <AcknowledgeOrderDialog
@@ -178,11 +210,20 @@ export default function AlertList({ compact = false, productTypeFilter = 'all', 
           onOpenChange={(open) => !open && setSelectedAlert(null)}
         />
       )}
+
+      {deprioritizeTarget && (
+        <DeprioritizeDialog
+          alert={deprioritizeTarget}
+          open={!!deprioritizeTarget}
+          onOpenChange={(open) => !open && setDeprioritizeTarget(null)}
+          onConfirm={(reason) => updateAlertMutation.mutate({ id: deprioritizeTarget.id, data: { status: 'DEPRIORITIZED', deprioritized_reason: reason || '' } })}
+        />
+      )}
     </div>
   );
 }
 
-function AlertTable({ alerts, onAcknowledge, showOrderInfo, isLoading }) {
+function AlertTable({ alerts, onAcknowledge, onDeprioritize, onReactivate, showOrderInfo, isLoading }) {
   if (isLoading) {
     return (
       <Card className="p-8 text-center">
@@ -212,18 +253,21 @@ function AlertTable({ alerts, onAcknowledge, showOrderInfo, isLoading }) {
             <TableHead className="text-right">Förslag</TableHead>
             <TableHead>Beställ senast</TableHead>
             {showOrderInfo && <TableHead>Beställning</TableHead>}
-            {onAcknowledge && <TableHead></TableHead>}
+            <TableHead className="text-right"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {alerts.map(alert => {
             const config = severityConfig[alert.severity];
             return (
-              <TableRow key={alert.id}>
+              <TableRow key={alert.id} className={cn(alert.status === 'DEPRIORITIZED' && 'opacity-60')}>
                 <TableCell>
                   <Badge className={cn(config.badge, "font-normal text-xs")}>
                     {typeLabels[alert.type]}
                   </Badge>
+                  {alert.status === 'DEPRIORITIZED' && (
+                    <Badge variant="secondary" className="ml-2 bg-slate-200 text-slate-700 font-normal text-xs">Ej prioriterad</Badge>
+                  )}
                 </TableCell>
                 <TableCell>
                   <div className="font-medium text-slate-900">{alert.product_sku}</div>
@@ -232,7 +276,12 @@ function AlertTable({ alerts, onAcknowledge, showOrderInfo, isLoading }) {
                 <TableCell className="max-w-md">
                   <div className="flex items-start gap-2">
                     <config.icon className={cn("w-4 h-4 mt-0.5 flex-shrink-0", config.color)} />
-                    <span className="text-sm text-slate-600">{alert.message}</span>
+                    <div>
+                      <span className="text-sm text-slate-600">{alert.message}</span>
+                      {alert.status === 'DEPRIORITIZED' && alert.deprioritized_reason && (
+                        <div className="text-xs italic text-slate-500 mt-1">Orsak: {alert.deprioritized_reason}</div>
+                      )}
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell className="text-right font-medium">
@@ -267,16 +316,19 @@ function AlertTable({ alerts, onAcknowledge, showOrderInfo, isLoading }) {
                     )}
                   </TableCell>
                 )}
-                {onAcknowledge && (
-                  <TableCell>
-                    <Button
-                      size="sm"
-                      onClick={() => onAcknowledge(alert)}
-                    >
-                      Markera som beställt
-                    </Button>
-                  </TableCell>
-                )}
+                <TableCell>
+                  <div className="flex items-center justify-end gap-2">
+                    {onAcknowledge && alert.status === 'OPEN' && (
+                      <Button size="sm" onClick={() => onAcknowledge(alert)}>Markera som beställt</Button>
+                    )}
+                    {alert.status !== 'DEPRIORITIZED' && alert.status !== 'CLOSED' && onDeprioritize && (
+                      <Button size="sm" variant="outline" onClick={() => onDeprioritize(alert)}>Ej prioriterad</Button>
+                    )}
+                    {alert.status === 'DEPRIORITIZED' && onReactivate && (
+                      <Button size="sm" variant="secondary" onClick={() => onReactivate(alert)}>Återaktivera</Button>
+                    )}
+                  </div>
+                </TableCell>
               </TableRow>
             );
           })}
