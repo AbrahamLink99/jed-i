@@ -71,12 +71,7 @@ export default function AlertList({ compact = false, productTypeFilter = 'all', 
     return matchType && matchStock;
   });
 
-  const filteredAlertsAll = baseFiltered.filter(a => {
-    if (statusFilter === 'active') return a.status === 'OPEN' || a.status === 'ORDERED_ACKNOWLEDGED';
-    if (statusFilter === 'deprioritized') return a.status === 'DEPRIORITIZED';
-    if (statusFilter === 'closed') return a.status === 'CLOSED';
-    return true; // 'all'
-  });
+  const allForTabs = baseFiltered; // status filtrering sker per flik lokalt
 
   const handleEvaluate = async () => {
     setEvaluating(true);
@@ -90,10 +85,10 @@ export default function AlertList({ compact = false, productTypeFilter = 'all', 
     }
   };
 
-  const openAlerts = filteredAlertsAll.filter(a => a.status === 'OPEN');
-  const acknowledgedAlerts = filteredAlertsAll.filter(a => a.status === 'ORDERED_ACKNOWLEDGED');
-  const deprioritizedAlerts = filteredAlertsAll.filter(a => a.status === 'DEPRIORITIZED');
-  const closedAlerts = filteredAlertsAll.filter(a => a.status === 'CLOSED');
+  const openAlerts = allForTabs.filter(a => a.status === 'OPEN');
+  const acknowledgedAlerts = allForTabs.filter(a => a.status === 'ORDERED_ACKNOWLEDGED');
+  const deprioritizedAlerts = allForTabs.filter(a => a.status === 'DEPRIORITIZED');
+  const closedAlerts = allForTabs.filter(a => a.status === 'CLOSED');
 
   if (compact) {
     return (
