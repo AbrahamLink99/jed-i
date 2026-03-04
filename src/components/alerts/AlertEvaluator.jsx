@@ -9,7 +9,7 @@ export async function evaluateInventoryAlerts() {
   const products = await base44.entities.Product.list();
   const ledgerEntries = await base44.entities.InventoryLedger.list();
   const batches = await base44.entities.Batch.list();
-  const existingAlerts = await base44.entities.InventoryAlert.filter({ 
+  const existingAlerts = await base44.entities.InventoryAlert.filter({
     status: { $in: ['OPEN', 'ORDERED_ACKNOWLEDGED'] }
   });
 
@@ -17,125 +17,123 @@ export async function evaluateInventoryAlerts() {
   const alertsToCreate = [];
   const alertsToUpdate = [];
 
+  // 1) Cleanup duplicates: keep the highest severity per product, close the rest
+  const severityRank = { critical: 3, warning: 2, info: 1 };
+  const byProduct = existingAlerts.reduce((acc, a) => {
+    (acc[a.product_id] ||= []).push(a);
+    return acc;
+  }, {});
+
+  for (const [productId, list] of Object.entries(byProduct)) {
+    if (list.length <= 1) continue;
+    let keep = list[0];
+    for (const a of list) {
+      if (severityRank[a.severity] > severityRank[keep.severity]) keep = a;
+    }
+    for (const a of list) {
+      if (a.id !== keep.id) {
+        await base44.entities.InventoryAlert.update(a.id, {
+          status: 'CLOSED',
+          resolved_at: now,
+          resolved_by: 'system'
+        });
+      }
+    }
+  }
+
+  // Re-fetch actives after cleanup map
+  const activesAfterCleanup = await base44.entities.InventoryAlert.filter({
+    status: { $in: ['OPEN', 'ORDERED_ACKNOWLEDGED'] }
+  });
+  const activeByProduct = activesAfterCleanup.reduce((acc, a) => {
+    acc[a.product_id] = a; // max one after cleanup
+    return acc;
+  }, {});
+
+  // 2) Single-rule evaluation per product
   for (const product of products) {
     if (!product.active) continue;
 
     const productLedger = ledgerEntries.filter(e => e.product_id === product.id);
     const productBatches = batches.filter(b => b.product_id === product.id);
-    
     const stockSummary = getStockSummary(product, productLedger, productBatches);
-    
+
     const {
-      onHand,
-      reserved,
       available,
       safetyStock = product.safety_stock || 0,
       reorderPoint = product.safety_stock || 0
     } = stockSummary;
 
-    // Check for existing alert of each type
-    const existingLowStock = existingAlerts.find(
-      a => a.product_id === product.id && a.type === 'LOW_STOCK'
-    );
-    const existingBelowSafety = existingAlerts.find(
-      a => a.product_id === product.id && a.type === 'BELOW_SAFETY'
-    );
+    let target = null; // {severity, type, message}
+    if (available <= 0) {
+      target = {
+        severity: 'critical',
+        type: 'LOW_STOCK',
+        message: `${product.name} är slut i lager.`
+      };
+    } else if (available <= safetyStock && safetyStock > 0) {
+      target = {
+        severity: 'warning',
+        type: 'BELOW_SAFETY',
+        message: `${product.name} är under säkerhetslagret. Tillgängligt: ${available}, Säkerhetslager: ${safetyStock}.`
+      };
+    } else if (available <= reorderPoint && reorderPoint > 0) {
+      target = {
+        severity: 'info',
+        type: 'LOW_STOCK',
+        message: `${product.name} har nått beställningspunkten.`
+      };
+    }
 
-    // Rule 1: LOW_STOCK - available <= reorderPoint
-    if (available <= reorderPoint && reorderPoint > 0) {
-      const severity = available <= 0 ? 'critical' : available <= safetyStock ? 'warning' : 'info';
-      const message = `${product.name} (${product.sku}) har nått beställningspunkten. Tillgängligt: ${available} ${product.unit}, Beställningspunkt: ${reorderPoint} ${product.unit}`;
-      
-      const suggestedOrderQty = Math.max(
-        reorderPoint * 2 - available,
-        product.moq || 0
-      );
+    const existing = activeByProduct[product.id];
 
+    if (target) {
+      // compute optional suggestion/dates when relevant
       const leadTimeDays = product.lead_time_days || 7;
       const orderByDate = new Date();
       orderByDate.setDate(orderByDate.getDate() + 1);
-
       const needByDate = new Date();
       needByDate.setDate(needByDate.getDate() + leadTimeDays);
+      const suggestedOrderQty = reorderPoint > 0 ? Math.max(reorderPoint * 2 - available, product.moq || 0) : undefined;
 
-      if (existingLowStock) {
-        if (existingLowStock.status === 'OPEN') {
-          alertsToUpdate.push({
-            id: existingLowStock.id,
-            data: {
-              severity,
-              message,
-              current_available_qty: available,
-              suggested_order_qty: suggestedOrderQty,
-              last_evaluated_at: now,
-              order_by_date: orderByDate.toISOString().split('T')[0],
-              need_by_date: needByDate.toISOString().split('T')[0]
-            }
-          });
-        }
+      if (existing) {
+        alertsToUpdate.push({
+          id: existing.id,
+          data: {
+            severity: target.severity,
+            type: target.type,
+            message: target.message,
+            current_available_qty: available,
+            safety_stock: safetyStock,
+            reorder_point: reorderPoint,
+            suggested_order_qty: suggestedOrderQty,
+            order_by_date: orderByDate.toISOString().split('T')[0],
+            need_by_date: needByDate.toISOString().split('T')[0],
+            last_evaluated_at: now
+          }
+        });
       } else {
         alertsToCreate.push({
           product_id: product.id,
           product_sku: product.sku,
           product_name: product.name,
           product_type: product.type,
-          severity,
-          type: 'LOW_STOCK',
+          severity: target.severity,
+          type: target.type,
           status: 'OPEN',
-          message,
+          message: target.message,
           current_available_qty: available,
-          reorder_point: reorderPoint,
           safety_stock: safetyStock,
+          reorder_point: reorderPoint,
           suggested_order_qty: suggestedOrderQty,
           order_by_date: orderByDate.toISOString().split('T')[0],
           need_by_date: needByDate.toISOString().split('T')[0],
           last_evaluated_at: now
         });
       }
-    } else if (existingLowStock) {
-      // Auto-close if stock is back above reorder point (for any status)
-      await base44.entities.InventoryAlert.update(existingLowStock.id, {
-        status: 'CLOSED',
-        resolved_at: now,
-        resolved_by: 'system'
-      });
-    }
-
-    // Rule 2: BELOW_SAFETY - available < safetyStock
-    if (available < safetyStock && safetyStock > 0) {
-      const severity = available <= 0 ? 'critical' : 'warning';
-      const message = `${product.name} (${product.sku}) är under säkerhetslagret. Tillgängligt: ${available} ${product.unit}, Säkerhetslager: ${safetyStock} ${product.unit}`;
-      
-      if (existingBelowSafety) {
-        if (existingBelowSafety.status === 'OPEN') {
-          alertsToUpdate.push({
-            id: existingBelowSafety.id,
-            data: {
-              severity,
-              message,
-              current_available_qty: available,
-              last_evaluated_at: now
-            }
-          });
-        }
-      } else {
-        alertsToCreate.push({
-          product_id: product.id,
-          product_sku: product.sku,
-          product_name: product.name,
-          product_type: product.type,
-          severity,
-          type: 'BELOW_SAFETY',
-          status: 'OPEN',
-          message,
-          current_available_qty: available,
-          safety_stock: safetyStock,
-          last_evaluated_at: now
-        });
-      }
-    } else if (existingBelowSafety) {
-      // Auto-close if stock is back above safety level (for any status)
-      await base44.entities.InventoryAlert.update(existingBelowSafety.id, {
+    } else if (existing) {
+      // Stock recovered above reorder point -> auto-close
+      await base44.entities.InventoryAlert.update(existing.id, {
         status: 'CLOSED',
         resolved_at: now,
         resolved_by: 'system'
@@ -143,12 +141,10 @@ export async function evaluateInventoryAlerts() {
     }
   }
 
-  // Create new alerts
   if (alertsToCreate.length > 0) {
     await base44.entities.InventoryAlert.bulkCreate(alertsToCreate);
   }
 
-  // Update existing alerts
   for (const update of alertsToUpdate) {
     await base44.entities.InventoryAlert.update(update.id, update.data);
   }
