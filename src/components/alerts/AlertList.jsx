@@ -55,7 +55,7 @@ export default function AlertList({ compact = false, productTypeFilter = 'all', 
 
   const { data: alerts = [], isLoading } = useQuery({
     queryKey: ['inventory_alerts', envFilter.environment],
-    queryFn: () => base44.entities.InventoryAlert.filter(envFilter, '-created_date')
+    queryFn: () => base44.entities.InventoryAlert.filter({ ...envFilter, status: { $in: ['OPEN', 'ORDERED_ACKNOWLEDGED', 'DEPRIORITIZED', 'CLOSED'] } }, '-created_date')
   });
 
   // Apply external filters
