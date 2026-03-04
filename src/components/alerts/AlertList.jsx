@@ -276,7 +276,7 @@ function AlertTable({ alerts, onAcknowledge, onDeprioritize, onReactivate, onRec
             const config = severityConfig[alert.severity];
             return (
               <TableRow key={alert.id} className={cn(alert.status === 'DEPRIORITIZED' && 'opacity-60')}>
-                <TableCell>
+                <TableCell className="px-4 py-5">
                   <Badge className={cn(config.badge, "font-normal text-xs px-3 py-1.5 rounded-[20px]")}>
                     {typeLabels[alert.type]}
                   </Badge>
