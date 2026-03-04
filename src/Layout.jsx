@@ -29,6 +29,7 @@ const navigation = [
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isSidebarHovered, setIsSidebarHovered] = useState(false);
   const [user, setUser] = useState(null);
 
 
@@ -61,10 +62,15 @@ export default function Layout({ children, currentPageName }) {
       }
 
       {/* Sidebar */}
-      <aside className={cn(
-        "group fixed inset-y-0 left-0 z-50 w-[52px] lg:w-[52px] bg-white border-r border-[#E8E6E1] transform transition-transform duration-200 ease-in-out lg:translate-x-0 shadow-sm lg:transition-[width] lg:duration-200 lg:ease-in-out lg:group-hover:w-[200px]",
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      )}>
+      <aside
+        onMouseEnter={() => setIsSidebarHovered(true)}
+        onMouseLeave={() => setIsSidebarHovered(false)}
+        className={cn(
+          "group fixed inset-y-0 left-0 z-50 w-[52px] bg-white border-r border-[#E8E6E1] transform transition-transform duration-200 ease-in-out lg:translate-x-0 shadow-sm lg:transition-[width] lg:duration-200 lg:ease-in-out",
+          isSidebarHovered ? "lg:w-[200px]" : "lg:w-[52px]",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
         <div className="flex items-center justify-center h-16 border-b border-slate-200">
           <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center font-extrabold text-sm leading-none">L</div>
         </div>
@@ -79,16 +85,17 @@ export default function Layout({ children, currentPageName }) {
                 title={item.name}
                 onClick={() => setSidebarOpen(false)}
                 className={cn(
-                  "flex items-center h-10 w-full mx-0 rounded-full transition-all px-0 lg:group-hover:px-3",
-                  "justify-center lg:group-hover:justify-start",
+                  "flex items-center h-10 w-full mx-0 rounded-full transition-all",
+                  isSidebarHovered ? "px-3 justify-start" : "px-0 justify-center",
                   isActive ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"
                 )}
               >
-                <item.icon className={cn("w-5 h-5")} />
+                <item.icon className={cn("w-5 h-5", isActive ? "text-white" : "text-slate-700")} />
                 <span className={cn(
-                  "ml-3 text-sm font-medium hidden lg:inline opacity-0 lg:group-hover:opacity-100 transition-all duration-200 translate-x-[-4px] lg:group-hover:translate-x-0",
+                  "ml-3 text-sm font-medium hidden lg:inline transition-all duration-200",
+                  isSidebarHovered ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-1",
                   isActive ? "text-white" : "text-slate-700"
-                )}> 
+                )}>
                   {item.name}
                 </span>
               </Link>
@@ -116,7 +123,8 @@ export default function Layout({ children, currentPageName }) {
       </aside>
 
       {/* Main content */}
-      <div className="lg:pl-[52px] lg:group-hover:pl-[200px] transition-[padding] duration-200 ease-in-out">
+      <div className={cn(isSidebarHovered ? "lg:pl-[200px]" : "lg:pl-[52px]", "transition-[padding] duration-200 ease-in-out")}>
+
         {/* Page content */}
         <main>
 
