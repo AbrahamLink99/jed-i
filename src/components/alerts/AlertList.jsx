@@ -157,17 +157,17 @@ export default function AlertList({ compact = false, productTypeFilter = 'all', 
 
       {(() => { const defaultTab = statusFilter === 'deprioritized' ? 'deprioritized' : (statusFilter === 'closed' ? 'closed' : 'open'); return (
       <Tabs defaultValue={defaultTab} className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="open">
+        <TabsList className="gap-2">
+          <TabsTrigger value="open" className="px-5 py-2.5">
             Öppna ({openAlerts.length})
           </TabsTrigger>
-          <TabsTrigger value="acknowledged">
+          <TabsTrigger value="acknowledged" className="px-5 py-2.5">
             Beställda ({acknowledgedAlerts.length})
           </TabsTrigger>
-          <TabsTrigger value="closed">
+          <TabsTrigger value="closed" className="px-5 py-2.5">
             Stängda ({closedAlerts.length})
           </TabsTrigger>
-          <TabsTrigger value="deprioritized">
+          <TabsTrigger value="deprioritized" className="px-5 py-2.5">
             Ej prioriterade ({deprioritizedAlerts.length})
           </TabsTrigger>
         </TabsList>
@@ -258,7 +258,7 @@ function AlertTable({ alerts, onAcknowledge, onDeprioritize, onReactivate, onRec
 
   return (
     <Card>
-      <Table>
+      <Table className="border-separate border-spacing-y-2 leading-[1.6]">
         <TableHeader>
           <TableRow>
             <TableHead>Typ</TableHead>
@@ -277,18 +277,18 @@ function AlertTable({ alerts, onAcknowledge, onDeprioritize, onReactivate, onRec
             return (
               <TableRow key={alert.id} className={cn(alert.status === 'DEPRIORITIZED' && 'opacity-60')}>
                 <TableCell>
-                  <Badge className={cn(config.badge, "font-normal text-xs")}>
+                  <Badge className={cn(config.badge, "font-normal text-xs px-3 py-1.5 rounded-[20px]")}>
                     {typeLabels[alert.type]}
                   </Badge>
                   {alert.status === 'DEPRIORITIZED' && (
-                    <Badge variant="secondary" className="ml-2 bg-slate-200 text-slate-700 font-normal text-xs">Ej prioriterad</Badge>
+                    <Badge variant="secondary" className="ml-2 bg-slate-200 text-slate-700 font-normal text-xs px-3 py-1.5 rounded-[20px]">Ej prioriterad</Badge>
                   )}
                 </TableCell>
-                <TableCell>
-                  <div className="font-medium text-slate-900">{alert.product_sku}</div>
+                <TableCell className="px-4 py-5">
+                  <div className="font-medium text-slate-900 mb-1">{alert.product_sku}</div>
                   <div className="text-sm text-slate-500">{alert.product_name}</div>
                 </TableCell>
-                <TableCell className="max-w-md">
+                <TableCell className="max-w-md px-4 py-5 pr-6">
                   <div className="flex items-start gap-2">
                     <config.icon className={cn("w-4 h-4 mt-0.5 flex-shrink-0", config.color)} />
                     <div>
@@ -299,17 +299,17 @@ function AlertTable({ alerts, onAcknowledge, onDeprioritize, onReactivate, onRec
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="text-right font-medium">
+                <TableCell className="text-right font-medium px-4 py-5">
                   {alert.current_available_qty || 0}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right px-4 py-5">
                   {alert.suggested_order_qty && (
                     <span className="font-semibold text-slate-700">
                       {alert.suggested_order_qty}
                     </span>
                   )}
                 </TableCell>
-                <TableCell>
+                <TableCell className="px-4 py-5">
                   {alert.order_by_date && (
                     <span className="text-sm text-slate-600">
                       {format(new Date(alert.order_by_date), 'd MMM yyyy', { locale: sv })}
@@ -317,9 +317,9 @@ function AlertTable({ alerts, onAcknowledge, onDeprioritize, onReactivate, onRec
                   )}
                 </TableCell>
                 {showOrderInfo && (
-                  <TableCell>
+                  <TableCell className="px-4 py-5">
                     {alert.order_reference && (
-                      <div className="text-sm">
+                      <div className="text-sm leading-[1.8] space-y-1 py-1">
                         <div className="font-medium">{alert.order_reference}</div>
                         <div className="text-slate-500">{alert.ordered_qty} st</div>
                         {alert.ordered_at && (
@@ -331,29 +331,29 @@ function AlertTable({ alerts, onAcknowledge, onDeprioritize, onReactivate, onRec
                     )}
                   </TableCell>
                 )}
-                <TableCell>
+                <TableCell className="px-4 py-5">
                   <div className="flex items-center justify-end gap-2">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Button variant="ghost" size="sm" className="px-3 py-2">
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
+                      <DropdownMenuContent align="end" className="space-y-3 py-2">
                         {alert.status === 'OPEN' && onAcknowledge && (
-                          <DropdownMenuItem onClick={() => onAcknowledge(alert)}>Markera som beställt</DropdownMenuItem>
+                          <DropdownMenuItem className="px-3 py-2" onClick={() => onAcknowledge(alert)}>Markera som beställt</DropdownMenuItem>
                         )}
                         {alert.status === 'ORDERED_ACKNOWLEDGED' && (
                           <>
-                            <DropdownMenuItem onClick={() => onReceive && onReceive(alert)}>Inleverans mottagen</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => onReopen && onReopen(alert)}>Återöppna</DropdownMenuItem>
+                            <DropdownMenuItem className="px-3 py-2" onClick={() => onReceive && onReceive(alert)}>Inleverans mottagen</DropdownMenuItem>
+                            <DropdownMenuItem className="px-3 py-2" onClick={() => onReopen && onReopen(alert)}>Återöppna</DropdownMenuItem>
                           </>
                         )}
                         {alert.status !== 'DEPRIORITIZED' && alert.status !== 'CLOSED' && onDeprioritize && (
-                          <DropdownMenuItem onClick={() => onDeprioritize(alert)}>Markera som ej prioriterad</DropdownMenuItem>
+                          <DropdownMenuItem className="px-3 py-2" onClick={() => onDeprioritize(alert)}>Markera som ej prioriterad</DropdownMenuItem>
                         )}
                         {alert.status === 'DEPRIORITIZED' && onReactivate && (
-                          <DropdownMenuItem onClick={() => onReactivate(alert)}>Återaktivera</DropdownMenuItem>
+                          <DropdownMenuItem className="px-3 py-2" onClick={() => onReactivate(alert)}>Återaktivera</DropdownMenuItem>
                         )}
                       </DropdownMenuContent>
                     </DropdownMenu>
