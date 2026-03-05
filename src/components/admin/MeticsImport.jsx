@@ -54,6 +54,7 @@ export default function MeticsImport() {
 
   const [ingredientCol, setIngredientCol] = useState("");
   const [qtyCol, setQtyCol] = useState("");
+  const [qtyUnit, setQtyUnit] = useState("kg"); // kg | g
   const [namesNotSku, setNamesNotSku] = useState(false);
 
   const [products, setProducts] = useState([]);
@@ -96,18 +97,20 @@ export default function MeticsImport() {
     if (!ingredientCol || !qtyCol) return [];
     return rawRows.map(r => {
       const rawIng = (r[ingredientCol] ?? "").toString().trim();
-      const qty = Number((r[qtyCol] ?? "").toString().replace(",", "."));
+      const qtyRaw = Number((r[qtyCol] ?? "").toString().replace(",", "."));
+      const qty = isFinite(qtyRaw) ? qtyRaw : NaN;
+      const qtyInKg = !Number.isNaN(qty) ? (qtyUnit === 'g' ? qty / 1000 : qty) : NaN;
       const sku = namesNotSku ? (nameToSkuMap[rawIng] || "") : rawIng;
       const prod = sku ? productsBySku.get(sku) : undefined;
       return {
         rawIngredient: rawIng,
         sku,
         productName: prod?.name || "",
-        qtyKg: isFinite(qty) ? qty : NaN,
+        qtyKg: qtyInKg,
         found: Boolean(prod),
       };
     });
-  }, [ingredientCol, qtyCol, namesNotSku, nameToSkuMap, rawRows, productsBySku]);
+  }, [ingredientCol, qtyCol, qtyUnit, namesNotSku, nameToSkuMap, rawRows, productsBySku]);
 
   const stats = useMemo(() => {
     const total = previewRows.length;
@@ -213,7 +216,7 @@ export default function MeticsImport() {
           {step === 1 && (
             <div className="space-y-4">
               <div>
-                <Label>CSV eller Excel (två kolumner: Ingrediens och Mängd kg per 1 kg)</Label>
+                <Label>CSV eller Excel (två kolumner: Ingrediens och Mängd)</Label>
                 <div className="mt-2 flex items-center gap-3">
                   <Input type="file" accept=".csv,.xlsx,.xls" onChange={handleFileUpload} />
                   <Button disabled className="gap-2" variant="outline">
@@ -244,17 +247,33 @@ export default function MeticsImport() {
                   </Select>
                 </div>
                 <div className="flex-1 space-y-2">
-                  <Label>Kolumn för mängd (kg per 1 kg)</Label>
-                  <Select value={qtyCol} onValueChange={setQtyCol}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Välj kolumn" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {rawHeaders.map((h) => (
-                        <SelectItem key={h} value={h}>{h}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label>Kolumn för mängd</Label>
+                  <div className="flex gap-3">
+                    <div className="flex-1">
+                      <Select value={qtyCol} onValueChange={setQtyCol}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Välj kolumn" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {rawHeaders.map((h) => (
+                            <SelectItem key={h} value={h}>{h}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="w-32">
+                      <Select value={qtyUnit} onValueChange={setQtyUnit}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Enhet" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="kg">kg</SelectItem>
+                          <SelectItem value="g">g</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-500">Om g väljs konverteras värden till kg i preview och import.</p>
                 </div>
               </div>
 
@@ -386,6 +405,11 @@ export default function MeticsImport() {
                 <Badge className="bg-amber-100 text-amber-800">{stats.missing} saknas</Badge>
                 <Badge variant="outline">Kopplas till {selectedProductIds.length} produkter</Badge>
               </div>
+              {qtyUnit === 'g' && (
+                <div className="text-sm text-slate-600">
+                  Värden konverterade från g till kg (dividerat med 1000).
+                </div>
+              )}
 
               <div className="overflow-auto border rounded">
                 <Table>
