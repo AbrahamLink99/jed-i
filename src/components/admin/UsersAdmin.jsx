@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 export default function UsersAdmin() {
   const [users, setUsers] = React.useState([]);
-  const [error, setError] = React.useState<string | null>(null);
+  const [error, setError] = React.useState(null);
 
   React.useEffect(() => {
     let mounted = true;
