@@ -136,17 +136,23 @@ export default function MeticsImport() {
         headers = parsed.headers;
         rows = parsed.rows;
       } else if (lower.endsWith('.xlsx') || lower.endsWith('.xls')) {
-        // För Excel använder vi ExtractDataFromUploadedFile för att få rader med kolumnnamn från första raden
-        const schema = { type: 'object', additionalProperties: true };
-        const res = await base44.integrations.Core.ExtractDataFromUploadedFile({ file_url, json_schema: schema });
-        if (res.status === 'success') {
-          // res.output kan vara array med objects där keys är kolumnrubriker
-          const out = Array.isArray(res.output) ? res.output : (Array.isArray(res.output?.rows) ? res.output.rows : []);
-          rows = out;
-          // Hämta headers från första raden
-          if (out.length > 0) headers = Object.keys(out[0]);
-        } else {
-          throw new Error(res.details || 'Kunde inte läsa Excel-filen');
+        // Excel-fallback: om parsing inte är tillgänglig, be användaren använda CSV
+        try {
+          const schema = { type: 'object', additionalProperties: true };
+          const res = await base44.integrations.Core.ExtractDataFromUploadedFile({ file_url, json_schema: schema });
+          if (res.status === 'success') {
+            const out = Array.isArray(res.output) ? res.output : (Array.isArray(res.output?.rows) ? res.output.rows : []);
+            rows = out;
+            if (out.length > 0) headers = Object.keys(out[0]);
+          } else {
+            alert('Excel-stöd är inte tillgängligt just nu. Konvertera filen till CSV och försök igen.');
+            setUploading(false);
+            return;
+          }
+        } catch (e) {
+          alert('Excel-stöd är inte tillgängligt just nu. Konvertera filen till CSV och försök igen.');
+          setUploading(false);
+          return;
         }
       } else {
         // Förhandsstöd endast csv/xlsx/xls
