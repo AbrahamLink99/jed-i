@@ -34,10 +34,7 @@ export default function Production() {
     }
   }, [productsError]);
 
-  useEffect(() => {
-    console.log('bomItems length:', (bomItems || []).length);
-    console.log('products length:', (products || []).length);
-  }, [bomItems, products]);
+
 
   const { data: bomItems = [], error: bomError } = useQuery({
     queryKey: ['bom-items', 'production'],
