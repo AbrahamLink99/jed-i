@@ -91,10 +91,10 @@ export default function ProductionForm({
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>{isMix ? 'Blandning (mix) *' : 'Färdigvara *'}</Label>
+            <Label>Välj produkt att tillverka</Label>
             <Select value={selectedProduct} onValueChange={setSelectedProduct}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder={isMix ? 'Välj blandning...' : 'Välj färdigvara...'} />
+                <SelectValue placeholder="Välj produkt att tillverka..." />
               </SelectTrigger>
               <SelectContent position="popper" className="max-h-60 overflow-y-auto">
                 {productList.length === 0 && (
