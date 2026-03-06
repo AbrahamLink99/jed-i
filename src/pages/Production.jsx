@@ -215,7 +215,7 @@ export default function Production() {
   };
 
   return (
-    <ErrorBoundary fallback={<div className=\"p-4 text-red-700 bg-red-50 border border-red-200 rounded\">Ett fel uppstod på Produktionssidan.</div>}>
+    <ErrorBoundary fallback={<div className="p-4 text-red-700 bg-red-50 border border-red-200 rounded">Ett fel uppstod på Produktionssidan.</div>}>
       <div className="min-h-screen bg-slate-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
