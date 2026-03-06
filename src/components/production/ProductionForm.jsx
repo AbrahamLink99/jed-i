@@ -24,7 +24,7 @@ export default function ProductionForm({
   const [notes, setNotes] = useState('');
   const [batchNumber, setBatchNumber] = useState('');
 
-  const productList = mixEligibleProducts;
+  const recipeList = recipeOptions;
   const selected = recipeList.find(o => o.mix_sku === selectedRecipe);
   const productBOM = selected?.bom || [];
 
@@ -46,7 +46,7 @@ export default function ProductionForm({
         shortage
       };
     });
-  }, [selectedProduct, quantity, productBOM, componentStock]);
+  }, [selectedRecipe, quantity, productBOM, componentStock]);
 
   const hasShortage = componentImpact.some(c => c.shortage);
   const canProduce = selected && selected.mix_product_id && quantity && parseFloat(quantity) > 0;
