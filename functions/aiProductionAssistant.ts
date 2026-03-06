@@ -55,16 +55,25 @@ Deno.serve(async (req) => {
       produced_at: m.produced_at
     }));
 
-    const alertsPayload = (alerts || []).map(a => ({
-      product_sku: a.product_sku,
-      product_name: a.product_name,
-      type: a.type,
-      severity: a.severity,
-      current_available_qty: a.current_available_qty,
-      safety_stock: a.safety_stock,
-      suggested_order_qty: a.suggested_order_qty,
-      deprioritized_reason: a.deprioritized_reason || null
-    }));
+    const alertsPayload = (alerts || []).map(a => {
+      const ca = Number(a.current_available_qty);
+      const ss = Number(a.safety_stock);
+      const valid = Number.isFinite(ca) && Number.isFinite(ss);
+      const gap = valid ? (ss - ca) : null;
+      const needs_ordering = valid ? (ca < ss) : false;
+      return {
+        product_sku: a.product_sku,
+        product_name: a.product_name,
+        type: a.type,
+        severity: a.severity,
+        current_available_qty: a.current_available_qty,
+        safety_stock: a.safety_stock,
+        suggested_order_qty: a.suggested_order_qty,
+        deprioritized_reason: a.deprioritized_reason || null,
+        needs_ordering,
+        gap
+      };
+    });
 
     const ledgerPayload = (ledger || []).map(l => ({
       product_sku: l.product_sku,
@@ -123,7 +132,7 @@ Deno.serve(async (req) => {
       '- Avgör intent i användarens meddelande.',
       '- Svara med {"type":"production",...} ENDAST när användaren beskriver genomförd produktion med konkreta siffror (kg, st, batchnummer).',
       '- För ALLA frågor, analyser, listor och rapporter: svara med {"type":"info","summary":"...","tables":[...]} (tables valfritt).',
-      '- För inköpslista/beställning/under säkerhetslager: använd "Beräknad tillgänglighet" som primär källa (fallback till alerts.current_available_qty). Räkna Tillgängligt per SKU, jämför mot product.safety_stock. Föreslagen beställning = max(0, safety_stock - tillgängligt), men om alerts.suggested_order_qty är större – använd det. Bygg tabell: ["Leverantör","SKU","Namn","Tillgängligt","Säkerhetslager","Föreslagen beställning"]. Stöd filtrering/gruppering per leverantör och hantera frasen "samma leverantör" genom att välja den leverantör som förekommer mest i urvalet.',
+      '- För inköpslista/beställning/under säkerhetslager: använd "Beräknad tillgänglighet" som primär källa (fallback till alerts.current_available_qty). Räkna Tillgängligt per SKU, jämför mot product.safety_stock. Föreslagen beställning = max(0, safety_stock - tillgängligt), men om alerts.suggested_order_qty är större – använd det. Inkludera ENDAST artiklar där alerts.needs_ordering === true (dvs current_available_qty < safety_stock). Exempel: 899 kg i lager och säkerhetslager 50 kg ska ALDRIG inkluderas i inköpslistan. Bygg tabell: ["Leverantör","SKU","Namn","Tillgängligt","Säkerhetslager","Föreslagen beställning"]. Stöd filtrering/gruppering per leverantör och hantera frasen "samma leverantör" genom att välja den leverantör som förekommer mest i urvalet.',
       '- Svara ENDAST med giltig JSON utan markdown eller extra text.'
     ].join('\n');
 
