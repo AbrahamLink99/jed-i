@@ -388,7 +388,7 @@ export default function FillingPage() {
                     onChange={(e) => onLineChange(idx, 'waste_kg', e.target.value)}
                     className="md:col-span-2"
                   />
-                </div)
+                </div>
               ))}
             </div>
           )}
