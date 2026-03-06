@@ -37,10 +37,11 @@ export default function Layout({ children, currentPageName }) {
 
   // AI assistant state
   const [assistantOpen, setAssistantOpen] = useState(false);
-  const [messages, setMessages] = useState([]); // {role: 'user'|'assistant', content: string}
+  const [messages, setMessages] = useState([]); // {role: 'user'|'assistant', content: string, type?: 'info'|'production', tables?: any[]}
   const [input, setInput] = useState("");
   const [pendingActions, setPendingActions] = useState(null); // [{type, sku, kg|units, batch_no}]
   const [submitting, setSubmitting] = useState(false);
+  const [thinking, setThinking] = useState(false);
   const [products, setProducts] = useState([]);
 
   const productsBySku = React.useMemo(() => {
@@ -95,13 +96,13 @@ export default function Layout({ children, currentPageName }) {
     if (!text) return;
     setMessages((m) => [...m, { role: 'user', content: text }]);
     setInput('');
+    setThinking(true);
 
     try {
       const res = await base44.functions.invoke('aiProductionAssistant', { message: text });
-      const { summary, actions } = res.data || {};
-      setMessages((m) => [...m, { role: 'assistant', content: summary || 'Jag har tolkat din text. Kontrollera förslaget nedan.' }]);
-      if (Array.isArray(actions) && actions.length > 0) {
-        // Normalize actions with defaults
+      const { type, summary, actions, tables } = res.data || {};
+
+      if (type === 'production' && Array.isArray(actions) && actions.length > 0) {
         const norm = actions.map(a => ({
           type: a.type,
           sku: a.sku,
@@ -109,13 +110,18 @@ export default function Layout({ children, currentPageName }) {
           units: a.units ?? undefined,
           batch_no: a.batch_no || (a.type === 'mix_batch' ? genBatchNo('MB', a.sku) : genBatchNo('B', a.sku))
         }));
+        setMessages((m) => [...m, { role: 'assistant', content: summary || 'Jag har tolkat din text. Kontrollera förslaget nedan.', type: 'production' }]);
         setPendingActions(norm);
       } else {
+        // info fallback
+        setMessages((m) => [...m, { role: 'assistant', content: summary || 'Här är informationen du efterfrågade.', type: 'info', tables: Array.isArray(tables) ? tables : [] }]);
         setPendingActions(null);
       }
     } catch (e) {
-      setMessages((m) => [...m, { role: 'assistant', content: 'Jag kunde inte tolka meddelandet. Jag kan hjälpa dig att registrera blandningar (kg) och färdigvarubatcher (st). Ex: "Körde 600 kg Hårmask bas, fick ut 412 st 350ml och 198 st 50ml, spill 2 kg".' }]);
+      setMessages((m) => [...m, { role: 'assistant', content: 'Jag kunde inte tolka meddelandet. Beskriv produktion (t.ex. "Körde 600 kg...") eller ställ en fråga om lager/planering.', type: 'info' }]);
       setPendingActions(null);
+    } finally {
+      setThinking(false);
     }
   };
 
@@ -304,10 +310,43 @@ export default function Layout({ children, currentPageName }) {
           {/* Messages */}
           <div className="flex-1 overflow-auto p-4 space-y-3">
             {messages.map((m, idx) => (
-              <div key={idx} className={cn('max-w-[85%] rounded-2xl px-3 py-2', m.role === 'user' ? 'ml-auto bg-slate-900 text-white' : 'mr-auto bg-white border')}>
-                {m.content}
+              <div key={idx} className="space-y-2">
+                <div className={cn('max-w-[85%] rounded-2xl px-3 py-2', m.role === 'user' ? 'ml-auto bg-slate-900 text-white' : 'mr-auto bg-white border')}>
+                  {m.content}
+                </div>
+                {m.type === 'info' && Array.isArray(m.tables) && m.tables.length > 0 && (
+                  <div className="mr-auto bg-white border rounded-xl p-2 max-w-[85%]">
+                    {m.tables.map((t, i) => (
+                      <div key={i} className="mb-3 last:mb-0">
+                        {t.title && <div className="text-sm font-medium mb-1">{t.title}</div>}
+                        <div className="overflow-auto">
+                          <Table>
+                            {t.columns && (
+                              <TableHeader>
+                                <TableRow>
+                                  {t.columns.map((c, ci) => (<TableHead key={ci}>{String(c)}</TableHead>))}
+                                </TableRow>
+                              </TableHeader>
+                            )}
+                            <TableBody>
+                              {(t.rows || []).map((row, ri) => (
+                                <TableRow key={ri}>
+                                  {row.map((cell, ci) => (<TableCell key={ci}>{String(cell)}</TableCell>))}
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
+
+            {thinking && (
+              <div className="mr-auto max-w-[70%] text-sm text-slate-600">AI:n tänker...</div>
+            )}
 
             {pendingActions && (
               <div className="border rounded-xl bg-white">

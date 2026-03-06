@@ -1,8 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
-// NOTE: This function calls Anthropic API. We need ANTHROPIC_API_KEY to be set.
-// It builds a system prompt with current products and available mix batches, then asks the model to output ONLY JSON per the schema.
-
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -17,23 +14,108 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing message' }, { status: 400 });
     }
 
-    // Fetch context data
-    const products = await base44.entities.Product.list('-name', 1000);
-    const mixBatches = await base44.entities.MixBatch.filter({ status: 'available' }, '-created_date', 200);
+    // Fetch data in parallel
+    const [products, bomItems, mixBatchesAvail, alerts, ledger, batchesAvail, packagingRecipes] = await Promise.all([
+      base44.entities.Product.list('-name', 2000),
+      base44.entities.BOMItem.list(undefined, 5000),
+      base44.entities.MixBatch.filter({ status: 'available' }, '-created_date', 1000),
+      base44.entities.InventoryAlert.filter({ status: ['OPEN', 'ORDERED_ACKNOWLEDGED'] }, '-last_evaluated_at', 1000),
+      base44.entities.InventoryLedger.list('-created_date', 100),
+      base44.entities.Batch.filter({ status: 'available' }, '-created_date', 1000),
+      base44.entities.PackagingRecipe.list(undefined, 2000).catch(() => [])
+    ]);
 
-    const productsList = (products || []).map(p => `- ${p.sku} :: ${p.name}`).join('\n');
-    const mixList = (mixBatches || []).map(m => `- ${m.batch_no} :: ${m.mix_sku} :: remaining_kg=${m.remaining_kg}`).join('\n');
+    const productById = new Map((products || []).map(p => [p.id, p]));
 
-    const systemPrompt = `Du är en AI-produktionsassistent i ett produktions- och lagersystem för kosmetika.\n\nDatamodell i korthet:\n- MixBatch: bulk/blandning producerad i kilogram (kg) med fält: mix_sku, batch_no, produced_kg, remaining_kg.\n- Batch: färdigvara producerad i styck med fält: batch_number, product_sku, produced_quantity.\n- InventoryLedger: lagertransaktioner. Vi registrerar 'production' (ökning) och 'backflush' (förbrukning).\n\nAktuella produkter (SKU :: namn):\n${productsList}\n\nTillgängliga MixBatches (batch_no :: mix_sku :: remaining_kg):\n${mixList || '- inga'}\n\nUppgift: Tolka användarens fritext om genomförd produktion. Matcha ALLA varubeskrivningar till SKU från listan ovan (t.ex. 'hårmask bas' -> korrekt SKU). Om tveksamhet, välj bästa SKU baserat på namnlikhet.\n\nUtdata: Svara ENDAST med ren JSON (ingen markdown) enligt detta schema:\n{\n  "summary": "Förklarande text till användaren på svenska",\n  "actions": [\n    { "type": "mix_batch", "sku": "...", "kg": 600, "batch_no": "..." },\n    { "type": "finished_batch", "sku": "...", "units": 412, "batch_no": "..." }\n  ]\n}\n\nViktigt:\n- Svara endast med giltig JSON.\n- Använd exakta SKU från produktlistan.\n- Ange batch_no om användaren nämner den, annars föreslå ett rimligt kort värde (ex. HM-202403-01).`;
+    const productsPayload = (products || []).map(p => ({
+      id: p.id,
+      sku: p.sku,
+      name: p.name,
+      type: p.type,
+      unit: p.unit,
+      safety_stock: p.safety_stock ?? null,
+      reorder_point: p.reorder_point ?? null,
+      supplier: p.supplier ?? null,
+      unlimited_stock: !!p.unlimited_stock
+    }));
+
+    const bomPayload = (bomItems || []).map(b => ({
+      finished_product_id: b.finished_product_id,
+      component_id: b.component_id,
+      component_sku: productById.get(b.component_id)?.sku || null,
+      component_name: productById.get(b.component_id)?.name || null,
+      quantity_per_unit: b.quantity_per_unit
+    }));
+
+    const mixPayload = (mixBatchesAvail || []).map(m => ({
+      mix_sku: m.mix_sku,
+      batch_no: m.batch_no,
+      produced_kg: m.produced_kg,
+      remaining_kg: m.remaining_kg,
+      produced_at: m.produced_at
+    }));
+
+    const alertsPayload = (alerts || []).map(a => ({
+      product_sku: a.product_sku,
+      product_name: a.product_name,
+      type: a.type,
+      severity: a.severity,
+      current_available_qty: a.current_available_qty,
+      safety_stock: a.safety_stock,
+      suggested_order_qty: a.suggested_order_qty,
+      deprioritized_reason: a.deprioritized_reason || null
+    }));
+
+    const ledgerPayload = (ledger || []).map(l => ({
+      product_sku: l.product_sku,
+      transaction_type: l.transaction_type,
+      quantity: l.quantity,
+      created_date: l.created_date
+    }));
+
+    const batchesPayload = (batchesAvail || []).map(b => ({
+      product_sku: b.product_sku,
+      product_name: b.product_name,
+      current_quantity: b.current_quantity,
+      batch_number: b.batch_number
+    }));
+
+    const recipesPayload = (packagingRecipes || []).map(r => ({
+      mix_sku: r.mix_sku,
+      finished_sku: r.finished_sku,
+      finished_name: r.finished_name,
+      fill_ml_per_unit: r.fill_ml_per_unit,
+      components: r.components
+    }));
+
+    const systemContext = [
+      'Du är en intelligent assistent för ett kosmetika-produktionssystem kallat Lagermaster.',
+      'Du har tillgång till realtidsdata från systemet och kan svara på alla frågor om lager,',
+      'produktion, inköp och planering. Du kan också registrera genomförd produktion när användaren',
+      'beskriver vad som faktiskt har hänt. Svara alltid på svenska och var konkret och handlingsorienterad.',
+      '',
+      'AKTUELL SYSTEMDATA:',
+      'Produkter: ' + JSON.stringify(productsPayload),
+      'BOM-recept: ' + JSON.stringify(bomPayload),
+      'Tillgängliga blandningar: ' + JSON.stringify(mixPayload),
+      'Aktiva notiser: ' + JSON.stringify(alertsPayload),
+      'Senaste transaktioner: ' + JSON.stringify(ledgerPayload),
+      'Tillgängliga färdigvarubatcher: ' + JSON.stringify(batchesPayload),
+      (recipesPayload?.length ? ('PackagingRecipe: ' + JSON.stringify(recipesPayload)) : 'PackagingRecipe: []'),
+      '',
+      'Instruktion för svar:',
+      '- Avgör intent i användarens meddelande.',
+      '- Om produktion beskrivs: returnera {"type":"production","summary":"...","actions":[{ "type":"mix_batch"|"finished_batch", "sku":"...", "kg"?:number, "units"?:number, "batch_no":"..." }]}',
+      '- Om fråga/analys/lista/rapport: returnera {"type":"info","summary":"...","tables":[{"title":"...","columns":["col1",...],"rows":[[v11,v12,...],[...]]}]} (tables valfritt).',
+      '- Svara ENDAST med giltig JSON utan markdown eller extra text.'
+    ].join('\n');
 
     const payload = {
       model: 'claude-sonnet-4-20250514',
-      system: systemPrompt,
-      messages: [
-        { role: 'user', content: message }
-      ],
-      max_tokens: 800,
-      temperature: 0.2,
+      system: systemContext,
+      messages: [ { role: 'user', content: message } ],
+      max_tokens: 1500,
+      temperature: 0.2
     };
 
     const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
@@ -58,24 +140,23 @@ Deno.serve(async (req) => {
 
     const data = await resp.json();
     let text = '';
-    try {
-      // Anthropic messages API returns content array
-      text = (data?.content?.[0]?.text || '').trim();
-    } catch (_) {
-      text = '';
-    }
+    try { text = (data?.content?.[0]?.text || '').trim(); } catch (_) { text = ''; }
 
-    // Ensure pure JSON (no markdown). Some models may wrap with ```json ... ```
     const cleaned = text.replace(/^```json\n?|```$/g, '').trim();
     let parsed;
     try {
       parsed = JSON.parse(cleaned);
     } catch (e) {
-      // Fallback: guide user
       parsed = {
-        summary: 'Jag kunde inte tolka meddelandet. Jag kan hjälpa dig att registrera blandningar (kg) och färdigvarubatcher (st). Ex: "Körde 600 kg Hårmask bas, fick ut 412 st 350ml och 198 st 50ml, spill 2 kg".',
-        actions: []
+        type: 'info',
+        summary: 'Jag kunde inte tolka meddelandet. Beskriv produktion (t.ex. "Körde 600 kg ...") eller ställ en fråga om lager/planering.',
+        tables: []
       };
+    }
+
+    // Minimal normalization
+    if (!parsed.type) {
+      parsed.type = Array.isArray(parsed.actions) && parsed.actions.length ? 'production' : 'info';
     }
 
     return Response.json(parsed);
