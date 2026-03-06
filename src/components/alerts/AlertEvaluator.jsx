@@ -54,6 +54,19 @@ export async function evaluateInventoryAlerts() {
   for (const product of products) {
     if (!product.active) continue;
 
+    // Skip unlimited stock products and auto-close any active alerts
+    if (product.unlimited_stock === true) {
+      const existing = activeByProduct[product.id];
+      if (existing) {
+        await base44.entities.InventoryAlert.update(existing.id, {
+          status: 'CLOSED',
+          resolved_at: now,
+          resolved_by: 'system'
+        });
+      }
+      continue;
+    }
+
     const productLedger = ledgerEntries.filter(e => e.product_id === product.id);
     const productBatches = batches.filter(b => b.product_id === product.id);
     const stockSummary = getStockSummary(product, productLedger, productBatches);

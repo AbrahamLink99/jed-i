@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
@@ -219,6 +220,24 @@ export default function ImportWizard() {
   // Mapping state
   const [mapping, setMapping] = useState({}); // { sku: 'Column A', ... }
   const [selectedProfile, setSelectedProfile] = useState('');
+
+  // Existing products for preview lookups (to show unlimited badge)
+  const [allProducts, setAllProducts] = useState([]);
+  useEffect(() => {
+    (async () => {
+      try {
+        const list = await base44.entities.Product.list();
+        setAllProducts(Array.isArray(list) ? list : []);
+      } catch (e) {
+        // ignore
+      }
+    })();
+  }, []);
+  const productBySku = useMemo(() => {
+    const m = {};
+    allProducts.forEach(p => { if (p?.sku) m[p.sku] = p; });
+    return m;
+  }, [allProducts]);
 
   // Import results
   const [previewRows, setPreviewRows] = useState([]); // normalized with errors
@@ -836,7 +855,13 @@ export default function ImportWizard() {
                         <TableCell>{r.uom}</TableCell>
                         <TableCell>{r.min_level}</TableCell>
                         <TableCell>{r.unit_cost}</TableCell>
-                        <TableCell>{r.on_hand_qty ?? '-'}</TableCell>
+                        <TableCell>
+                          {productBySku[r.sku]?.unlimited_stock ? (
+                            <Badge className="bg-blue-100 text-blue-800">Obegränsad</Badge>
+                          ) : (
+                            r.on_hand_qty ?? '-'
+                          )}
+                        </TableCell>
                         {importType === 'finished' && <TableCell>{r.variant_size_ml ?? '-'}</TableCell>}
                         {importType === 'raw_material' && <TableCell>{r.lead_time_days ?? '-'}</TableCell>}
                         <TableCell>

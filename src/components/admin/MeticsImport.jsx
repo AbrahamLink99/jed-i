@@ -466,7 +466,9 @@ export default function MeticsImport() {
                         <TableCell>{r.productName || '-'}</TableCell>
                         <TableCell>{Number.isNaN(r.qtyKg) ? '-' : r.qtyKg}</TableCell>
                         <TableCell>
-                          {r.found ? (
+                          {productsBySku.get(r.sku)?.unlimited_stock ? (
+                            <Badge className="bg-blue-100 text-blue-800">Obegränsad</Badge>
+                          ) : r.found ? (
                             <div className="flex items-center gap-1 text-green-700"><CheckCircle2 className="w-4 h-4" />OK</div>
                           ) : (
                             <Badge className="bg-amber-100 text-amber-800 flex items-center gap-1"><AlertTriangle className="w-3 h-3" />Saknas i systemet</Badge>

@@ -22,6 +22,9 @@ export function calculateReserved(ledgerEntries) {
 }
 
 export function calculateAvailable(ledgerEntries, batches, product) {
+  if (product?.unlimited_stock) {
+    return 999999;
+  }
   const onHand = calculateOnHand(ledgerEntries);
   const reserved = calculateReserved(ledgerEntries);
   
@@ -34,6 +37,17 @@ export function calculateAvailable(ledgerEntries, batches, product) {
 }
 
 export function getStockSummary(product, ledgerEntries, batches) {
+  if (product?.unlimited_stock) {
+    const safetyStock = product.safety_stock || 0;
+    return {
+      onHand: 999999,
+      reserved: 0,
+      available: 999999,
+      safetyStock,
+      belowSafety: false,
+      daysUntilStockout: null
+    };
+  }
   const productLedger = ledgerEntries.filter(e => e.product_id === product.id);
   
   const onHand = calculateOnHand(productLedger);

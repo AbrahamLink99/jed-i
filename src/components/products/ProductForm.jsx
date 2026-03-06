@@ -48,6 +48,7 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }) {
     notes: '',
     active: true,
     tag_ids: [],
+    unlimited_stock: false,
     ...product
   });
 
@@ -238,6 +239,14 @@ export default function ProductForm({ product, onSave, onCancel, isLoading }) {
                 onChange={(e) => handleChange('cost_per_unit', e.target.value === '' ? 0 : parseFloat(e.target.value))}
               />
             </div>
+          </div>
+          <div className="flex items-center gap-2 mt-4">
+            <Switch
+              id="unlimited_stock"
+              checked={!!formData.unlimited_stock}
+              onCheckedChange={(v) => handleChange('unlimited_stock', v)}
+            />
+            <Label htmlFor="unlimited_stock">Obegränsad tillgång</Label>
           </div>
         </div>
 
