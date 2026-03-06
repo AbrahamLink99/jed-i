@@ -16,13 +16,13 @@ Deno.serve(async (req) => {
 
     // Fetch data in parallel
     const [products, bomItems, mixBatchesAvail, alerts, ledger, batchesAvail, packagingRecipes] = await Promise.all([
-      base44.entities.Product.list('-name', 2000),
+      base44.entities.Product.filter({ environment: 'production' }, '-name', 2000),
       base44.entities.BOMItem.list(undefined, 5000),
-      base44.entities.MixBatch.filter({ status: 'available' }, '-created_date', 1000),
-      base44.entities.InventoryAlert.filter({ status: ['OPEN', 'ORDERED_ACKNOWLEDGED'] }, '-last_evaluated_at', 1000),
-      base44.entities.InventoryLedger.list('-created_date', 100),
-      base44.entities.Batch.filter({ status: 'available' }, '-created_date', 1000),
-      base44.entities.PackagingRecipe.list(undefined, 2000).catch(() => [])
+      base44.entities.MixBatch.filter({ status: 'available', environment: 'production' }, '-created_date', 1000),
+      base44.entities.InventoryAlert.filter({ status: ['OPEN', 'ORDERED_ACKNOWLEDGED'], environment: 'production' }, '-last_evaluated_at', 1000),
+      base44.entities.InventoryLedger.filter({ environment: 'production' }, '-created_date', 50000),
+      base44.entities.Batch.filter({ status: 'available', environment: 'production' }, '-created_date', 1000),
+      base44.entities.PackagingRecipe.filter({ environment: 'production' }, '-created_date', 2000).catch(() => [])
     ]);
 
     const productById = new Map((products || []).map(p => [p.id, p]));
@@ -73,6 +73,21 @@ Deno.serve(async (req) => {
       created_date: l.created_date
     }));
 
+    // Compute real-time availability per SKU from ledger (on-hand minus net reservations)
+    const availSums = new Map();
+    for (const l of (ledger || [])) {
+      const sku = l.product_sku; if (!sku) continue;
+      const rec = availSums.get(sku) || { onhand: 0, reserved: 0 };
+      const qty = Number(l.quantity) || 0;
+      if (l.transaction_type === 'reservation' || l.transaction_type === 'release_reservation') {
+        rec.reserved += qty;
+      } else {
+        rec.onhand += qty;
+      }
+      availSums.set(sku, rec);
+    }
+    const computedAvailability = Array.from(availSums.entries()).map(([sku, r]) => ({ product_sku: sku, available_qty: (r.onhand - r.reserved) }));
+
     const batchesPayload = (batchesAvail || []).map(b => ({
       product_sku: b.product_sku,
       product_name: b.product_name,
@@ -102,12 +117,13 @@ Deno.serve(async (req) => {
       'Senaste transaktioner: ' + JSON.stringify(ledgerPayload),
       'Tillgängliga färdigvarubatcher: ' + JSON.stringify(batchesPayload),
       (recipesPayload?.length ? ('PackagingRecipe: ' + JSON.stringify(recipesPayload)) : 'PackagingRecipe: []'),
+      'Beräknad tillgänglighet: ' + JSON.stringify(computedAvailability),
       '',
       'Instruktion för svar:',
       '- Avgör intent i användarens meddelande.',
       '- Om produktion beskrivs: returnera {"type":"production","summary":"...","actions":[{ "type":"mix_batch"|"finished_batch", "sku":"...", "kg"?:number, "units"?:number, "batch_no":"..." }]}',
       '- Om fråga/analys/lista/rapport: returnera {"type":"info","summary":"...","tables":[{"title":"...","columns":["col1",...],"rows":[[v11,v12,...],[...]]}]} (tables valfritt).',
-      '- Om användaren ber om inköpslista/beställning/under säkerhetslager: använd Aktiva notiser (alerts) som källa och bygg en tabell med kolumnerna ["Leverantör","SKU","Namn","Tillgängligt","Säkerhetslager","Föreslagen beställning"]; inkludera endast rader där current_available_qty < safety_stock eller där suggested_order_qty > 0; gruppera gärna per Leverantör; om användaren anger en specifik leverantör, filtrera på den; om ej specificerat och texten säger "samma leverantör" – välj den leverantör som flest rader tillhör och visa den listan.',
+      '- För inköpslista/beställning/under säkerhetslager: använd "Beräknad tillgänglighet" som primär källa (fallback till alerts.current_available_qty). Räkna Tillgängligt per SKU, jämför mot product.safety_stock. Föreslagen beställning = max(0, safety_stock - tillgängligt), men om alerts.suggested_order_qty är större – använd det. Bygg tabell: ["Leverantör","SKU","Namn","Tillgängligt","Säkerhetslager","Föreslagen beställning"]. Stöd filtrering/gruppering per leverantör och hantera frasen "samma leverantör" genom att välja den leverantör som förekommer mest i urvalet.',
       '- Svara ENDAST med giltig JSON utan markdown eller extra text.'
     ].join('\n');
 
