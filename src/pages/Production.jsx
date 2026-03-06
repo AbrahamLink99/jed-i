@@ -31,10 +31,16 @@ export default function Production() {
     }
   }, [productsError]);
 
-  const { data: bomItems = [] } = useQuery({
+  const { data: bomItems = [], error: bomError } = useQuery({
     queryKey: ['bom-items', envFilter.environment],
-    queryFn: () => base44.entities.BOMItem.filter(envFilter)
+    queryFn: () => base44.entities.BOMItem.filter(envFilter),
   });
+
+  useEffect(() => {
+    if (bomError) {
+      console.error('useQuery BOM items error:', bomError);
+    }
+  }, [bomError]);
 
   const { data: packagingRecipes = [] } = useQuery({
     queryKey: ['packaging-recipes', envFilter.environment],
