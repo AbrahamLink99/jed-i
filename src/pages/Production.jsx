@@ -65,10 +65,39 @@ export default function Production() {
   const finishedProducts = products.filter(p => p.type === 'finished_good' && p.active !== false);
 
   // Produkter som är godkända som blandningar (har tappningsrecept)
-  const mixEligibleProducts = useMemo(() => {
-    const idsWithBOM = new Set((bomItems || []).map(b => b.finished_product_id));
-    return products.filter(p => idsWithBOM.has(p.id) && p.active !== false);
-  }, [products, bomItems]);
+  const recipeOptions = useMemo(() => {
+    const activeRecipes = (packagingRecipes || []).filter(r => r.active);
+    const byMix = new Map();
+    activeRecipes.forEach(r => {
+      if (!byMix.has(r.mix_sku)) byMix.set(r.mix_sku, []);
+      byMix.get(r.mix_sku).push(r);
+    });
+
+    const opts = [];
+    byMix.forEach((recipes, mixSku) => {
+      const finishedSku = recipes[0]?.finished_sku;
+      const finishedProduct = products.find(p => p.sku === finishedSku);
+      const mixProduct = products.find(p => p.sku === mixSku);
+      const bomForFinished = finishedProduct ? bomItems.filter(b => b.finished_product_id === finishedProduct.id) : [];
+      if (!bomForFinished.length) return; // only show recipes that have a BOM
+      const label = mixProduct?.name || finishedProduct?.name || mixSku;
+      const enrichedBOM = bomForFinished.map(b => {
+        const component = products.find(p => p.id === b.component_id);
+        return { ...b, component_sku: component?.sku, component_name: component?.name, component_unit: component?.unit };
+      });
+      opts.push({ mix_sku: mixSku, label, mix_product_id: mixProduct?.id, mix_product: mixProduct, finished_product_id: finishedProduct?.id, bom: enrichedBOM });
+    });
+
+    // Deduplicate by BOM signature so identical recipes appear once
+    const bySig = new Map();
+    for (const o of opts) {
+      const sig = JSON.stringify(o.bom.map(b => ({ c: b.component_id, q: b.quantity_per_unit })).sort((a,b)=> a.c.localeCompare(b.c)));
+      if (!bySig.has(sig)) {
+        bySig.set(sig, o);
+      }
+    }
+    return Array.from(bySig.values());
+  }, [packagingRecipes, products, bomItems]);
 
   const bomWithNames = useMemo(() => {
     return bomItems.map(bom => {
@@ -220,13 +249,10 @@ export default function Production() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
                 <ProductionForm
-                  finishedProducts={finishedProducts}
-                  mixEligibleProducts={mixEligibleProducts}
-                  bomItems={bomWithNames}
+                  recipeOptions={recipeOptions}
                   componentStock={componentStock}
                   onSubmit={(data) => productionMutation.mutate(data)}
                   isLoading={productionMutation.isPending}
-                  mixOnly
                 />
               </div>
               <div className="lg:col-span-1">
