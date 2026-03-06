@@ -66,16 +66,24 @@ export default function Admin() {
         </TabsList>
 
         <TabsContent value="users">
-          <UsersAdmin />
+          <ErrorBoundary fallback={<div className="p-4 border rounded bg-amber-50 text-amber-800">Kunde inte ladda Användare</div>}>
+            <UsersAdmin />
+          </ErrorBoundary>
         </TabsContent>
         <TabsContent value="import">
-          <DataImport />
+          <ErrorBoundary fallback={<div className="p-4 border rounded bg-amber-50 text-amber-800">Kunde inte ladda Import</div>}>
+            <DataImport />
+          </ErrorBoundary>
         </TabsContent>
         <TabsContent value="inventory">
-          <InventoryCount />
+          <ErrorBoundary fallback={<div className="p-4 border rounded bg-amber-50 text-amber-800">Kunde inte ladda Inventering</div>}>
+            <InventoryCount />
+          </ErrorBoundary>
         </TabsContent>
         <TabsContent value="guide">
-          <SystemGuide />
+          <ErrorBoundary fallback={<div className="p-4 border rounded bg-amber-50 text-amber-800">Kunde inte ladda Guide</div>}>
+            <SystemGuide />
+          </ErrorBoundary>
         </TabsContent>
         <TabsContent value="metics-bom">
           <ErrorBoundary fallback={<div className="p-4 border rounded bg-amber-50 text-amber-800">Komponenten kunde inte laddas</div>}>
@@ -83,7 +91,9 @@ export default function Admin() {
           </ErrorBoundary>
         </TabsContent>
         <TabsContent value="audit">
-          <AuditLogViewer />
+          <ErrorBoundary fallback={<div className="p-4 border rounded bg-amber-50 text-amber-800">Kunde inte ladda Audit-logg</div>}>
+            <AuditLogViewer />
+          </ErrorBoundary>
         </TabsContent>
       </Tabs>
     </div>
