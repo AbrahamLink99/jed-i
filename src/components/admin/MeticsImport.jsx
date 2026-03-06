@@ -171,10 +171,10 @@ export default function MeticsImport() {
   }
 
   function downloadTemplate() {
-    const headers = ['Ingrediens','Mängd'];
+    const headers = ['SKU','Namn','Mängd'];
     const sample = [
-      ['SKU_ELLER_NAMN_1','0.25'],
-      ['SKU_ELLER_NAMN_2','0.75']
+      ['SKU001','Exempelprodukt 1','0.25'],
+      ['SKU002','Exempelprodukt 2','0.75']
     ];
     const csv = [headers.join(','), ...sample.map(r => r.join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -187,6 +187,16 @@ export default function MeticsImport() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
+
+  useEffect(() => {
+    if (rawHeaders.length) {
+      const lower = rawHeaders.map(h => ({ h, l: h.toLowerCase() }));
+      const sku = lower.find(x => x.l === 'sku')?.h;
+      const qty = lower.find(x => ['mängd','mangd','qty','quantity','amount'].includes(x.l))?.h;
+      if (sku) { setIngredientCol(sku); setNamesNotSku(false); }
+      if (qty) setQtyCol(qty);
+    }
+  }, [rawHeaders]);
 
   const canGoStep3 = step === 2 && ingredientCol && qtyCol;
   const canImport = step === 5 && selectedProductIds.length > 0 && stats.matched > 0;
@@ -240,7 +250,7 @@ export default function MeticsImport() {
           {step === 1 && (
             <div className="space-y-4">
               <div>
-                <Label>CSV eller Excel (två kolumner: Ingrediens och Mängd)</Label>
+                <Label>CSV eller Excel (tre kolumner: SKU, Namn, Mängd – matchning sker via SKU)</Label>
                 <div className="mt-2 flex items-center gap-3">
                   <Input type="file" accept=".csv,.xlsx,.xls" onChange={handleFileUpload} />
                   <Button disabled className="gap-2" variant="outline">
@@ -262,7 +272,7 @@ export default function MeticsImport() {
             <div className="space-y-6">
               <div className="flex flex-col md:flex-row gap-6">
                 <div className="flex-1 space-y-2">
-                  <Label>Kolumn för ingrediensnamn/SKU</Label>
+                  <Label>Kolumn för SKU (används för koppling)</Label>
                   <Select value={ingredientCol} onValueChange={setIngredientCol}>
                     <SelectTrigger>
                       <SelectValue placeholder="Välj kolumn" />
