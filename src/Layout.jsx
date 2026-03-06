@@ -100,7 +100,18 @@ export default function Layout({ children, currentPageName }) {
 
     try {
       const res = await base44.functions.invoke('aiProductionAssistant', { message: text });
-      const { type, summary, actions, tables } = res.data || {};
+      console.debug('AI-assistenten – rått svar:', res?.data || res);
+
+      // Robust hantering: backend returnerar vanligtvis ett objekt, men hantera även sträng
+      let payload = res?.data;
+      if (typeof payload === 'string') {
+        try { payload = JSON.parse(payload); } catch { payload = { type: 'info', summary: String(payload), tables: [] }; }
+      }
+      if (!payload || typeof payload !== 'object') {
+        payload = { type: 'info', summary: 'Kunde inte tolka svaret från AI:n.', tables: [] };
+      }
+
+      const { type, summary, actions, tables } = payload;
 
       if (type === 'production' && Array.isArray(actions) && actions.length > 0) {
         const norm = actions.map(a => ({
@@ -113,12 +124,18 @@ export default function Layout({ children, currentPageName }) {
         setMessages((m) => [...m, { role: 'assistant', content: summary || 'Jag har tolkat din text. Kontrollera förslaget nedan.', type: 'production' }]);
         setPendingActions(norm);
       } else {
-        // info fallback
-        setMessages((m) => [...m, { role: 'assistant', content: summary || 'Här är informationen du efterfrågade.', type: 'info', tables: Array.isArray(tables) ? tables : [] }]);
+        // Info-svar: rendera sammanfattning + tabeller
+        setMessages((m) => [...m, {
+          role: 'assistant',
+          content: summary || 'Här är informationen du efterfrågade.',
+          type: 'info',
+          tables: Array.isArray(tables) ? tables : []
+        }]);
         setPendingActions(null);
       }
     } catch (e) {
-      setMessages((m) => [...m, { role: 'assistant', content: 'Jag kunde inte tolka meddelandet. Beskriv produktion (t.ex. "Körde 600 kg...") eller ställ en fråga om lager/planering.', type: 'info' }]);
+      console.error('AI-assistenten – fel:', e);
+      setMessages((m) => [...m, { role: 'assistant', content: 'Kunde inte tolka svaret från AI:n (tekniskt fel). Försök igen om en stund.', type: 'info' }]);
       setPendingActions(null);
     } finally {
       setThinking(false);
@@ -315,23 +332,34 @@ export default function Layout({ children, currentPageName }) {
                   {m.content}
                 </div>
                 {m.type === 'info' && Array.isArray(m.tables) && m.tables.length > 0 && (
-                  <div className="mr-auto bg-white border rounded-xl p-2 max-w-[85%]">
+                  <div className="mr-auto bg-white rounded-lg border shadow-sm p-2 max-w-[85%]">
                     {m.tables.map((t, i) => (
                       <div key={i} className="mb-3 last:mb-0">
-                        {t.title && <div className="text-sm font-medium mb-1">{t.title}</div>}
-                        <div className="overflow-auto">
+                        {t.title && <div className="text-sm font-medium mb-2">{t.title}</div>}
+                        <div className="overflow-auto rounded-md">
                           <Table>
                             {t.columns && (
-                              <TableHeader>
+                              <TableHeader className="bg-slate-100">
                                 <TableRow>
-                                  {t.columns.map((c, ci) => (<TableHead key={ci}>{String(c)}</TableHead>))}
+                                  {t.columns.map((c, ci) => (
+                                    <TableHead
+                                      key={ci}
+                                      className="px-3 py-2 text-xs font-semibold text-slate-700 uppercase"
+                                    >
+                                      {String(c)}
+                                    </TableHead>
+                                  ))}
                                 </TableRow>
                               </TableHeader>
                             )}
                             <TableBody>
                               {(t.rows || []).map((row, ri) => (
-                                <TableRow key={ri}>
-                                  {row.map((cell, ci) => (<TableCell key={ci}>{String(cell)}</TableCell>))}
+                                <TableRow key={ri} className="odd:bg-white even:bg-slate-50">
+                                  {row.map((cell, ci) => (
+                                    <TableCell key={ci} className="px-3 py-2 text-sm">
+                                      {String(cell)}
+                                    </TableCell>
+                                  ))}
                                 </TableRow>
                               ))}
                             </TableBody>

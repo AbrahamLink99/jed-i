@@ -121,8 +121,8 @@ Deno.serve(async (req) => {
       '',
       'Instruktion för svar:',
       '- Avgör intent i användarens meddelande.',
-      '- Om produktion beskrivs: returnera {"type":"production","summary":"...","actions":[{ "type":"mix_batch"|"finished_batch", "sku":"...", "kg"?:number, "units"?:number, "batch_no":"..." }]}',
-      '- Om fråga/analys/lista/rapport: returnera {"type":"info","summary":"...","tables":[{"title":"...","columns":["col1",...],"rows":[[v11,v12,...],[...]]}]} (tables valfritt).',
+      '- Svara med {"type":"production",...} ENDAST när användaren beskriver genomförd produktion med konkreta siffror (kg, st, batchnummer).',
+      '- För ALLA frågor, analyser, listor och rapporter: svara med {"type":"info","summary":"...","tables":[...]} (tables valfritt).',
       '- För inköpslista/beställning/under säkerhetslager: använd "Beräknad tillgänglighet" som primär källa (fallback till alerts.current_available_qty). Räkna Tillgängligt per SKU, jämför mot product.safety_stock. Föreslagen beställning = max(0, safety_stock - tillgängligt), men om alerts.suggested_order_qty är större – använd det. Bygg tabell: ["Leverantör","SKU","Namn","Tillgängligt","Säkerhetslager","Föreslagen beställning"]. Stöd filtrering/gruppering per leverantör och hantera frasen "samma leverantör" genom att välja den leverantör som förekommer mest i urvalet.',
       '- Svara ENDAST med giltig JSON utan markdown eller extra text.'
     ].join('\n');
