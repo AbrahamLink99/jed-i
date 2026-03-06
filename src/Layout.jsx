@@ -49,6 +49,12 @@ export default function Layout({ children, currentPageName }) {
     return m;
   }, [products]);
 
+  const productsById = React.useMemo(() => {
+    const m = new Map();
+    for (const p of products) m.set(p.id, p);
+    return m;
+  }, [products]);
+
   const genBatchNo = (prefix, sku) => {
     const d = new Date();
     const ds = [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('');
@@ -121,13 +127,14 @@ export default function Layout({ children, currentPageName }) {
         const prod = productsBySku.get(a.sku);
         if (!prod) continue;
         if (a.type === 'mix_batch') {
+          const kg = Number(a.kg) || 0;
           // Create MixBatch and production ledger (kg)
           await base44.entities.MixBatch.create({
             environment: 'production',
             mix_sku: a.sku,
             batch_no: a.batch_no,
-            produced_kg: Number(a.kg) || 0,
-            remaining_kg: Number(a.kg) || 0,
+            produced_kg: kg,
+            remaining_kg: kg,
             status: 'available',
             produced_at: new Date().toISOString(),
             notes: 'Registrerad via AI-assistent'
@@ -138,10 +145,27 @@ export default function Layout({ children, currentPageName }) {
             product_sku: prod.sku,
             product_name: prod.name,
             transaction_type: 'production',
-            quantity: Number(a.kg) || 0,
+            quantity: kg,
             reference_type: 'production_run',
             notes: `MixBatch ${a.batch_no} via AI-assistent`
           });
+          // Backflush components based on BOM
+          const bom = await base44.entities.BOMItem.filter({ finished_product_id: prod.id });
+          for (const line of (bom || [])) {
+            const comp = productsById.get(line.component_id);
+            const qty = -((Number(line.quantity_per_unit) || 0) * kg);
+            if (!comp || !qty) continue;
+            await base44.entities.InventoryLedger.create({
+              environment: 'production',
+              product_id: comp.id,
+              product_sku: comp.sku,
+              product_name: comp.name,
+              transaction_type: 'backflush',
+              quantity: qty,
+              reference_type: 'production_run',
+              notes: `Backflush för MixBatch ${a.batch_no} via AI-assistent`
+            });
+          }
         } else if (a.type === 'finished_batch') {
           // Create generic Batch and production ledger (units)
           await base44.entities.Batch.create({
