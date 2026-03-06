@@ -96,7 +96,12 @@ export default function ProductionForm({
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={isMix ? 'Välj blandning...' : 'Välj färdigvara...'} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper" className="max-h-60 overflow-y-auto">
+                {productList.length === 0 && (
+                  <SelectItem value="__empty" disabled>
+                    Inga produkter hittades
+                  </SelectItem>
+                )}
                 {productList.map(p => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.sku} - {p.name} {p._missing ? '• saknas i Artiklar' : ''}

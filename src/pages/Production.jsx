@@ -19,10 +19,17 @@ export default function Production() {
   const queryClient = useQueryClient();
   const envFilter = useEnvironmentFilter();
 
-  const { data: products = [] } = useQuery({
+  const { data: products = [], error: productsError } = useQuery({
     queryKey: ['products', envFilter.environment],
-    queryFn: () => base44.entities.Product.filter(envFilter)
+    queryFn: () => base44.entities.Product.filter(envFilter),
+    onError: (e) => console.error('Failed to load products', e)
   });
+
+  useEffect(() => {
+    if (productsError) {
+      console.error('useQuery products error:', productsError);
+    }
+  }, [productsError]);
 
   const { data: bomItems = [] } = useQuery({
     queryKey: ['bom-items', envFilter.environment],
