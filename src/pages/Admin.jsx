@@ -2,13 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { base44 } from "@/api/base44Client";
-import MeticsImport from "../components/admin/MeticsImport";
-import DataImport from "../components/admin/DataImport";
-import InventoryCount from "../components/admin/InventoryCount";
-import SystemGuide from "../components/admin/SystemGuide";
-import UsersAdmin from "../components/admin/UsersAdmin";
-import AuditLogViewer from "../components/admin/AuditLogViewer";
 import ErrorBoundary from "../components/common/ErrorBoundary";
+const UsersAdmin = React.lazy(() => import("../components/admin/UsersAdmin"));
+const DataImport = React.lazy(() => import("../components/admin/DataImport"));
+const InventoryCount = React.lazy(() => import("../components/admin/InventoryCount"));
+const SystemGuide = React.lazy(() => import("../components/admin/SystemGuide"));
+const MeticsImport = React.lazy(() => import("../components/admin/MeticsImport"));
+const AuditLogViewer = React.lazy(() => import("../components/admin/AuditLogViewer"));
 
 export default function Admin() {
   const [user, setUser] = useState(null);
@@ -67,32 +67,44 @@ export default function Admin() {
 
         <TabsContent value="users">
           <ErrorBoundary fallback={<div className="p-4 border rounded bg-amber-50 text-amber-800">Kunde inte ladda Användare</div>}>
-            <UsersAdmin />
+            <React.Suspense fallback={<div className="p-4">Laddar...</div>}>
+              <UsersAdmin />
+            </React.Suspense>
           </ErrorBoundary>
         </TabsContent>
         <TabsContent value="import">
           <ErrorBoundary fallback={<div className="p-4 border rounded bg-amber-50 text-amber-800">Kunde inte ladda Import</div>}>
-            <DataImport />
+            <React.Suspense fallback={<div className="p-4">Laddar...</div>}>
+              <DataImport />
+            </React.Suspense>
           </ErrorBoundary>
         </TabsContent>
         <TabsContent value="inventory">
           <ErrorBoundary fallback={<div className="p-4 border rounded bg-amber-50 text-amber-800">Kunde inte ladda Inventering</div>}>
-            <InventoryCount />
+            <React.Suspense fallback={<div className="p-4">Laddar...</div>}>
+              <InventoryCount />
+            </React.Suspense>
           </ErrorBoundary>
         </TabsContent>
         <TabsContent value="guide">
           <ErrorBoundary fallback={<div className="p-4 border rounded bg-amber-50 text-amber-800">Kunde inte ladda Guide</div>}>
-            <SystemGuide />
+            <React.Suspense fallback={<div className="p-4">Laddar...</div>}>
+              <SystemGuide />
+            </React.Suspense>
           </ErrorBoundary>
         </TabsContent>
         <TabsContent value="metics-bom">
           <ErrorBoundary fallback={<div className="p-4 border rounded bg-amber-50 text-amber-800">Komponenten kunde inte laddas</div>}>
-            <MeticsImport />
+            <React.Suspense fallback={<div className="p-4">Laddar...</div>}>
+              <MeticsImport />
+            </React.Suspense>
           </ErrorBoundary>
         </TabsContent>
         <TabsContent value="audit">
           <ErrorBoundary fallback={<div className="p-4 border rounded bg-amber-50 text-amber-800">Kunde inte ladda Audit-logg</div>}>
-            <AuditLogViewer />
+            <React.Suspense fallback={<div className="p-4">Laddar...</div>}>
+              <AuditLogViewer />
+            </React.Suspense>
           </ErrorBoundary>
         </TabsContent>
       </Tabs>
