@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import { Factory, CheckCircle } from 'lucide-react';
 import ProductionForm from '@/components/production/ProductionForm';
@@ -270,7 +270,7 @@ export default function Production() {
                           </div>
                           <div className="text-right ml-4">
                             <p className="font-semibold text-slate-900">{mix.produced_kg?.toLocaleString('sv-SE')} kg</p>
-                            <p className="text-xs text-slate-500">{mix.produced_at && format(new Date(mix.produced_at), 'd MMM', { locale: sv })}</p>
+                            <p className="text-xs text-slate-500">{mix.produced_at && isValid(new Date(mix.produced_at)) ? format(new Date(mix.produced_at), 'd MMM', { locale: sv }) : null}</p>
                           </div>
                         </div>
                       ))}
