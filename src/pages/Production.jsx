@@ -184,7 +184,7 @@ export default function Production() {
     }
   });
 
-  const recentBatches = batches.slice(0, 10);
+  const recentMixes = mixBatches.slice(0, 10);
 
   const [activeTab, setActiveTab] = useState('tillverkning');
   const [selectedMixBatchId, setSelectedMixBatchId] = useState(null);
@@ -237,24 +237,24 @@ export default function Production() {
                     <Factory className="w-5 h-5 text-indigo-600" />
                     Senaste produktioner
                   </h3>
-                  {recentBatches.length === 0 ? (
+                  {recentMixes.length === 0 ? (
                     <div className="text-center py-8 text-slate-500">
                       Inga produktioner registrerade
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {recentBatches.map((batch) => (
-                        <div key={batch.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                      {recentMixes.map((mix) => (
+                        <div key={mix.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
                               <CheckCircle className="w-4 h-4 text-emerald-500" />
-                              <span className="font-mono text-sm font-medium text-slate-900">{batch.batch_number}</span>
+                              <span className="font-mono text-sm font-medium text-slate-900">{mix.batch_no}</span>
                             </div>
-                            <p className="text-sm text-slate-500 truncate">{batch.product_name || batch.product_sku}</p>
+                            <p className="text-sm text-slate-500 truncate">{mix.mix_sku}</p>
                           </div>
                           <div className="text-right ml-4">
-                            <p className="font-semibold text-slate-900">{batch.produced_quantity?.toLocaleString('sv-SE')} kg</p>
-                            <p className="text-xs text-slate-500">{batch.production_date && format(new Date(batch.production_date), 'd MMM', { locale: sv })}</p>
+                            <p className="font-semibold text-slate-900">{mix.produced_kg?.toLocaleString('sv-SE')} kg</p>
+                            <p className="text-xs text-slate-500">{mix.produced_at && format(new Date(mix.produced_at), 'd MMM', { locale: sv })}</p>
                           </div>
                         </div>
                       ))}
