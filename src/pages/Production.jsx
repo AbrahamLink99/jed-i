@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { generateBatchNumber, getStockSummary } from '@/components/inventory/StockCalculations';
 import { toast } from 'sonner';
 import { useEnvironmentFilter } from '@/components/environment/useEnvironmentFilter';
+import ErrorBoundary from '@/components/common/ErrorBoundary';
 
 export default function Production() {
   const queryClient = useQueryClient();
@@ -23,6 +24,7 @@ export default function Production() {
   const { data: products = [], error: productsError } = useQuery({
     queryKey: ['products', 'production'],
     queryFn: () => base44.entities.Product.filter({ environment: 'production' }, undefined, 1000),
+    initialData: [],
     onError: (e) => console.error('Failed to load products', e)
   });
 
@@ -40,6 +42,7 @@ export default function Production() {
   const { data: bomItems = [], error: bomError } = useQuery({
     queryKey: ['bom-items', 'production'],
     queryFn: () => base44.entities.BOMItem.filter({ environment: 'production' }),
+    initialData: []
   });
 
   useEffect(() => {
@@ -50,25 +53,29 @@ export default function Production() {
 
   const { data: packagingRecipes = [] } = useQuery({
     queryKey: ['packaging-recipes', envFilter.environment],
-    queryFn: () => base44.entities.PackagingRecipe.filter(envFilter)
+    queryFn: () => base44.entities.PackagingRecipe.filter(envFilter),
+    initialData: []
   });
 
   const { data: batches = [] } = useQuery({
     queryKey: ['batches', envFilter.environment],
-    queryFn: () => base44.entities.Batch.filter(envFilter, '-created_date', 20)
+    queryFn: () => base44.entities.Batch.filter(envFilter, '-created_date', 20),
+    initialData: []
   });
 
   const { data: mixBatches = [] } = useQuery({
     queryKey: ['mixBatches', envFilter.environment],
-    queryFn: () => base44.entities.MixBatch.filter(envFilter, '-created_date', 100)
+    queryFn: () => base44.entities.MixBatch.filter(envFilter, '-created_date', 100),
+    initialData: []
   });
 
   const { data: ledger = [] } = useQuery({
     queryKey: ['ledger', envFilter.environment],
-    queryFn: () => base44.entities.InventoryLedger.filter(envFilter, '-created_date', 500)
+    queryFn: () => base44.entities.InventoryLedger.filter(envFilter, '-created_date', 500),
+    initialData: []
   });
 
-  const finishedProducts = products.filter(p => p.type === 'finished_good' && p.active !== false);
+  const finishedProducts = (products || []).filter(p => p.type === 'finished_good' && p.active !== false);
 
   // Produkter som är godkända som blandningar (har tappningsrecept)
   const recipeOptions = useMemo(() => {
@@ -101,8 +108,8 @@ export default function Production() {
   }, [bomItems, products]);
 
   const bomWithNames = useMemo(() => {
-    return bomItems.map(bom => {
-      const component = products.find(p => p.id === bom.component_id);
+    return (bomItems || []).map(bom => {
+      const component = (products || []).find(p => p.id === bom.component_id);
       return {
         ...bom,
         component_sku: component?.sku,
@@ -114,8 +121,8 @@ export default function Production() {
 
   const componentStock = useMemo(() => {
     const stock = {};
-    products.forEach(p => {
-      const summary = getStockSummary(p, ledger, batches);
+    (products || []).forEach(p => {
+      const summary = getStockSummary(p, (ledger || []), (batches || []));
       stock[p.id] = summary.onHand;
     });
     return stock;
@@ -185,7 +192,7 @@ export default function Production() {
     }
   });
 
-  const recentMixes = mixBatches.slice(0, 10);
+  const recentMixes = (mixBatches || []).slice(0, 10);
 
   const [activeTab, setActiveTab] = useState('tillverkning');
   const [selectedMixBatchId, setSelectedMixBatchId] = useState(null);
@@ -208,7 +215,8 @@ export default function Production() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <ErrorBoundary fallback={<div className=\"p-4 text-red-700 bg-red-50 border border-red-200 rounded\">Ett fel uppstod på Produktionssidan.</div>}>
+      <div className="min-h-screen bg-slate-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-slate-900">Produktion</h1>
@@ -287,5 +295,6 @@ export default function Production() {
         </Tabs>
       </div>
     </div>
+    </ErrorBoundary>
   );
 }
