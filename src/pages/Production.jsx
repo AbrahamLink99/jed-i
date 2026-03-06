@@ -172,6 +172,12 @@ export default function Production() {
       queryClient.invalidateQueries({ queryKey: ['mixBatches'] });
       queryClient.invalidateQueries({ queryKey: ['ledger'] });
       toast.success(`Produktion registrerad: ${batch.batch_number}`);
+      // Preselect this mix for filling so all matching recipes appear immediately
+      setSelectedMixBatchId(batch.id);
+      setActiveTab('tappning');
+      const url = new URL(window.location.href);
+      url.searchParams.set('mix_batch_id', batch.id);
+      window.history.replaceState({}, '', url.toString());
     },
     onError: (error) => {
       toast.error('Kunde inte registrera produktion');
