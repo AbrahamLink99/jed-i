@@ -190,16 +190,14 @@ export default function Production() {
 
       return batch;
     },
-    onSuccess: (batch) => {
-      queryClient.invalidateQueries({ queryKey: ['batches'] });
+    onSuccess: (mix) => {
       queryClient.invalidateQueries({ queryKey: ['mixBatches'] });
       queryClient.invalidateQueries({ queryKey: ['ledger'] });
-      toast.success(`Produktion registrerad: ${batch.batch_number}`);
-      // Preselect this mix for filling so all matching recipes appear immediately
-      setSelectedMixBatchId(batch.id);
+      toast.success(`Blandning registrerad: ${mix.batch_no}`);
+      setSelectedMixBatchId(mix.id);
       setActiveTab('tappning');
       const url = new URL(window.location.href);
-      url.searchParams.set('mix_batch_id', batch.id);
+      url.searchParams.set('mix_batch_id', mix.id);
       window.history.replaceState({}, '', url.toString());
     },
     onError: (error) => {

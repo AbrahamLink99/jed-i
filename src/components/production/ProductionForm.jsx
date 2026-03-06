@@ -25,11 +25,11 @@ export default function ProductionForm({
   const [batchNumber, setBatchNumber] = useState('');
 
   const productList = mixEligibleProducts;
-  const product = productList.find(p => p.id === selectedProduct);
-  const productBOM = bomItems.filter(b => b.finished_product_id === selectedProduct);
+  const selected = recipeList.find(o => o.mix_sku === selectedRecipe);
+  const productBOM = selected?.bom || [];
 
   const componentImpact = useMemo(() => {
-    if (!selectedProduct || !quantity || !productBOM.length) return [];
+    if (!selectedRecipe || !quantity || !productBOM.length) return [];
 
     const qty = parseFloat(quantity) || 0;
     return productBOM.map(bom => {
@@ -49,20 +49,20 @@ export default function ProductionForm({
   }, [selectedProduct, quantity, productBOM, componentStock]);
 
   const hasShortage = componentImpact.some(c => c.shortage);
-  const canProduce = selectedProduct && quantity && parseFloat(quantity) > 0 && !(product && product._missing);
+  const canProduce = selected && selected.mix_product_id && quantity && parseFloat(quantity) > 0;
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!canProduce) return;
 
     onSubmit({
-      productId: selectedProduct,
-      product,
+      mixSku: selected?.mix_sku,
+      mixProductId: selected?.mix_product_id,
+      mixProduct: selected?.mix_product,
       quantity: parseFloat(quantity),
       productionDate,
       notes,
       componentImpact,
-      isMix,
       batchNumber
     });
   };
@@ -79,44 +79,35 @@ export default function ProductionForm({
             <p className="text-sm text-slate-500">Deklarera vad som har producerats</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Label className="text-sm text-slate-600">Blandning (bulk för tappning)</Label>
-          <Switch checked={isMix} onCheckedChange={setIsMix} />
-        </div>
+
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>Välj produkt att tillverka</Label>
-            <Select value={selectedProduct} onValueChange={setSelectedProduct}>
+            <Label>Välj recept</Label>
+            <Select value={selectedRecipe} onValueChange={setSelectedRecipe}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Välj produkt att tillverka..." />
+                <SelectValue placeholder="Välj recept..." />
               </SelectTrigger>
               <SelectContent position="popper" className="max-h-60 overflow-y-auto">
-                {productList.length === 0 && (
+                {recipeList.length === 0 && (
                   <SelectItem value="__empty" disabled>
-                    Inga produkter hittades
+                    Inga recept hittades
                   </SelectItem>
                 )}
-                {productList.map(p => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.sku} - {p.name} {p._missing ? '• saknas i Artiklar' : ''}
+                {recipeList.map(o => (
+                  <SelectItem key={o.mix_sku} value={o.mix_sku}>
+                    {o.label} {o.mix_product ? '' : '• saknas i Artiklar'}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {product?._missing && (
-              <Alert variant="destructive">
-                <AlertDescription>
-                  Receptets blandning saknar motsvarande produkt i Artiklar. Skapa en produkt med SKU {product?.sku} för att kunna registrera produktion.
-                </AlertDescription>
-              </Alert>
-            )}
+
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="quantity">Kvantitet ({product?.unit || 'kg'}) *</Label>
+            <Label htmlFor="quantity">Kvantitet (kg) *</Label>
             <Input
               id="quantity"
               type="number"
