@@ -107,6 +107,7 @@ Deno.serve(async (req) => {
       '- Avgör intent i användarens meddelande.',
       '- Om produktion beskrivs: returnera {"type":"production","summary":"...","actions":[{ "type":"mix_batch"|"finished_batch", "sku":"...", "kg"?:number, "units"?:number, "batch_no":"..." }]}',
       '- Om fråga/analys/lista/rapport: returnera {"type":"info","summary":"...","tables":[{"title":"...","columns":["col1",...],"rows":[[v11,v12,...],[...]]}]} (tables valfritt).',
+      '- Om användaren ber om inköpslista/beställning/under säkerhetslager: använd Aktiva notiser (alerts) som källa och bygg en tabell med kolumnerna ["Leverantör","SKU","Namn","Tillgängligt","Säkerhetslager","Föreslagen beställning"]; inkludera endast rader där current_available_qty < safety_stock eller där suggested_order_qty > 0; gruppera gärna per Leverantör; om användaren anger en specifik leverantör, filtrera på den; om ej specificerat och texten säger "samma leverantör" – välj den leverantör som flest rader tillhör och visa den listan.',
       '- Svara ENDAST med giltig JSON utan markdown eller extra text.'
     ].join('\n');
 
