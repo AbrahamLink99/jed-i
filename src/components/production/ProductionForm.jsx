@@ -27,7 +27,7 @@ export default function ProductionForm({
   const [notes, setNotes] = useState('');
   const [batchNumber, setBatchNumber] = useState('');
 
-  const productList = mixOnly ? mixEligibleProducts : (isMix ? mixEligibleProducts : finishedProducts);
+  const productList = mixEligibleProducts;
   const product = productList.find(p => p.id === selectedProduct);
   const productBOM = bomItems.filter(b => b.finished_product_id === selectedProduct);
 
