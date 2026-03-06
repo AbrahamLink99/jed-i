@@ -12,16 +12,13 @@ import { Switch } from "@/components/ui/switch";
 import { format } from 'date-fns';
 
 export default function ProductionForm({ 
-  finishedProducts = [], 
-  mixEligibleProducts = [],
-  bomItems = [],
+  recipeOptions = [],
   componentStock = {},
   onSubmit,
   isLoading,
-  mixOnly = false,
-}) {
-  const [selectedProduct, setSelectedProduct] = useState('');
-  const [isMix, setIsMix] = useState(true);
+ }) {
+  const [selectedRecipe, setSelectedRecipe] = useState('');
+  // removed isMix toggle – always mixing
   const [quantity, setQuantity] = useState('');
   const [productionDate, setProductionDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [notes, setNotes] = useState('');
