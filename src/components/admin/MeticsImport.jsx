@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Upload, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Loader2, Upload, CheckCircle2, AlertTriangle, Download } from "lucide-react";
 
 function parseCSV(text) {
   // Simple CSV parser supporting comma or semicolon separators and quoted values
@@ -170,6 +170,24 @@ export default function MeticsImport() {
     }
   }
 
+  function downloadTemplate() {
+    const headers = ['Ingrediens','Mängd'];
+    const sample = [
+      ['SKU_ELLER_NAMN_1','0.25'],
+      ['SKU_ELLER_NAMN_2','0.75']
+    ];
+    const csv = [headers.join(','), ...sample.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'metics_bom_mall.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   const canGoStep3 = step === 2 && ingredientCol && qtyCol;
   const canImport = step === 5 && selectedProductIds.length > 0 && stats.matched > 0;
 
@@ -228,6 +246,10 @@ export default function MeticsImport() {
                   <Button disabled className="gap-2" variant="outline">
                     <Upload className="w-4 h-4" />
                     {uploading ? 'Laddar upp...' : 'Välj fil'}
+                  </Button>
+                  <Button onClick={downloadTemplate} className="gap-2" variant="secondary">
+                    <Download className="w-4 h-4" />
+                    Ladda ner importmall
                   </Button>
                 </div>
                 <p className="text-xs text-slate-500 mt-2">Förhandsvisning visas efter uppladdning.</p>
