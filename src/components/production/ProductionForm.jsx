@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Factory, AlertTriangle, CheckCircle, Package } from 'lucide-react';
-import { Switch } from "@/components/ui/switch";
+
 import { format } from 'date-fns';
 
 export default function ProductionForm({ 

@@ -122,73 +122,51 @@ export default function Production() {
 
   const productionMutation = useMutation({
     mutationFn: async (data) => {
-      const { productId, product, quantity, productionDate, notes, componentImpact, isMix } = data;
-      
-      // Check if this product has packaging recipes (is a mix)
-      const hasPackagingRecipes = packagingRecipes.some(r => r.mix_sku === product.sku);
-      
-      // 1. Generate batch number (allow override from UI)
-      const batchNumber = (data.batchNumber && data.batchNumber.trim()) ? data.batchNumber.trim() : generateBatchNumber(product.sku);
-      
-      // 2. Create batch
-      const batch = await base44.entities.Batch.create({
+      const { mixSku, mixProductId, mixProduct, quantity, productionDate, notes, componentImpact, batchNumber } = data;
+
+      const finalBatchNo = (batchNumber && batchNumber.trim()) ? batchNumber.trim() : generateBatchNumber(mixSku);
+
+      // 1. Create MixBatch (always)
+      const mix = await base44.entities.MixBatch.create({
         environment: envFilter.environment,
-        batch_number: batchNumber,
-        product_id: productId,
-        product_sku: product.sku,
-        product_name: product.name,
-        produced_quantity: quantity,
-        current_quantity: quantity,
-        production_date: productionDate,
+        mix_sku: mixSku,
+        batch_no: finalBatchNo,
+        produced_kg: quantity,
+        remaining_kg: quantity,
         status: 'available',
+        produced_at: new Date().toISOString(),
         notes
       });
 
-      // 3. Create MixBatch för tappning (endast om detta är markerat som blandning OCH recept finns)
-      if (isMix && hasPackagingRecipes) {
-        await base44.entities.MixBatch.create({
-          environment: envFilter.environment,
-          mix_sku: product.sku,
-          batch_no: batchNumber,
-          produced_kg: quantity,
-          remaining_kg: quantity,
-          status: 'available',
-          produced_at: new Date().toISOString(),
-          notes
-        });
-      }
-
-      // 4. Create ledger entry for production (finished goods in)
+      // 2. Ledger entry for mix production (bulk in)
       await base44.entities.InventoryLedger.create({
         environment: envFilter.environment,
-        product_id: productId,
-        product_sku: product.sku,
-        product_name: product.name,
-        batch_id: batch.id,
-        batch_number: batchNumber,
+        product_id: mixProductId,
+        product_sku: mixSku,
+        product_name: mixProduct?.name,
+        batch_number: finalBatchNo,
         transaction_type: 'production',
         quantity: quantity,
-        reference: `Produktion: ${batchNumber}`,
+        reference: `Blandning: ${finalBatchNo}`,
         notes
       });
 
-      // 5. Create backflush entries for components
+      // 3. Backflush raw materials
       for (const impact of componentImpact) {
         await base44.entities.InventoryLedger.create({
           environment: envFilter.environment,
           product_id: impact.component_id,
           product_sku: impact.component_sku,
           product_name: impact.component_name,
-          batch_id: batch.id,
-          batch_number: batchNumber,
+          batch_number: finalBatchNo,
           transaction_type: 'backflush',
-          quantity: -impact.required, // Negative = consumption
-          reference: `Backflush för: ${batchNumber}`,
-          notes: `${quantity} ${product.unit} ${product.sku}`
+          quantity: -impact.required,
+          reference: `Backflush: ${finalBatchNo}`,
+          notes: `${quantity} kg ${mixSku}`
         });
       }
 
-      return batch;
+      return mix;
     },
     onSuccess: (mix) => {
       queryClient.invalidateQueries({ queryKey: ['mixBatches'] });
