@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from 'date-fns';
@@ -20,8 +21,8 @@ export default function Production() {
   const envFilter = useEnvironmentFilter();
 
   const { data: products = [], error: productsError } = useQuery({
-    queryKey: ['products', envFilter.environment],
-    queryFn: () => base44.entities.Product.filter(envFilter),
+    queryKey: ['products', 'production'],
+    queryFn: () => base44.entities.Product.filter({ environment: 'production' }, undefined, 1000),
     onError: (e) => console.error('Failed to load products', e)
   });
 
@@ -31,9 +32,14 @@ export default function Production() {
     }
   }, [productsError]);
 
+  useEffect(() => {
+    console.log('bomItems length:', (bomItems || []).length);
+    console.log('products length:', (products || []).length);
+  }, [bomItems, products]);
+
   const { data: bomItems = [], error: bomError } = useQuery({
-    queryKey: ['bom-items', envFilter.environment],
-    queryFn: () => base44.entities.BOMItem.filter(envFilter),
+    queryKey: ['bom-items', 'production'],
+    queryFn: () => base44.entities.BOMItem.filter({ environment: 'production' }),
   });
 
   useEffect(() => {
@@ -66,38 +72,33 @@ export default function Production() {
 
   // Produkter som är godkända som blandningar (har tappningsrecept)
   const recipeOptions = useMemo(() => {
-    const activeRecipes = (packagingRecipes || []).filter(r => r.active);
-    const byMix = new Map();
-    activeRecipes.forEach(r => {
-      if (!byMix.has(r.mix_sku)) byMix.set(r.mix_sku, []);
-      byMix.get(r.mix_sku).push(r);
+    const byFinished = new Map();
+    (bomItems || []).forEach(b => {
+      if (!b.finished_product_id) return;
+      if (!byFinished.has(b.finished_product_id)) byFinished.set(b.finished_product_id, []);
+      byFinished.get(b.finished_product_id).push(b);
     });
 
     const opts = [];
-    byMix.forEach((recipes, mixSku) => {
-      const finishedSku = recipes[0]?.finished_sku;
-      const finishedProduct = products.find(p => p.sku === finishedSku);
-      const mixProduct = products.find(p => p.sku === mixSku);
-      const bomForFinished = finishedProduct ? bomItems.filter(b => b.finished_product_id === finishedProduct.id) : [];
-      if (!bomForFinished.length) return; // only show recipes that have a BOM
-      const label = mixProduct?.name || finishedProduct?.name || mixSku;
-      const enrichedBOM = bomForFinished.map(b => {
+    byFinished.forEach((items, finishedId) => {
+      const product = products.find(p => p.id === finishedId);
+      if (!product || product.active === false) return;
+      const enrichedBOM = items.map(b => {
         const component = products.find(p => p.id === b.component_id);
         return { ...b, component_sku: component?.sku, component_name: component?.name, component_unit: component?.unit };
       });
-      opts.push({ mix_sku: mixSku, label, mix_product_id: mixProduct?.id, mix_product: mixProduct, finished_product_id: finishedProduct?.id, bom: enrichedBOM });
+      opts.push({
+        mix_sku: product.sku,
+        label: `${product.sku} - ${product.name}`,
+        mix_product_id: product.id,
+        mix_product: product,
+        finished_product_id: product.id,
+        bom: enrichedBOM
+      });
     });
 
-    // Deduplicate by BOM signature so identical recipes appear once
-    const bySig = new Map();
-    for (const o of opts) {
-      const sig = JSON.stringify(o.bom.map(b => ({ c: b.component_id, q: b.quantity_per_unit })).sort((a,b)=> a.c.localeCompare(b.c)));
-      if (!bySig.has(sig)) {
-        bySig.set(sig, o);
-      }
-    }
-    return Array.from(bySig.values());
-  }, [packagingRecipes, products, bomItems]);
+    return opts;
+  }, [bomItems, products]);
 
   const bomWithNames = useMemo(() => {
     return bomItems.map(bom => {
@@ -222,6 +223,13 @@ export default function Production() {
           </TabsList>
 
           <TabsContent value="tillverkning">
+            {(bomItems?.length ?? 0) === 0 && (
+              <Alert className="mb-4">
+                <AlertDescription>
+                  Inga BOM-recept hittades – importera recept via Admin → Metics BOM först.
+                </AlertDescription>
+              </Alert>
+            )}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
                 <ProductionForm
