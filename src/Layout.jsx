@@ -4,11 +4,14 @@ import { createPageUrl } from '@/utils';
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, Package, Factory, Boxes,
-  Calculator, Menu, X,
+  Calculator, Menu, X, Sparkles, Send,
   ChevronRight, Bell, Shield, LogOut, ChefHat, Droplets } from
 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { base44 } from '@/api/base44Client';
 import { EnvironmentProvider } from '@/components/environment/EnvironmentContext';
 
@@ -32,6 +35,27 @@ export default function Layout({ children, currentPageName }) {
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
   const [user, setUser] = useState(null);
 
+  // AI assistant state
+  const [assistantOpen, setAssistantOpen] = useState(false);
+  const [messages, setMessages] = useState([]); // {role: 'user'|'assistant', content: string}
+  const [input, setInput] = useState("");
+  const [pendingActions, setPendingActions] = useState(null); // [{type, sku, kg|units, batch_no}]
+  const [submitting, setSubmitting] = useState(false);
+  const [products, setProducts] = useState([]);
+
+  const productsBySku = React.useMemo(() => {
+    const m = new Map();
+    for (const p of products) m.set(p.sku, p);
+    return m;
+  }, [products]);
+
+  const genBatchNo = (prefix, sku) => {
+    const d = new Date();
+    const ds = [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('');
+    const rand = Math.random().toString(36).slice(2,6).toUpperCase();
+    return `${prefix}-${sku}-${ds}-${rand}`;
+  };
+
 
   React.useEffect(() => {
     const loadUser = async () => {
@@ -45,10 +69,110 @@ export default function Layout({ children, currentPageName }) {
     loadUser();
   }, []);
 
+  // Load products once (used for name lookup and committing actions)
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const list = await base44.entities.Product.list('-name', 1000);
+        setProducts(Array.isArray(list) ? list : []);
+      } catch (e) { console.warn('Failed to load products', e); }
+    })();
+  }, []);
+
   const navItems = React.useMemo(
     () => (user?.role === 'admin' ? [...navigation, { name: 'Admin', icon: Shield, page: 'Admin' }] : navigation),
     [user]
   );
+
+  const sendMessage = async () => {
+    const text = input.trim();
+    if (!text) return;
+    setMessages((m) => [...m, { role: 'user', content: text }]);
+    setInput('');
+
+    try {
+      const res = await base44.functions.invoke('aiProductionAssistant', { message: text });
+      const { summary, actions } = res.data || {};
+      setMessages((m) => [...m, { role: 'assistant', content: summary || 'Jag har tolkat din text. Kontrollera förslaget nedan.' }]);
+      if (Array.isArray(actions) && actions.length > 0) {
+        // Normalize actions with defaults
+        const norm = actions.map(a => ({
+          type: a.type,
+          sku: a.sku,
+          kg: a.kg ?? undefined,
+          units: a.units ?? undefined,
+          batch_no: a.batch_no || (a.type === 'mix_batch' ? genBatchNo('MB', a.sku) : genBatchNo('B', a.sku))
+        }));
+        setPendingActions(norm);
+      } else {
+        setPendingActions(null);
+      }
+    } catch (e) {
+      setMessages((m) => [...m, { role: 'assistant', content: 'Jag kunde inte tolka meddelandet. Jag kan hjälpa dig att registrera blandningar (kg) och färdigvarubatcher (st). Ex: "Körde 600 kg Hårmask bas, fick ut 412 st 350ml och 198 st 50ml, spill 2 kg".' }]);
+      setPendingActions(null);
+    }
+  };
+
+  const commitActions = async () => {
+    if (!pendingActions || submitting) return;
+    setSubmitting(true);
+    try {
+      for (const a of pendingActions) {
+        const prod = productsBySku.get(a.sku);
+        if (!prod) continue;
+        if (a.type === 'mix_batch') {
+          // Create MixBatch and production ledger (kg)
+          await base44.entities.MixBatch.create({
+            environment: 'production',
+            mix_sku: a.sku,
+            batch_no: a.batch_no,
+            produced_kg: Number(a.kg) || 0,
+            remaining_kg: Number(a.kg) || 0,
+            status: 'available',
+            produced_at: new Date().toISOString(),
+            notes: 'Registrerad via AI-assistent'
+          });
+          await base44.entities.InventoryLedger.create({
+            environment: 'production',
+            product_id: prod.id,
+            product_sku: prod.sku,
+            product_name: prod.name,
+            transaction_type: 'production',
+            quantity: Number(a.kg) || 0,
+            reference_type: 'production_run',
+            notes: `MixBatch ${a.batch_no} via AI-assistent`
+          });
+        } else if (a.type === 'finished_batch') {
+          // Create generic Batch and production ledger (units)
+          await base44.entities.Batch.create({
+            environment: 'production',
+            batch_number: a.batch_no,
+            product_id: prod.id,
+            product_sku: prod.sku,
+            product_name: prod.name,
+            produced_quantity: Number(a.units) || 0,
+            current_quantity: Number(a.units) || 0,
+            status: 'available',
+            production_date: new Date().toISOString().slice(0,10)
+          });
+          await base44.entities.InventoryLedger.create({
+            environment: 'production',
+            product_id: prod.id,
+            product_sku: prod.sku,
+            product_name: prod.name,
+            transaction_type: 'production',
+            quantity: Number(a.units) || 0,
+            reference_type: 'production_run',
+            notes: `Batch ${a.batch_no} via AI-assistent`
+          });
+        }
+      }
+      setMessages((m) => [...m, { role: 'assistant', content: 'Klart! Produktionen har registrerats.' }]);
+      setPendingActions(null);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <EnvironmentProvider>
@@ -131,7 +255,105 @@ export default function Layout({ children, currentPageName }) {
           {children}
         </main>
       </div>
-    </div>
+
+      {/* Floating AI Assistant Button */}
+      <button
+        title="AI-assistent"
+        onClick={() => setAssistantOpen(true)}
+        className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full bg-black text-white shadow-lg flex items-center justify-center hover:opacity-90 focus:outline-none"
+      >
+        <Sparkles className="w-6 h-6" />
+      </button>
+
+      {/* Assistant Panel */}
+      <Sheet open={assistantOpen} onOpenChange={setAssistantOpen}>
+        <SheetContent side="right" className="w-[400px] p-0 flex flex-col">
+          <SheetHeader className="p-4 border-b">
+            <SheetTitle className="flex items-center justify-between">
+              <span>AI-assistent</span>
+              <Button size="icon" variant="ghost" onClick={() => setAssistantOpen(false)}>
+                <X className="w-5 h-5" />
+              </Button>
+            </SheetTitle>
+          </SheetHeader>
+
+          {/* Messages */}
+          <div className="flex-1 overflow-auto p-4 space-y-3">
+            {messages.map((m, idx) => (
+              <div key={idx} className={cn('max-w-[85%] rounded-2xl px-3 py-2', m.role === 'user' ? 'ml-auto bg-slate-900 text-white' : 'mr-auto bg-white border')}>
+                {m.content}
+              </div>
+            ))}
+
+            {pendingActions && (
+              <div className="border rounded-xl bg-white">
+                <div className="p-3 border-b font-medium">Föreslagna åtgärder</div>
+                <div className="p-3">
+                  <div className="overflow-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Typ</TableHead>
+                          <TableHead>SKU</TableHead>
+                          <TableHead>Produkt</TableHead>
+                          <TableHead className="text-right">Antal</TableHead>
+                          <TableHead>Batch</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {pendingActions.map((a, i) => (
+                          <TableRow key={i}>
+                            <TableCell className="text-xs">{a.type === 'mix_batch' ? 'Mix (kg)' : 'Färdig (st)'}</TableCell>
+                            <TableCell className="font-mono text-xs">{a.sku}</TableCell>
+                            <TableCell className="text-xs">{productsBySku.get(a.sku)?.name || '-'}</TableCell>
+                            <TableCell>
+                              {a.type === 'mix_batch' ? (
+                                <Input type="number" step="0.001" value={a.kg ?? ''} onChange={(e)=>{
+                                  const v = e.target.value; setPendingActions(prev => prev.map((x,idx)=> idx===i? {...x, kg: v }: x));
+                                }} className="h-8 w-24 text-right" />
+                              ) : (
+                                <Input type="number" step="1" value={a.units ?? ''} onChange={(e)=>{
+                                  const v = e.target.value; setPendingActions(prev => prev.map((x,idx)=> idx===i? {...x, units: v }: x));
+                                }} className="h-8 w-24 text-right" />
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Input value={a.batch_no} onChange={(e)=>{
+                                const v = e.target.value; setPendingActions(prev => prev.map((x,idx)=> idx===i? {...x, batch_no: v }: x));
+                              }} className="h-8" />
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <div className="flex gap-2 justify-end mt-3">
+                    <Button variant="outline" onClick={()=> setPendingActions(null)}>Avbryt</Button>
+                    <Button onClick={commitActions} disabled={submitting} className="gap-2">
+                      {submitting && <span className="animate-pulse">...</span>} Godkänn och registrera
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Composer */}
+          <div className="p-3 border-t flex items-center gap-2">
+            <Input
+              placeholder="Skriv t.ex. 'Körde 600 kg hårmask bas...'"
+              value={input}
+              onChange={(e)=> setInput(e.target.value)}
+              onKeyDown={(e)=> { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+            />
+            <Button onClick={sendMessage} className="gap-2">
+              <Send className="w-4 h-4" /> Skicka
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      </div>
     </EnvironmentProvider>
   );
 }
