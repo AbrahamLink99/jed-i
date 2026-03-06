@@ -53,8 +53,20 @@ export default function Production() {
 
   // Produkter som är godkända som blandningar (har tappningsrecept)
   const mixEligibleProducts = useMemo(() => {
-    const mixSkus = new Set((packagingRecipes || []).map(r => r.mix_sku));
-    return products.filter(p => mixSkus.has(p.sku) && p.active !== false);
+    const seen = new Set();
+    const list = [];
+    (packagingRecipes || []).forEach(r => {
+      const sku = r.mix_sku;
+      if (!sku || seen.has(sku)) return;
+      seen.add(sku);
+      const p = products.find(x => x.sku === sku && x.active !== false);
+      if (p) {
+        list.push(p);
+      } else {
+        list.push({ id: `missing:${sku}`, sku, name: '(saknas i Artiklar)', unit: 'kg', _missing: true });
+      }
+    });
+    return list;
   }, [products, packagingRecipes]);
 
   const bomWithNames = useMemo(() => {

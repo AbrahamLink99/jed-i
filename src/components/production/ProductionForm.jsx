@@ -52,7 +52,7 @@ export default function ProductionForm({
   }, [selectedProduct, quantity, productBOM, componentStock]);
 
   const hasShortage = componentImpact.some(c => c.shortage);
-  const canProduce = selectedProduct && quantity && parseFloat(quantity) > 0;
+  const canProduce = selectedProduct && quantity && parseFloat(quantity) > 0 && !(product && product._missing);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -93,17 +93,24 @@ export default function ProductionForm({
           <div className="space-y-2">
             <Label>{isMix ? 'Blandning (mix) *' : 'Färdigvara *'}</Label>
             <Select value={selectedProduct} onValueChange={setSelectedProduct}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder={isMix ? 'Välj blandning...' : 'Välj färdigvara...'} />
               </SelectTrigger>
               <SelectContent>
                 {productList.map(p => (
                   <SelectItem key={p.id} value={p.id}>
-                    {p.sku} - {p.name}
+                    {p.sku} - {p.name} {p._missing ? '• saknas i Artiklar' : ''}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            {product?._missing && (
+              <Alert variant="destructive">
+                <AlertDescription>
+                  Receptets blandning saknar motsvarande produkt i Artiklar. Skapa en produkt med SKU {product?.sku} för att kunna registrera produktion.
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
 
           <div className="space-y-2">
