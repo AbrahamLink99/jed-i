@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
       unit: productBySku.get(a.product_sku)?.unit || null
     }));
 
-    const bomItems = (bomItemsAll || []).map(b => ({
+    const bomItems = (bomItemsAll || []).slice(0, 50).map(b => ({
       finished_product_id: b.finished_product_id,
       component_id: b.component_id,
       component_sku: productById.get(b.component_id)?.sku || null,
