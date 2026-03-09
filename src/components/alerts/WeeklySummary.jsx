@@ -13,9 +13,29 @@ export default function WeeklySummary() {
     setError(null);
     try {
       const res = await base44.functions.invoke('weeklySummary', {});
-      setAnalysis(res?.data || null);
+      const data = res?.data;
+      if (data?.error) {
+        const msg = data.details ? `${data.error}: ${data.details}` : data.error;
+        setError(`Fel från AI: ${msg}`);
+        console.error('weeklySummary error payload:', data);
+        return;
+      }
+      // Try to parse if string (shouldn't happen but guard it)
+      let parsed = data;
+      if (typeof data === 'string') {
+        try {
+          parsed = JSON.parse(data);
+        } catch (parseErr) {
+          console.error('AI-svar kunde inte tolkas (råtext):', data);
+          setError('AI-svaret kunde inte tolkas – se konsolen för detaljer.');
+          return;
+        }
+      }
+      setAnalysis(parsed || null);
     } catch (e) {
-      setError('Kunde inte hämta analysen.');
+      const msg = e?.response?.data?.error || e?.message || 'Okänt fel';
+      setError(`Kunde inte hämta analysen: ${msg}`);
+      console.error('weeklySummary fetch error:', e);
     } finally {
       setLoading(false);
     }
