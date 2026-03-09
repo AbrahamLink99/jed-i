@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AlertList from '@/components/alerts/AlertList';
+import { evaluateInventoryAlerts } from '@/components/alerts/AlertEvaluator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 
