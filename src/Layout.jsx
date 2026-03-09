@@ -355,7 +355,8 @@ export default function Layout({ children, currentPageName }) {
       <button
         title="AI-assistent"
         onClick={() => setAssistantOpen(true)}
-        className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full bg-black text-white shadow-lg flex items-center justify-center hover:opacity-90 focus:outline-none"
+        className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full flex items-center justify-center hover:opacity-90 focus:outline-none"
+        style={{ background: 'var(--navy)', color: 'var(--text-on-navy)', boxShadow: '0 4px 20px rgba(43,63,140,0.30)' }}
       >
         <Sparkles className="w-6 h-6" />
       </button>
