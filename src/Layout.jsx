@@ -300,7 +300,7 @@ export default function Layout({ children, currentPageName }) {
                 <span className={cn(
                    "ml-3 text-sm font-medium transition-all duration-200",
                    isSidebarHovered ? "inline opacity-100 translate-x-0" : "hidden",
-                   isActive ? "text-white" : "text-slate-700"
+                   isActive ? "text-slate-900 font-semibold" : "text-slate-600"
                  )}>
                   {item.name}
                 </span>
