@@ -60,6 +60,7 @@ Deno.serve(async (req) => {
       .filter(l => {
         try { return new Date(l.created_date) >= since; } catch { return false; }
       })
+      .slice(0, 30)
       .map(l => ({
         product_sku: l.product_sku,
         quantity: Number(l.quantity ?? 0),
