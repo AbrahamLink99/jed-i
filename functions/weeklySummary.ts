@@ -29,8 +29,14 @@ Deno.serve(async (req) => {
     const productById = new Map((productsAll || []).map(p => [p.id, p]));
     const productBySku = new Map((productsAll || []).map(p => [p.sku, p]));
 
+    // Severity sort order: critical first, then warning, then info
+    const severityOrder = { critical: 0, warning: 1, info: 2 };
+    const openAlertsSorted = (openAlertsAll || [])
+      .sort((a, b) => (severityOrder[a.severity] ?? 9) - (severityOrder[b.severity] ?? 9))
+      .slice(0, 50);
+
     // Prepare datasets as required
-    const openAlerts = (openAlertsAll || []).map(a => ({
+    const openAlerts = openAlertsSorted.map(a => ({
       product_sku: a.product_sku,
       product_name: a.product_name,
       type: a.type,
