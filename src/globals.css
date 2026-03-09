@@ -1,9 +1,9 @@
+/* ── Google Fonts – MUST be first ── */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Cormorant:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* ── Google Fonts ── */
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Cormorant:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
 
 /* ── Design tokens ── */
 :root {
@@ -28,10 +28,10 @@
   --text-tertiary: #A89F8C;
   --text-on-navy: #EDE5D4;
   --text-on-navy-2: rgba(237,229,212,0.55);
-  --border: rgba(140,125,95,0.18);
-  --border-strong: rgba(140,125,95,0.30);
+  --ds-border: rgba(140,125,95,0.18);
+  --ds-border-strong: rgba(140,125,95,0.30);
 
-  /* Shadcn/UI compatibility */
+  /* Shadcn compat */
   --background: 38 35% 87%;
   --foreground: 40 12% 10%;
   --card: 42 44% 93%;
@@ -54,169 +54,141 @@
   --radius: 0.75rem;
 }
 
-/* ── Base ── */
-@layer base {
-  * { @apply border-border; }
-  body {
-    background: var(--beige-bg);
-    color: var(--text-primary);
-    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 14px;
-    @apply antialiased;
-  }
-  h1, h2 {
-    font-family: 'Cormorant', serif;
-    font-weight: 600;
-    color: var(--text-primary);
-    letter-spacing: -0.01em;
-  }
-  h1 { font-size: 28px; }
-  h2 { font-size: 22px; }
-  h3, h4 {
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 600;
-    color: var(--text-primary);
-  }
-  h3 { font-size: 17px; }
-  h4 { font-size: 15px; }
+/* ── Global base ── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body, #root {
+  background: var(--beige-bg) !important;
+  color: var(--text-primary) !important;
+  font-family: 'DM Sans', -apple-system, sans-serif !important;
+  font-size: 14px;
 }
 
-/* ── Cards & Panels ── */
-@layer components {
+h1, h2 {
+  font-family: 'Cormorant', serif !important;
+  font-weight: 600 !important;
+  color: var(--text-primary) !important;
+}
+h1 { font-size: 28px !important; }
+h2 { font-size: 22px !important; }
+h3, h4 { font-family: 'DM Sans', sans-serif !important; font-weight: 600 !important; }
 
-  .card, [class*="card"], [class*="Card"] {
-    background: var(--creme) !important;
-    border: 1px solid var(--border) !important;
-    border-radius: 12px !important;
-    box-shadow: none !important;
-  }
-
-  /* ── Tables ── */
-  table { @apply w-full; border-collapse: collapse; }
-  thead { background: var(--beige-card); }
-  thead tr { border-bottom: 1px solid var(--border-strong); }
-  tbody tr { transition: background 0.12s; }
-  tbody tr:hover { background: var(--beige-hover); }
-  tbody tr + tr { border-top: 1px solid var(--border); }
-  th {
-    text-align: left;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-tertiary);
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    padding: 11px 16px;
-    font-family: 'DM Sans', sans-serif;
-  }
-  td {
-    padding: 13px 16px;
-    font-size: 14px;
-    color: var(--text-secondary);
-    font-family: 'DM Sans', sans-serif;
-  }
-
-  /* Mono for codes */
-  .mono, .font-mono, [class*="sku"], [class*="batch"], [class*="Sku"], [class*="Batch"] {
-    font-family: 'IBM Plex Mono', monospace !important;
-    font-size: 12px;
-  }
-
-  /* ── Pill tabs ── */
-  [role="tablist"] {
-    background: var(--beige-card);
-    border-radius: 50px;
-    padding: 3px;
-    gap: 2px;
-    display: inline-flex;
-    border: 1px solid var(--border);
-  }
-  [role="tab"] {
-    border-radius: 50px;
-    padding: 5px 14px;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-secondary);
-    transition: all 0.15s;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-  }
-  [role="tab"][data-state="active"],
-  [role="tab"][aria-selected="true"] {
-    background: var(--creme);
-    color: var(--navy);
-    font-weight: 600;
-    box-shadow: 0 1px 4px rgba(43,63,140,0.12);
-  }
-
-  /* ── Buttons ── */
-  /* Primary */
-  .btn-primary, button[class*="bg-slate"], button[class*="bg-black"] {
-    background: var(--navy) !important;
-    color: white !important;
-    border-radius: 8px !important;
-  }
-
-  /* ── Status badges ── */
-  .badge-critical, .badge-low {
-    background: var(--red-muted);
-    color: var(--red-alert);
-    border: 1px solid rgba(185,64,64,0.18);
-    border-radius: 50px;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 2px 9px;
-  }
-  .badge-ok, .badge-success {
-    background: var(--forest-muted);
-    color: var(--forest-mid);
-    border-radius: 50px;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 2px 9px;
-  }
-  .badge-warning {
-    background: var(--orange-muted);
-    color: var(--orange);
-    border-radius: 50px;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 2px 9px;
-  }
-  .badge-info, .badge-ordered {
-    background: var(--navy-light);
-    color: var(--navy);
-    border-radius: 50px;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 2px 9px;
-  }
-
-  /* ── Filter bar ── */
-  .filter-bar {
-    background: var(--creme);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 14px 18px;
-    margin-bottom: 18px;
-  }
-
-  /* ── Scrollbar ── */
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { background: var(--beige-bg); }
-  ::-webkit-scrollbar-thumb { background: var(--tan); opacity: 0.4; border-radius: 99px; }
-
-  /* ── Modal ── */
-  [role="dialog"] {
-    background: var(--creme) !important;
-    border: 1px solid var(--border) !important;
-    border-radius: 16px !important;
-    box-shadow: 0 12px 48px rgba(43,63,140,0.14) !important;
-  }
+/* ── Cards ── */
+.card, [class*="Card"]:not([class*="CardHeader"]):not([class*="CardTitle"]):not([class*="CardContent"]):not([class*="CardDescription"]):not([class*="CardFooter"]) {
+  background: var(--creme) !important;
+  border: 1px solid var(--ds-border) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
 }
 
-/* Recharts */
+/* ── Main content area ── */
+main, [class*="page"], [class*="content"] {
+  background: transparent !important;
+}
+
+/* ── Tables ── */
+table { width: 100%; border-collapse: collapse; }
+thead { background: var(--beige-card) !important; }
+thead tr { border-bottom: 1px solid var(--ds-border-strong) !important; }
+tbody tr { transition: background 0.12s; }
+tbody tr:hover { background: var(--beige-hover) !important; }
+tbody tr + tr { border-top: 1px solid var(--ds-border) !important; }
+th {
+  text-align: left !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: var(--text-tertiary) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.07em !important;
+  padding: 11px 16px !important;
+}
+td {
+  padding: 13px 16px !important;
+  font-size: 14px !important;
+  color: var(--text-secondary) !important;
+  font-family: 'DM Sans', sans-serif !important;
+}
+
+/* ── Monospace for codes ── */
+.font-mono, code, [class*="mono"], [class*="Mono"] {
+  font-family: 'IBM Plex Mono', monospace !important;
+}
+
+/* ── Inputs ── */
+input, textarea, select {
+  background: var(--creme) !important;
+  border: 1px solid var(--ds-border-strong) !important;
+  border-radius: 8px !important;
+  font-family: 'DM Sans', sans-serif !important;
+  color: var(--text-primary) !important;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: var(--navy) !important;
+  box-shadow: 0 0 0 2px var(--navy-light) !important;
+  outline: none !important;
+}
+
+/* ── Buttons ── */
+button, [role="button"] {
+  font-family: 'DM Sans', sans-serif !important;
+  font-weight: 500 !important;
+  transition: all 0.15s !important;
+}
+
+/* ── Tabs ── */
+[role="tablist"] {
+  background: var(--beige-card) !important;
+  border-radius: 50px !important;
+  padding: 3px !important;
+  display: inline-flex !important;
+  gap: 2px !important;
+  border: 1px solid var(--ds-border) !important;
+  box-shadow: none !important;
+}
+[role="tab"] {
+  border-radius: 50px !important;
+  padding: 5px 14px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--text-secondary) !important;
+  border: none !important;
+  background: transparent !important;
+  font-family: 'DM Sans', sans-serif !important;
+}
+[role="tab"][data-state="active"],
+[role="tab"][aria-selected="true"] {
+  background: var(--creme) !important;
+  color: var(--navy) !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 4px rgba(43,63,140,0.12) !important;
+}
+
+/* ── Badges ── */
+.badge, [class*="badge"], [class*="Badge"] {
+  border-radius: 50px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 2px 9px !important;
+  font-family: 'DM Sans', sans-serif !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* ── Dialogs ── */
+[role="dialog"] {
+  background: var(--creme) !important;
+  border: 1px solid var(--ds-border) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 12px 48px rgba(43,63,140,0.14) !important;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--beige-bg); }
+::-webkit-scrollbar-thumb { background: var(--tan); border-radius: 99px; opacity: 0.5; }
+
+/* ── Recharts ── */
 .recharts-cartesian-grid-horizontal line,
-.recharts-cartesian-grid-vertical line { stroke: var(--border); }
+.recharts-cartesian-grid-vertical line { stroke: var(--ds-border); }
 .recharts-text { fill: var(--text-tertiary); font-size: 12px; }
