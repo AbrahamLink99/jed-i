@@ -57,6 +57,7 @@ export default function SalesImport() {
   const [importing, setImporting] = useState(false);
   const [receipt, setReceipt] = useState(null);
   const [importProgress, setImportProgress] = useState({ current: 0, total: 0 });
+  const [updatingAlerts, setUpdatingAlerts] = useState(false);
 
   const headerIndex = useMemo(() => {
     const map = {};
@@ -166,9 +167,7 @@ export default function SalesImport() {
         }
       }
 
-      // Vänta lite innan vi kör utvärdering av notiser
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      await evaluateInventoryAlerts();
+      // Uppdatering av notiser görs manuellt via knapp efter importen
 
       const skipped = preview.filter(r => !(r.include && r.matched));
       setReceipt({
@@ -371,7 +370,25 @@ export default function SalesImport() {
                           </div>
                         </div>
                       )}
-                      <div className="flex justify-end">
+                      <div className="flex justify-between gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={async () => {
+                            setUpdatingAlerts(true);
+                            try {
+                              await evaluateInventoryAlerts();
+                              toast.success('Notiser uppdaterade');
+                            } catch (e) {
+                              console.error(e);
+                              toast.error('Kunde inte uppdatera notiser');
+                            } finally {
+                              setUpdatingAlerts(false);
+                            }
+                          }}
+                          disabled={updatingAlerts}
+                        >
+                          {updatingAlerts ? 'Uppdaterar notiser...' : 'Uppdatera notiser'}
+                        </Button>
                         <Button onClick={() => { setStep(1); setHeaders([]); setRows([]); setMapping({ sku:'', qty:''}); setPreview([]); setReceipt(null); setFileName(''); }}>Ny import</Button>
                       </div>
                     </>

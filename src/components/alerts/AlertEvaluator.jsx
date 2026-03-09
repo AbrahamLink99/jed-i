@@ -155,11 +155,15 @@ export async function evaluateInventoryAlerts() {
   }
 
   if (alertsToCreate.length > 0) {
-    await base44.entities.InventoryAlert.bulkCreate(alertsToCreate);
+    for (const alert of alertsToCreate) {
+      await base44.entities.InventoryAlert.create(alert);
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
   }
 
   for (const update of alertsToUpdate) {
     await base44.entities.InventoryAlert.update(update.id, update.data);
+    await new Promise((resolve) => setTimeout(resolve, 200));
   }
 
   return {
