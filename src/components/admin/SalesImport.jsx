@@ -56,6 +56,7 @@ export default function SalesImport() {
   const [preview, setPreview] = useState([]); // [{sku, qty, product, matched, include}]
   const [importing, setImporting] = useState(false);
   const [receipt, setReceipt] = useState(null);
+  const [importProgress, setImportProgress] = useState({ current: 0, total: 0 });
 
   const headerIndex = useMemo(() => {
     const map = {};
@@ -141,21 +142,32 @@ export default function SalesImport() {
       const dateStr = today.toLocaleDateString('sv-SE');
       const notes = `Shopify ${source} veckorapport ${dateStr}`;
 
-      // Create ledger entries in parallel (throttle not added for simplicity)
-      await Promise.all(toImport.map((r) => {
-        return base44.entities.InventoryLedger.create({
-          environment: 'production',
-          product_id: r.product.id,
-          product_sku: r.product.sku,
-          product_name: r.product.name,
-          transaction_type: 'shipment',
-          quantity: -Math.abs(r.qty || 0),
-          reference_type: 'shopify_order',
-          notes
-        });
+      // Skapa ledger-poster (bulk om möjligt, annars sekventiellt med fördröjning)
+      const entries = toImport.map((r) => ({
+        environment: 'production',
+        product_id: r.product.id,
+        product_sku: r.product.sku,
+        product_name: r.product.name,
+        transaction_type: 'shipment',
+        quantity: -Math.abs(r.qty || 0),
+        reference_type: 'shopify_order',
+        notes
       }));
 
-      // Evaluate alerts
+      setImportProgress({ current: 0, total: entries.length });
+      if (typeof base44.entities.InventoryLedger.bulkCreate === 'function') {
+        await base44.entities.InventoryLedger.bulkCreate(entries);
+        setImportProgress({ current: entries.length, total: entries.length });
+      } else {
+        for (let i = 0; i < entries.length; i++) {
+          await base44.entities.InventoryLedger.create(entries[i]);
+          setImportProgress({ current: i + 1, total: entries.length });
+          await new Promise((resolve) => setTimeout(resolve, 300));
+        }
+      }
+
+      // Vänta lite innan vi kör utvärdering av notiser
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       await evaluateInventoryAlerts();
 
       const skipped = preview.filter(r => !(r.include && r.matched));
