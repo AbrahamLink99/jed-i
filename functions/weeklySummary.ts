@@ -83,7 +83,11 @@ Deno.serve(async (req) => {
       'order_now = råvaror under säkerhetslager grupperade per leverantör.',
       'order_soon = råvaror som inte är slut än men som behövs för att kunna tillverka produce_this_week-produkterna – inkludera vilken produkt de är kopplade till via connected_to.',
       'insights = en kort mening med det viktigaste att tänka på denna vecka.',
-      'Svara ENDAST med JSON.'
+      'Svara ENDAST med JSON enligt EXAKT följande format utan markdown eller extra text:',
+      '{"produce_this_week":[{"sku":"","name":"","reason":""}],',
+      ' "order_now":[{"supplier":"","items":[{"sku":"","name":"","qty":"","unit":""}],"reason":""}],',
+      ' "order_soon":[{"supplier":"","items":[{"sku":"","name":"","qty":"","unit":""}],"reason":"","connected_to":""}],',
+      ' "insights":""}'
     ].join(' ');
 
     const userMessage = [
