@@ -273,7 +273,7 @@ export default function Layout({ children, currentPageName }) {
                                  <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-full bg-slate-900" aria-hidden />
                                )}
                                <div className="relative">
-                  <item.icon className={cn("w-5 h-5", isActive ? "text-white" : "text-slate-700")} />
+                  <item.icon className={cn("w-5 h-5", isActive ? "text-slate-900" : "text-slate-500")} />
                   {item.page === 'Alerts' && (openAlerts?.length || 0) > 0 && (
                     <span
                       style={{
