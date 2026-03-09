@@ -16,6 +16,9 @@ import DeprioritizeDialog from './DeprioritizeDialog';
 import ReceiveDialog from './ReceiveDialog';
 import { evaluateInventoryAlerts } from './AlertEvaluator';
 import { useEnvironmentFilter } from '@/components/environment/useEnvironmentFilter';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const severityConfig = {
   critical: { icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-50', badge: 'bg-red-100 text-red-700' },
