@@ -148,9 +148,6 @@ export default function AlertList({ compact = false, productTypeFilter = 'all', 
           <h2 className="text-2xl font-bold text-slate-900">Lagernotiser</h2>
           <p className="text-slate-500 mt-1">Hantera lagervarningar och beställningar</p>
         </div>
-        <Button onClick={handleEvaluate} disabled={evaluating}>
-          {evaluating ? 'Uppdaterar...' : 'Uppdatera notiser'}
-        </Button>
       </div>
 
       {(() => { const defaultTab = statusFilter === 'deprioritized' ? 'deprioritized' : (statusFilter === 'closed' ? 'closed' : 'open'); return (
