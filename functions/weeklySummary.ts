@@ -35,71 +35,43 @@ Deno.serve(async (req) => {
       .sort((a, b) => (severityOrder[a.severity] ?? 9) - (severityOrder[b.severity] ?? 9))
       .slice(0, 50);
 
-    // Prepare datasets as required
-    const openAlerts = openAlertsSorted.map(a => ({
-      product_sku: a.product_sku,
-      product_name: a.product_name,
-      type: a.type,
-      current_available_qty: Number(a.current_available_qty ?? 0),
-      safety_stock: Number(a.safety_stock ?? 0),
-      suggested_order_qty: Number(a.suggested_order_qty ?? 0),
-      supplier: a.supplier || productBySku.get(a.product_sku)?.supplier || null,
-      unit: productBySku.get(a.product_sku)?.unit || null
-    }));
+    // Build compact text summaries instead of full JSON objects
+    const alertsSummary = openAlertsSorted.slice(0, 30).map(a => {
+      const supplier = a.supplier || productBySku.get(a.product_sku)?.supplier || 'okänd';
+      const unit = productBySku.get(a.product_sku)?.unit || '';
+      return `${a.product_sku} ${a.product_name}: ${Number(a.current_available_qty ?? 0)} ${unit} (säkerhetslager: ${Number(a.safety_stock ?? 0)}, leverantör: ${supplier})`;
+    }).join('\n');
 
-    const bomItems = (bomItemsAll || []).slice(0, 50).map(b => ({
-      finished_product_id: b.finished_product_id,
-      component_id: b.component_id,
-      component_sku: productById.get(b.component_id)?.sku || null,
-      component_name: productById.get(b.component_id)?.name || null,
-      quantity_per_unit: Number(b.quantity_per_unit ?? 0)
-    }));
+    const bomSummary = (bomItemsAll || []).slice(0, 40).map(b => {
+      const compSku = productById.get(b.component_id)?.sku || b.component_id;
+      const finSku = productById.get(b.finished_product_id)?.sku || b.finished_product_id;
+      return `${finSku} innehåller ${compSku} (${Number(b.quantity_per_unit ?? 0)} kg/kg)`;
+    }).join('\n');
 
-    const shipments_last_30_days = (ledgerAll || [])
+    const shipmentsSummary = (ledgerAll || [])
       .filter(l => l.transaction_type === 'shipment')
-      .filter(l => {
-        try { return new Date(l.created_date) >= since; } catch { return false; }
-      })
+      .filter(l => { try { return new Date(l.created_date) >= since; } catch { return false; } })
       .slice(0, 30)
-      .map(l => ({
-        product_sku: l.product_sku,
-        quantity: Number(l.quantity ?? 0),
-        created_date: l.created_date
-      }));
+      .map(l => `${l.product_sku}: ${Number(l.quantity ?? 0)} st`)
+      .join('\n');
 
-    const mix_batches = (mixBatchesAll || [])
+    const mixSummary = (mixBatchesAll || [])
       .filter(m => Number(m.remaining_kg ?? 0) > 0)
-      .map(m => ({
-        mix_sku: m.mix_sku,
-        batch_no: m.batch_no,
-        remaining_kg: Number(m.remaining_kg ?? 0),
-        produced_at: m.produced_at
-      }));
+      .slice(0, 20)
+      .map(m => `${m.mix_sku} batch ${m.batch_no}: ${Number(m.remaining_kg ?? 0)} kg kvar`)
+      .join('\n');
 
-    const dataPayload = {
-      open_alerts: openAlerts,
-      bom_items: bomItems,
-      shipments_last_30_days,
-      mix_batches,
-      products: (productsAll || []).map(p => ({ sku: p.sku, name: p.name, unit: p.unit, supplier: p.supplier, type: p.type }))
-    };
-
-    const systemPrompt = [
-      'Du är en produktionsplanerare för ett kosmetika-tillverkningsföretag. Analysera lagerstatus, försäljningshistorik och BOM-recept och ge konkreta rekommendationer för denna vecka.',
-      'produce_this_week = färdigvaror som är låga i lager baserat på försäljningstakt.',
-      'order_now = råvaror under säkerhetslager grupperade per leverantör.',
-      'order_soon = råvaror som inte är slut än men som behövs för att kunna tillverka produce_this_week-produkterna – inkludera vilken produkt de är kopplade till via connected_to.',
-      'insights = en kort mening med det viktigaste att tänka på denna vecka.',
-      'Svara ENDAST med JSON enligt EXAKT följande format utan markdown eller extra text:',
-      '{"produce_this_week":[{"sku":"","name":"","reason":""}],',
-      ' "order_now":[{"supplier":"","items":[{"sku":"","name":"","qty":"","unit":""}],"reason":""}],',
-      ' "order_soon":[{"supplier":"","items":[{"sku":"","name":"","qty":"","unit":""}],"reason":"","connected_to":""}],',
-      ' "insights":""}'
-    ].join(' ');
+    const systemPrompt = 'Du är en produktionsplanerare för ett kosmetika-tillverkningsföretag. Analysera lagerstatus och ge konkreta rekommendationer. produce_this_week=färdigvaror låga i lager. order_now=råvaror under säkerhetslager per leverantör. order_soon=råvaror som behövs för produce_this_week (connected_to=vilken produkt). insights=en kort mening. Svara ENDAST med JSON utan markdown: {"produce_this_week":[{"sku":"","name":"","reason":""}],"order_now":[{"supplier":"","items":[{"sku":"","name":"","qty":"","unit":""}],"reason":""}],"order_soon":[{"supplier":"","items":[{"sku":"","name":"","qty":"","unit":""}],"reason":"","connected_to":""}],"insights":""}';
 
     const userMessage = [
-      'DATA (JSON):',
-      JSON.stringify(dataPayload)
+      'NOTISER (sku namn: tillgängligt enhet, säkerhetslager, leverantör):',
+      alertsSummary || 'Inga öppna notiser.',
+      '\nBOM-RECEPT (färdigvara innehåller komponent kg/kg):',
+      bomSummary || 'Inga BOM-rader.',
+      '\nFÖRSÄLJNING SENASTE 30 DAGARNA:',
+      shipmentsSummary || 'Ingen data.',
+      '\nAKTIVA MIXBATCHER:',
+      mixSummary || 'Inga aktiva batcher.'
     ].join('\n');
 
     const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
