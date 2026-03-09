@@ -19,11 +19,11 @@ Deno.serve(async (req) => {
       mixBatchesAll,
       productsAll
     ] = await Promise.all([
-      base44.entities.InventoryAlert.filter({ status: 'OPEN', environment: 'production' }, '-last_evaluated_at', 2000),
-      base44.entities.BOMItem.list(undefined, 5000),
-      base44.entities.InventoryLedger.filter({ environment: 'production' }, '-created_date', 50000),
-      base44.entities.MixBatch.filter({ environment: 'production' }, '-created_date', 2000),
-      base44.entities.Product.filter({ environment: 'production' }, '-name', 5000),
+      base44.entities.InventoryAlert.filter({ status: 'OPEN', environment: 'production' }, '-last_evaluated_at', 200),
+      base44.entities.BOMItem.list(undefined, 200),
+      base44.entities.InventoryLedger.filter({ environment: 'production' }, '-created_date', 100),
+      base44.entities.MixBatch.filter({ environment: 'production' }, '-created_date', 100),
+      base44.entities.Product.filter({ environment: 'production' }, '-name', 1000),
     ]);
 
     const productById = new Map((productsAll || []).map(p => [p.id, p]));
