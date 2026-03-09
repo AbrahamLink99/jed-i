@@ -14,6 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { base44 } from '@/api/base44Client';
 import { EnvironmentProvider } from '@/components/environment/EnvironmentContext';
+import { useQuery } from '@tanstack/react-query';
 
 
 
@@ -34,6 +35,13 @@ export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
   const [user, setUser] = useState(null);
+
+  // Global alerts counter (OPEN)
+  const { data: openAlerts = [] } = useQuery({
+    queryKey: ['open-alerts-count'],
+    queryFn: () => base44.entities.InventoryAlert.filter({ status: 'OPEN', environment: 'production' }),
+    refetchInterval: 5 * 60 * 1000,
+  });
 
   // AI assistant state
   const [assistantOpen, setAssistantOpen] = useState(false);
@@ -261,7 +269,22 @@ export default function Layout({ children, currentPageName }) {
                   isActive ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"
                 )}
               >
-                <item.icon className={cn("w-5 h-5", isActive ? "text-white" : "text-slate-700")} />
+                <div className="relative">
+                  <item.icon className={cn("w-5 h-5", isActive ? "text-white" : "text-slate-700")} />
+                  {item.page === 'Alerts' && (openAlerts?.length || 0) > 0 && (
+                    <span
+                      style={{
+                        position: 'absolute', top: 4, right: 4,
+                        background: '#E53E3E', color: '#fff', fontSize: 10,
+                        minWidth: 18, height: 18, borderRadius: 9,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        padding: '0 4px'
+                      }}
+                    >
+                      {(openAlerts.length > 99) ? '99+' : String(openAlerts.length)}
+                    </span>
+                  )}
+                </div>
                 <span className={cn(
                   "ml-3 text-sm font-medium hidden lg:inline transition-all duration-200",
                   isSidebarHovered ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-1",
