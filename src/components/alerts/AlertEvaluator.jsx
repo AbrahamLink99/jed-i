@@ -6,12 +6,13 @@ import { getStockSummary } from '@/components/inventory/StockCalculations';
  * Creates or updates alerts based on stock levels and rules
  */
 export async function evaluateInventoryAlerts() {
-  const products = await base44.entities.Product.list();
-  const ledgerEntries = await base44.entities.InventoryLedger.list();
-  const batches = await base44.entities.Batch.list();
+  const products = await base44.entities.Product.filter({ environment: 'production' }, '-name', 5000);
+  const ledgerEntries = await base44.entities.InventoryLedger.filter({ environment: 'production' }, '-created_date', 50000);
+  const batches = await base44.entities.Batch.filter({ environment: 'production' }, '-created_date', 5000);
   const existingAlerts = await base44.entities.InventoryAlert.filter({
-    status: { $in: ['OPEN', 'ORDERED_ACKNOWLEDGED'] }
-  });
+    status: { $in: ['OPEN', 'ORDERED_ACKNOWLEDGED'] },
+    environment: 'production'
+  }, '-updated_date', 5000);
 
   const now = new Date().toISOString();
   const alertsToCreate = [];
@@ -43,14 +44,16 @@ export async function evaluateInventoryAlerts() {
 
   // Re-fetch actives after cleanup map
   const activesAfterCleanup = await base44.entities.InventoryAlert.filter({
-    status: { $in: ['OPEN', 'ORDERED_ACKNOWLEDGED'] }
-  });
+    status: { $in: ['OPEN', 'ORDERED_ACKNOWLEDGED'] },
+    environment: 'production'
+  }, '-updated_date', 5000);
   const activeByProduct = activesAfterCleanup.reduce((acc, a) => {
     acc[a.product_id] = a; // max one after cleanup
     return acc;
   }, {});
 
   // 2) Single-rule evaluation per product
+  let debugCount = 0;
   for (const product of products) {
     if (!product.active) continue;
 
@@ -70,6 +73,11 @@ export async function evaluateInventoryAlerts() {
     const productLedger = ledgerEntries.filter(e => e.product_id === product.id);
     const productBatches = batches.filter(b => b.product_id === product.id);
     const stockSummary = getStockSummary(product, productLedger, productBatches);
+
+    if (debugCount < 3) {
+      console.log('[AlertEvaluator]', product.sku, { onHand: stockSummary.onHand, available: stockSummary.available });
+      debugCount++;
+    }
 
     const {
       available,
