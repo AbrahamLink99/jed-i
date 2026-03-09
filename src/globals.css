@@ -2,66 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
-/* =========================================
-   MODERN ANALYTICS THEME - Light & Clean
-   Primary: JED-I Blue/Cyan (#0891b2, #06b6d4)
-   Neutrals: Slate grays
-   Status: Green/Yellow/Red sparingly
-   ========================================= */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Sans:wght@500;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
   /* Backgrounds */
-  --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f8fafc;
-  --color-bg-tertiary: #f1f5f9;
-  
+  --color-bg-primary: #F5F6F4;
+  --color-bg-secondary: #ffffff;
+
   /* Text */
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #475569;
-  --color-text-tertiary: #94a3b8;
-  
-  /* Accent - JED-I Cyan/Blue */
+  --color-text-primary: #111827;
+  --color-text-secondary: #374151;
+  --color-text-tertiary: #9CA3AF;
+
+  /* Accent */
   --color-accent-primary: #0891b2;
-  --color-accent-primary-hover: #06b6d4;
   --color-accent-light: #e0f2fe;
-  
+
   /* Status */
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
-  
-  /* Borders */
-  --color-border: #e2e8f0;
-  --color-border-strong: #cbd5e1;
-  
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-  
+
   /* Shadcn/UI compatibility */
-  --background: 0 0% 100%;
-  --foreground: 222 47% 11%;
+  --background: 100 3% 96%;
+  --foreground: 220 13% 13%;
   --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
+  --card-foreground: 220 13% 13%;
   --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
-  --primary: 0 0% 0%;
+  --popover-foreground: 220 13% 13%;
+  --primary: 0 0% 7%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 210 40% 96%;
-  --secondary-foreground: 222 47% 11%;
-  --muted: 210 40% 96%;
-  --muted-foreground: 215 16% 47%;
-  --accent: 210 40% 96%;
-  --accent-foreground: 222 47% 11%;
+  --secondary: 210 20% 96%;
+  --secondary-foreground: 220 13% 13%;
+  --muted: 210 20% 96%;
+  --muted-foreground: 215 14% 45%;
+  --accent: 210 20% 96%;
+  --accent-foreground: 220 13% 13%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
-  --border: 214 32% 91%;
-  --input: 214 32% 91%;
-  --ring: 189 94% 43%;
-  --radius: 1rem;
+  --border: 220 13% 90%;
+  --input: 220 13% 90%;
+  --ring: 142 71% 45%;
+  --radius: 0.875rem;
   --chart-1: 189 94% 43%;
   --chart-2: 160 60% 45%;
   --chart-3: 30 80% 55%;
@@ -75,90 +57,129 @@
   }
 
   body {
-    background-color: #ffffff;
-    @apply text-slate-900 antialiased;
-    font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    background-color: #F5F6F4;
+    color: #111827;
+    @apply antialiased;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    font-size: 14px;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    @apply text-slate-900 font-semibold tracking-tight;
-  }
-
-  h1 { @apply text-3xl; }
-  h2 { @apply text-2xl; }
-  h3 { @apply text-xl; }
-  h4 { @apply text-lg; }
+  h1 { font-size: 28px; font-weight: 700; color: #111827; letter-spacing: -0.02em; }
+  h2 { font-size: 22px; font-weight: 600; color: #111827; letter-spacing: -0.01em; }
+  h3 { font-size: 18px; font-weight: 600; color: #111827; }
+  h4 { font-size: 16px; font-weight: 600; color: #111827; }
 }
 
 @layer components {
-  /* Modern card style */
+
+  /* ── Card ── */
   .analytics-card {
-    @apply bg-white rounded-2xl;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.04);
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    border: none;
   }
 
-  /* KPI Card */
   .kpi-card {
-    @apply bg-white rounded-2xl p-6 transition-shadow;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.04);
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    border: none;
+    transition: box-shadow 0.2s;
   }
 
-  /* Section header */
+  .kpi-card:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.09);
+  }
+
+  /* ── Section header ── */
   .section-header {
-    @apply text-sm font-semibold text-slate-700 uppercase tracking-wider mb-4;
+    @apply text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4;
   }
 
-  /* Metric value */
+  /* ── Metric value ── */
   .metric-value {
-    @apply text-4xl font-bold text-slate-900 tracking-tight;
+    font-size: 48px;
+    font-weight: 700;
+    color: #111827;
+    letter-spacing: -0.03em;
+    line-height: 1;
   }
 
-  /* Trend indicator */
-  .trend-up {
-    @apply text-green-600 flex items-center gap-1 text-sm font-medium;
+  /* ── Trend ── */
+  .trend-up    { @apply text-green-600 flex items-center gap-1 text-sm font-medium; }
+  .trend-down  { @apply text-red-500 flex items-center gap-1 text-sm font-medium; }
+  .trend-neutral { @apply text-slate-500 flex items-center gap-1 text-sm font-medium; }
+
+  /* ── Tables ── */
+  table { @apply w-full; border-collapse: collapse; }
+  thead { background: #ffffff; }
+  thead tr { border-bottom: 1px solid #F3F4F6; }
+  tbody tr { transition: background 0.12s; }
+  tbody tr:hover { background-color: #F9FAFB; }
+  tbody tr + tr { border-top: 1px solid #F3F4F6; }
+  th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: #9CA3AF;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    padding: 12px 20px;
   }
-  
-  .trend-down {
-    @apply text-red-600 flex items-center gap-1 text-sm font-medium;
-  }
-  
-  .trend-neutral {
-    @apply text-slate-500 flex items-center gap-1 text-sm font-medium;
+  td {
+    padding: 14px 20px;
+    font-size: 14px;
+    color: #374151;
   }
 
-  /* Table style - airy, zebra, no borders */
-  table { @apply w-full; border-collapse: separate; border-spacing: 0; }
-  thead { @apply bg-white; }
-  tbody tr { @apply transition-colors; }
-  tbody tr:nth-child(even) { background-color: #FAFAF8; }
-  th { @apply text-left text-xs font-semibold text-slate-700 uppercase tracking-wider px-5 py-3; }
-  td { @apply px-5 py-4 text-sm text-slate-800; }
+  /* ── Pill tabs ── */
+  [role="tablist"] {
+    background: #EBEBEA;
+    border-radius: 50px;
+    padding: 4px;
+    gap: 2px;
+    display: inline-flex;
+  }
+  [role="tab"] {
+    border-radius: 50px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6B7280;
+    transition: all 0.15s;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+  }
+  [role="tab"][data-state="active"] {
+    background: #ffffff;
+    color: #111827;
+    font-weight: 600;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  /* ── Filter bar ── */
+  .filter-bar {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 16px 20px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    margin-bottom: 20px;
+  }
 }
 
-/* Recharts customization */
+/* Recharts */
 .recharts-cartesian-grid-horizontal line,
 .recharts-cartesian-grid-vertical line {
-  @apply stroke-slate-200;
+  stroke: #F3F4F6;
 }
+.recharts-text { fill: #9CA3AF; font-size: 12px; }
 
-.recharts-text {
-  @apply fill-slate-600 text-xs;
-}
-
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-slate-100;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 rounded-full;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-400;
-}
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #F5F6F4; }
+::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
