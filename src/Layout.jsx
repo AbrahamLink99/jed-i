@@ -243,18 +243,33 @@ export default function Layout({ children, currentPageName }) {
       <aside
         onMouseEnter={() => setIsSidebarHovered(true)}
         onMouseLeave={() => setIsSidebarHovered(false)}
+        style={{ background: 'var(--navy)' }}
         className={cn(
-          "group fixed inset-y-0 left-0 z-50 w-[52px] bg-white transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:transition-[width] lg:duration-200 lg:ease-in-out",
-          "shadow-[2px_0_16px_rgba(0,0,0,0.06)]",
-          isSidebarHovered ? "lg:w-[200px]" : "lg:w-[52px]",
+          "group fixed inset-y-0 left-0 z-50 w-[52px] transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:transition-[width] lg:duration-200 lg:ease-in-out",
+          isSidebarHovered ? "lg:w-[228px]" : "lg:w-[52px]",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div className="flex items-center justify-center h-16 border-b border-slate-200">
-          <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center font-extrabold text-sm leading-none">L</div>
+        {/* Logo area */}
+        <div className={cn(
+          "flex items-center h-16 px-3 overflow-hidden",
+          isSidebarHovered ? "gap-3" : "justify-center"
+        )} style={{ borderBottom: '1px solid rgba(237,229,212,0.10)' }}>
+          <div
+            className="flex-shrink-0 flex items-center justify-center rounded-lg"
+            style={{ width: 34, height: 34, background: 'var(--tan)' }}
+          >
+            <span style={{ fontFamily: "'Cormorant', serif", fontWeight: 600, fontSize: 15, color: 'var(--navy)', letterSpacing: '-0.01em' }}>JED</span>
+          </div>
+          {isSidebarHovered && (
+            <div className="min-w-0">
+              <div style={{ fontFamily: "'Cormorant', serif", fontWeight: 600, fontSize: 17, color: 'var(--text-on-navy)', letterSpacing: '-0.01em', lineHeight: 1.1 }}>Lagermaster</div>
+              <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: 9, color: 'var(--text-on-navy-2)', letterSpacing: '0.12em', marginTop: 1 }}>INVENTORY</div>
+            </div>
+          )}
         </div>
 
-        <nav className="p-2 space-y-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+        <nav className="p-2 space-y-0.5 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 180px)' }}>
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
             return (
@@ -263,66 +278,64 @@ export default function Layout({ children, currentPageName }) {
                 to={createPageUrl(item.page)}
                 title={item.name}
                 onClick={() => setSidebarOpen(false)}
+                style={{
+                  color: isActive ? 'var(--text-on-navy)' : 'var(--text-on-navy-2)',
+                  borderLeft: isActive ? '3px solid var(--tan)' : '3px solid transparent',
+                  background: isActive ? 'rgba(237,229,212,0.08)' : 'transparent',
+                  borderRadius: 8,
+                }}
                 className={cn(
-                  "relative flex items-center h-10 w-full mx-0 rounded-xl transition-all",
-                  isSidebarHovered ? "px-3 justify-start" : "px-0 justify-center",
-                  isActive ? "bg-[#F3F4F6] text-slate-900" : "text-slate-500 hover:bg-slate-50"
+                  "relative flex items-center h-10 w-full transition-all hover:bg-white/5",
+                  isSidebarHovered ? "px-3 justify-start" : "px-0 justify-center"
                 )}
               >
-                               {isActive && (
-                                 <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-full bg-slate-900" aria-hidden />
-                               )}
-                               <div className="relative">
-                  <item.icon className={cn("w-5 h-5", isActive ? "text-slate-900" : "text-slate-500")} />
+                <div className="relative flex-shrink-0" style={{ marginLeft: isActive ? -3 : 0 }}>
+                  <item.icon className="w-4 h-4" style={{ color: isActive ? 'var(--text-on-navy)' : 'var(--text-on-navy-2)' }} />
                   {item.page === 'Alerts' && (openAlerts?.length || 0) > 0 && (
-                    <span
-                      style={{
-                        position: 'absolute',
-                        top: 4,
-                        right: 4,
-                        backgroundColor: '#E53E3E',
-                        color: 'white',
-                        fontSize: 10,
-                        minWidth: 18,
-                        height: 18,
-                        borderRadius: 9,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: '0 4px',
-                        lineHeight: '18px'
-                      }}
-                    >
+                    <span style={{
+                      position: 'absolute', top: -4, right: -6,
+                      background: 'rgba(196,169,120,0.18)',
+                      color: 'var(--tan)',
+                      border: '1px solid var(--tan)',
+                      fontSize: 9, minWidth: 16, height: 16,
+                      borderRadius: 8, display: 'flex', alignItems: 'center',
+                      justifyContent: 'center', padding: '0 3px', fontWeight: 600,
+                      fontFamily: "'DM Sans', sans-serif"
+                    }}>
                       {openAlerts.length > 99 ? '99+' : openAlerts.length}
                     </span>
                   )}
                 </div>
-                <span className={cn(
-                   "ml-3 text-sm font-medium transition-all duration-200",
-                   isSidebarHovered ? "inline opacity-100 translate-x-0" : "hidden",
-                   isActive ? "text-slate-900 font-semibold" : "text-slate-600"
-                 )}>
-                  {item.name}
-                </span>
+                {isSidebarHovered && (
+                  <span className="ml-3 text-sm font-medium truncate" style={{
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontWeight: isActive ? 600 : 400,
+                    color: isActive ? 'var(--text-on-navy)' : 'var(--text-on-navy-2)'
+                  }}>
+                    {item.name}
+                  </span>
+                )}
               </Link>
             );
           })}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-slate-200 bg-white">
+        <div className="absolute bottom-0 left-0 right-0 p-3" style={{ borderTop: '1px solid rgba(237,229,212,0.10)' }}>
           {user && (
-            <div className="flex items-center justify-center">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full bg-slate-100"
+            <div className={cn("flex items-center", isSidebarHovered ? "gap-2 px-1" : "justify-center")}>
+              <button
                 title="Logga ut"
                 onClick={() => base44.auth.logout()}
+                className="flex-shrink-0 flex items-center justify-center rounded-full text-sm font-semibold"
+                style={{ width: 30, height: 30, background: 'var(--tan)', color: 'var(--navy)' }}
               >
-                <span className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-xs">
-                  {user.email?.[0]?.toUpperCase() || 'U'}
+                {user.email?.[0]?.toUpperCase() || 'U'}
+              </button>
+              {isSidebarHovered && (
+                <span className="text-xs truncate" style={{ color: 'var(--text-on-navy-2)', fontFamily: "'DM Sans', sans-serif" }}>
+                  {user.email}
                 </span>
-              </Button>
+              )}
             </div>
           )}
         </div>
