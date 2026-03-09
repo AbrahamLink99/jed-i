@@ -263,12 +263,15 @@ export default function Layout({ children, currentPageName }) {
                 title={item.name}
                 onClick={() => setSidebarOpen(false)}
                 className={cn(
-                  "flex items-center h-10 w-full mx-0 rounded-full transition-all",
+                  "relative flex items-center h-10 w-full mx-0 rounded-full transition-all",
                   isSidebarHovered ? "px-3 justify-start" : "px-0 justify-center",
                   isActive ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"
                 )}
               >
-                <div className="relative">
+                               {isActive && (
+                                 <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-full bg-slate-900" aria-hidden />
+                               )}
+                               <div className="relative">
                   <item.icon className={cn("w-5 h-5", isActive ? "text-white" : "text-slate-700")} />
                   {item.page === 'Alerts' && (openAlerts?.length || 0) > 0 && (
                     <span
@@ -294,10 +297,10 @@ export default function Layout({ children, currentPageName }) {
                   )}
                 </div>
                 <span className={cn(
-                  "ml-3 text-sm font-medium hidden lg:inline transition-all duration-200",
-                  isSidebarHovered ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-1",
-                  isActive ? "text-white" : "text-slate-700"
-                )}>
+                   "ml-3 text-sm font-medium transition-all duration-200",
+                   isSidebarHovered ? "inline opacity-100 translate-x-0" : "hidden",
+                   isActive ? "text-white" : "text-slate-700"
+                 )}>
                   {item.name}
                 </span>
               </Link>
