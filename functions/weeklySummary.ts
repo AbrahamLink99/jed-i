@@ -80,10 +80,10 @@ Deno.serve(async (req) => {
     }
 
     const payload = {
-      model: 'claude-3-5-sonnet-20240620',
+      model: 'claude-haiku-4-5-20251001',
       system: systemPrompt,
       messages: [{ role: 'user', content: userMessage }],
-      max_tokens: 2000,
+      max_tokens: 1500,
       temperature: 0.2
     };
 
@@ -99,6 +99,7 @@ Deno.serve(async (req) => {
 
     if (!resp.ok) {
       const errText = await resp.text();
+      console.error('Anthropic error:', errText);
       return Response.json({ error: 'Anthropic error', details: errText }, { status: 500 });
     }
 
