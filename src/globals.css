@@ -183,3 +183,234 @@
 ::-webkit-scrollbar-track { background: #F5F6F4; }
 ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+/* ── GRUND ── */
+body, #root {
+  font-family: 'Inter', sans-serif !important;
+  background: #F5F6F4 !important;
+  color: #1F2937 !important;
+}
+/* ── SIDA / CONTAINER ── */
+main, [class*="page"], [class*="content"] {
+  background: transparent !important;
+  padding: 32px !important;
+}
+h1 {
+  font-size: 28px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.03em !important;
+  color: #111827 !important;
+}
+h2, h3 {
+  font-weight: 600 !important;
+  letter-spacing: -0.02em !important;
+}
+/* ── ALLA KORT / SEKTIONER ── */
+.card, [class*="card"], [class*="Card"],
+[class*="section"], [class*="Section"],
+[class*="panel"], [class*="Panel"],
+[class*="block"], [class*="Block"] {
+  background: #FFFFFF !important;
+  border-radius: 16px !important;
+  border: none !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.05) !important;
+  padding: 24px !important;
+  margin-bottom: 16px !important;
+}
+/* ── STAT-KORT PÅ DASHBOARD ── */
+/* Gult */
+[class*="stat"]:nth-child(1),
+[class*="metric"]:nth-child(1) {
+  background: #FEFCE8 !important;
+  border-left: 4px solid #EAB308 !important;
+  border-radius: 16px !important;
+}
+/* Orange */
+[class*="stat"]:nth-child(2),
+[class*="metric"]:nth-child(2) {
+  background: #FFF7ED !important;
+  border-left: 4px solid #F97316 !important;
+  border-radius: 16px !important;
+}
+/* Mörkt/neutralt */
+[class*="stat"]:nth-child(3),
+[class*="metric"]:nth-child(3) {
+  background: #F0F9FF !important;
+  border-left: 4px solid #0EA5E9 !important;
+  border-radius: 16px !important;
+  color: #0F172A !important;
+}
+/* Stora siffror i stat-kort */
+[class*="stat"] [class*="value"],
+[class*="stat"] [class*="number"],
+[class*="metric"] [class*="value"] {
+  font-size: 48px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.04em !important;
+  line-height: 1 !important;
+}
+/* ── TABELLER ── */
+[class*="table-container"], [class*="TableContainer"],
+table { 
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.04) !important;
+  background: white !important;
+}
+thead, thead tr {
+  background: #F9FAFB !important;
+  border-bottom: 1px solid #F3F4F6 !important;
+}
+th {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  color: #6B7280 !important;
+  padding: 14px 16px !important;
+}
+td {
+  padding: 14px 16px !important;
+  border-color: #F9FAFB !important;
+  font-size: 14px !important;
+  border-bottom: 1px solid #F9FAFB !important;
+}
+tr:hover td {
+  background: #FAFAFA !important;
+}
+/* ── FILTER / SÖKFÄLT-RAD ── */
+[class*="filter"], [class*="Filter"],
+[class*="search-bar"], [class*="SearchBar"],
+[class*="toolbar"], [class*="Toolbar"] {
+  background: #FFFFFF !important;
+  border-radius: 14px !important;
+  padding: 14px 16px !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05) !important;
+  margin-bottom: 16px !important;
+}
+input[type="text"], input[type="search"],
+input[placeholder*="Sök"], input[placeholder*="Search"] {
+  background: #F9FAFB !important;
+  border: 1.5px solid #E5E7EB !important;
+  border-radius: 10px !important;
+  padding: 10px 14px !important;
+  font-size: 14px !important;
+  transition: all 0.18s ease !important;
+}
+input:focus {
+  border-color: #6EE7B7 !important;
+  box-shadow: 0 0 0 3px rgba(110,231,183,0.15) !important;
+  background: #FFFFFF !important;
+  outline: none !important;
+}
+select, [role="combobox"] {
+  background: #F9FAFB !important;
+  border: 1.5px solid #E5E7EB !important;
+  border-radius: 10px !important;
+  padding: 9px 12px !important;
+  font-size: 14px !important;
+}
+/* ── KNAPPAR ── */
+button, [class*="button"], [class*="Button"], [role="button"] {
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 500 !important;
+  border-radius: 10px !important;
+  transition: all 0.18s ease !important;
+  font-size: 14px !important;
+}
+/* Primär (lila/blå "Ny artikel"-typ) */
+button[class*="primary"], [class*="btn-primary"],
+button[class*="solid"] {
+  border-radius: 50px !important;
+  padding: 10px 22px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12) !important;
+}
+button:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12) !important;
+}
+/* ── FLIKAR (TABS) ── */
+[role="tablist"], [class*="tabs"], [class*="Tabs"] {
+  background: #F3F4F6 !important;
+  border-radius: 12px !important;
+  padding: 4px !important;
+  display: inline-flex !important;
+  gap: 2px !important;
+  border: none !important;
+}
+[role="tab"], [class*="tab-item"], [class*="TabItem"] {
+  border-radius: 9px !important;
+  padding: 7px 16px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #6B7280 !important;
+  border: none !important;
+  background: transparent !important;
+  transition: all 0.15s ease !important;
+}
+[role="tab"][aria-selected="true"],
+[class*="tab-item"][class*="active"],
+[class*="TabItem"][class*="active"] {
+  background: #FFFFFF !important;
+  color: #111827 !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.10) !important;
+}
+/* ── ALERT-KORT (Tillverka/Beställ) ── */
+[class*="alert"], [class*="Alert"],
+[class*="action-card"], [class*="ActionCard"] {
+  background: #FFFFFF !important;
+  border-radius: 14px !important;
+  border: none !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.04) !important;
+  padding: 22px 24px !important;
+  margin-bottom: 14px !important;
+}
+/* ── FORMULÄR ── */
+input, textarea, [class*="input"], [class*="Input"] {
+  border-radius: 10px !important;
+  border: 1.5px solid #E5E7EB !important;
+  padding: 11px 14px !important;
+  font-size: 14px !important;
+  background: #FAFAFA !important;
+}
+label, [class*="label"], [class*="Label"] {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #374151 !important;
+  margin-bottom: 6px !important;
+}
+/* ── BADGES / TAGGAR ── */
+.badge, [class*="badge"], [class*="Badge"],
+[class*="tag"], [class*="Tag"],
+[class*="chip"], [class*="Chip"] {
+  border-radius: 50px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 3px 10px !important;
+  letter-spacing: 0.02em !important;
+}
+/* ── LISTRAD-KORT (i Dashboard, under säkerhetslager) ── */
+[class*="list"] > div, [class*="List"] > div {
+  border-radius: 10px !important;
+  transition: background 0.15s ease !important;
+}
+[class*="list"] > div:hover {
+  background: #F9FAFB !important;
+}
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 10px;
+}
+/* ── MODAL / DIALOG ── */
+[role="dialog"], [class*="modal"], [class*="Modal"] {
+  border-radius: 20px !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.14) !important;
+}
+[class*="overlay"], [class*="backdrop"] {
+  backdrop-filter: blur(3px) !important;
+  background: rgba(0,0,0,0.25) !important;
+}
