@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AlertList from '@/components/alerts/AlertList';
+import WeeklySummary from '@/components/alerts/WeeklySummary';
 import { evaluateInventoryAlerts } from '@/components/alerts/AlertEvaluator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -17,7 +18,9 @@ export default function AlertsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <WeeklySummary />
+
         <div className="mb-6 flex flex-col sm:flex-row gap-4 sm:items-end">
           <div className="space-y-1">
             <Label>Artikeltyp</Label>
