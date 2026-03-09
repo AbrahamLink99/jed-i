@@ -237,6 +237,71 @@ export default function AlertList({ compact = false, productTypeFilter = 'all', 
 }
 
 function AlertTable({ alerts, onAcknowledge, onDeprioritize, onReactivate, onReceive, onReopen, showOrderInfo, isLoading }) {
+  const queryClient = useQueryClient();
+  const [selected, setSelected] = useState(new Set());
+  const [bulkAckOpen, setBulkAckOpen] = useState(false);
+  const [bulkDeprioOpen, setBulkDeprioOpen] = useState(false);
+  const [bulkText, setBulkText] = useState('');
+  const [running, setRunning] = useState(false);
+
+  const delay = (ms) => new Promise((r) => setTimeout(r, ms));
+  const visibleIds = alerts.map(a => a.id);
+  const allSelected = visibleIds.length > 0 && visibleIds.every(id => selected.has(id));
+
+  const toggleRow = (id, checked) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (checked) next.add(id); else next.delete(id);
+      return next;
+    });
+  };
+
+  const toggleAll = (checked) => {
+    if (checked) setSelected(new Set(visibleIds));
+    else setSelected(new Set());
+  };
+
+  const clearSelection = () => setSelected(new Set());
+
+  const doBulkAcknowledge = async () => {
+    setRunning(true);
+    try {
+      for (const id of Array.from(selected)) {
+        await base44.entities.InventoryAlert.update(id, {
+          status: 'ORDERED_ACKNOWLEDGED',
+          notes: bulkText || undefined,
+          ordered_at: new Date().toISOString()
+        });
+        await delay(200);
+      }
+      setBulkAckOpen(false);
+      setBulkText('');
+      clearSelection();
+      queryClient.invalidateQueries({ queryKey: ['inventory_alerts'] });
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  const doBulkDeprioritize = async () => {
+    setRunning(true);
+    try {
+      for (const id of Array.from(selected)) {
+        await base44.entities.InventoryAlert.update(id, {
+          status: 'DEPRIORITIZED',
+          deprioritized_reason: bulkText || ''
+        });
+        await delay(200);
+      }
+      setBulkDeprioOpen(false);
+      setBulkText('');
+      clearSelection();
+      queryClient.invalidateQueries({ queryKey: ['inventory_alerts'] });
+    } finally {
+      setRunning(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <Card className="p-8 text-center">
@@ -256,9 +321,31 @@ function AlertTable({ alerts, onAcknowledge, onDeprioritize, onReactivate, onRec
 
   return (
     <Card>
+      {selected.size > 0 && (
+        <div className="m-4 mb-0 p-3 bg-white border rounded-xl shadow flex items-center justify-between">
+          <div className="text-sm">{selected.size} markerade</div>
+          <div className="flex gap-2">
+            <Button className="bg-slate-900 text-white" size="sm" onClick={() => { setBulkText(''); setBulkAckOpen(true); }} disabled={running}>
+              Markera som beställd
+            </Button>
+            <Button className="bg-slate-900 text-white" size="sm" onClick={() => { setBulkText(''); setBulkDeprioOpen(true); }} disabled={running}>
+              Markera som ej prioriterad
+            </Button>
+          </div>
+        </div>
+      )}
       <Table className="border-separate border-spacing-y-2 leading-[1.6]">
         <TableHeader>
           <TableRow>
+            <TableHead className="w-[44px]">
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded border-slate-300"
+                checked={allSelected}
+                onChange={(e) => toggleAll(e.target.checked)}
+                aria-label="Välj alla"
+              />
+            </TableHead>
             <TableHead>Typ</TableHead>
             <TableHead>Produkt</TableHead>
             <TableHead>Meddelande</TableHead>
@@ -274,6 +361,15 @@ function AlertTable({ alerts, onAcknowledge, onDeprioritize, onReactivate, onRec
             const config = severityConfig[alert.severity];
             return (
               <TableRow key={alert.id} className={cn(alert.status === 'DEPRIORITIZED' && 'opacity-60')}>
+                <TableCell className="px-4 py-5">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-slate-300"
+                    checked={selected.has(alert.id)}
+                    onChange={(e) => toggleRow(alert.id, e.target.checked)}
+                    aria-label={`Välj ${alert.product_sku}`}
+                  />
+                </TableCell>
                 <TableCell className="px-4 py-5">
                   <Badge className={cn(config.badge, "font-normal text-xs px-3 py-1.5 rounded-[20px]")}>
                     {typeLabels[alert.type]}
@@ -362,6 +458,39 @@ function AlertTable({ alerts, onAcknowledge, onDeprioritize, onReactivate, onRec
           })}
         </TableBody>
       </Table>
+
+      {/* Bulk dialogs */}
+      <Dialog open={bulkAckOpen} onOpenChange={(o) => { if (!o) setBulkAckOpen(false); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Markera som beställd</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label>Beställningsinformation (valfritt)</Label>
+            <Input value={bulkText} onChange={(e) => setBulkText(e.target.value)} placeholder="PO-nummer, leverantör, m.m." />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkAckOpen(false)}>Avbryt</Button>
+            <Button className="bg-slate-900 text-white" onClick={doBulkAcknowledge} disabled={running}>Bekräfta</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={bulkDeprioOpen} onOpenChange={(o) => { if (!o) setBulkDeprioOpen(false); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Markera som ej prioriterad</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label>Anledning (valfritt)</Label>
+            <Input value={bulkText} onChange={(e) => setBulkText(e.target.value)} placeholder="Varför skjuts detta upp?" />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkDeprioOpen(false)}>Avbryt</Button>
+            <Button className="bg-slate-900 text-white" onClick={doBulkDeprioritize} disabled={running}>Bekräfta</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
