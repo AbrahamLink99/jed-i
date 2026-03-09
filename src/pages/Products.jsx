@@ -262,7 +262,7 @@ export default function Products() {
             <h1 className="text-3xl font-bold text-slate-900">Artiklar</h1>
             <p className="text-slate-500 mt-1">Hantera artiklar, råvaror och förpackningar</p>
           </div>
-          <Button onClick={() => setShowForm(true)} className="bg-indigo-600 hover:bg-indigo-700">
+          <Button onClick={() => setShowForm(true)} className="bg-slate-800 hover:bg-slate-900 rounded-full px-5">
             <Plus className="w-4 h-4 mr-2" />
             Ny artikel
           </Button>
