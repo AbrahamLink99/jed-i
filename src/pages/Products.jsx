@@ -277,7 +277,7 @@ export default function Products() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Sök SKU eller namn..."
-                className="pl-9 rounded-full bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="pl-9 bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0"
               />
             </div>
 
