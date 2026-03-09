@@ -91,7 +91,7 @@ export default function DashboardPage() {
               <div className="text-xs text-slate-600">Importera Shopify-försäljning för D2C eller B2B.</div>
             </div>
             <Link to={createPageUrl('Admin') + '?tab=sales'}>
-              <Button className="bg-slate-900 text-white">Importera nu</Button>
+              <Button className="bg-slate-700 hover:bg-slate-800 text-white rounded-xl">Importera nu</Button>
             </Link>
           </Card>
         )}
