@@ -341,17 +341,15 @@ export default function Products() {
               </SelectContent>
             </Select>
           </div>
-          <div className="mt-3">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList>
-                <TabsTrigger value="all">Alla</TabsTrigger>
-                <TabsTrigger value="finished_good">Färdigvaror</TabsTrigger>
-                <TabsTrigger value="raw_material">Råvaror</TabsTrigger>
-                <TabsTrigger value="packaging">Förpackning</TabsTrigger>
-                <TabsTrigger value="label">Etiketter</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="bg-[#EBEBEA] rounded-full p-1 gap-0">
+              <TabsTrigger value="all" className="rounded-full px-4 py-1.5 text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:font-semibold">Alla</TabsTrigger>
+              <TabsTrigger value="finished_good" className="rounded-full px-4 py-1.5 text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:font-semibold">Färdigvaror</TabsTrigger>
+              <TabsTrigger value="raw_material" className="rounded-full px-4 py-1.5 text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:font-semibold">Råvaror</TabsTrigger>
+              <TabsTrigger value="packaging" className="rounded-full px-4 py-1.5 text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:font-semibold">Förpackning</TabsTrigger>
+              <TabsTrigger value="label" className="rounded-full px-4 py-1.5 text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:font-semibold">Etiketter</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
 
         {/* Products Table */}
