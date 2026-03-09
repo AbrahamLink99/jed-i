@@ -98,52 +98,33 @@ export default function DashboardPage() {
 
         {/* Top KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="relative overflow-hidden p-6 bg-[#E8F02A]">
-            {/* Diagonal stripe overlay */}
-            <svg className="absolute inset-0 pointer-events-none" width="100%" height="100%">
-              <defs>
-                <pattern id="diagStripes" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
-                  <rect width="4" height="8" fill="#000000" opacity="0.15" />
-                </pattern>
-              </defs>
-              <rect width="100%" height="100%" fill="url(#diagStripes)" />
-            </svg>
-            {/* Big decorative number */}
-            <div className="absolute -right-2 -bottom-6 text-black/10 text-[120px] font-extrabold leading-none select-none">
-              {activeAlerts}
-            </div>
+          <Card className="relative overflow-hidden p-7 bg-[#FEFCE8]" style={{ borderLeft: '4px solid #EAB308' }}>
             <div className="relative">
-              <div className="text-sm font-medium text-slate-900">Aktiva notiser</div>
-              <div className="mt-1 text-[4rem] leading-none font-extrabold text-slate-900">{activeAlerts}</div>
-              <div className="mt-2 flex items-center gap-1 text-slate-700 text-xs">
+              <div className="text-sm font-medium text-slate-600">Aktiva notiser</div>
+              <div className="mt-1 text-[3rem] leading-none font-extrabold text-slate-900">{activeAlerts}</div>
+              <div className="mt-2 flex items-center gap-1 text-slate-500 text-xs">
                 <ArrowUpRight className="w-3.5 h-3.5" />
                 <span>+0 sedan igår</span>
               </div>
             </div>
           </Card>
 
-          <Card className="relative overflow-hidden p-6 bg-[#F4833D] text-white">
-            <div className="absolute -right-2 -bottom-6 text-white/10 text-[120px] font-extrabold leading-none select-none">
-              {underSafetyCount}
-            </div>
+          <Card className="relative overflow-hidden p-7 bg-[#FFF7ED]" style={{ borderLeft: '4px solid #F97316' }}>
             <div className="relative">
-              <div className="text-sm font-medium">Artiklar under säkerhetslager</div>
-              <div className="mt-1 text-[4rem] leading-none font-extrabold">{underSafetyCount}</div>
-              <div className="mt-2 flex items-center gap-1 text-white/80 text-xs">
+              <div className="text-sm font-medium text-slate-600">Artiklar under säkerhetslager</div>
+              <div className="mt-1 text-[3rem] leading-none font-extrabold text-slate-900">{underSafetyCount}</div>
+              <div className="mt-2 flex items-center gap-1 text-slate-500 text-xs">
                 <ArrowUpRight className="w-3.5 h-3.5" />
                 <span>+0 sedan igår</span>
               </div>
             </div>
           </Card>
 
-          <Card className="relative overflow-hidden p-6 bg-[#1A1A1A] text-white">
-            <div className="absolute -right-2 -bottom-6 text-white/10 text-[120px] font-extrabold leading-none select-none">
-              {ongoingBatches}
-            </div>
+          <Card className="relative overflow-hidden p-7 bg-[#F0F9FF]" style={{ borderLeft: '4px solid #0EA5E9' }}>
             <div className="relative">
-              <div className="text-sm font-medium">Pågående batcher</div>
-              <div className="mt-1 text-[4rem] leading-none font-extrabold">{ongoingBatches}</div>
-              <div className="mt-2 flex items-center gap-1 text-white/70 text-xs">
+              <div className="text-sm font-medium text-slate-600">Pågående batcher</div>
+              <div className="mt-1 text-[3rem] leading-none font-extrabold text-slate-900">{ongoingBatches}</div>
+              <div className="mt-2 flex items-center gap-1 text-slate-500 text-xs">
                 <ArrowUpRight className="w-3.5 h-3.5" />
                 <span>+0 sedan igår</span>
               </div>
