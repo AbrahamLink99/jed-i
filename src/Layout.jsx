@@ -36,13 +36,6 @@ export default function Layout({ children, currentPageName }) {
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
   const [user, setUser] = useState(null);
 
-  // Global alerts counter (OPEN)
-  const { data: openAlerts = [] } = useQuery({
-    queryKey: ['open-alerts-count'],
-    queryFn: () => base44.entities.InventoryAlert.filter({ status: 'OPEN', environment: 'production' }),
-    refetchInterval: 5 * 60 * 1000,
-  });
-
   // AI assistant state
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [messages, setMessages] = useState([]); // {role: 'user'|'assistant', content: string, type?: 'info'|'production', tables?: any[]}
@@ -98,6 +91,12 @@ export default function Layout({ children, currentPageName }) {
     () => (user?.role === 'admin' ? [...navigation, { name: 'Admin', icon: Shield, page: 'Admin' }] : navigation),
     [user]
   );
+
+  const { data: openAlerts = [] } = useQuery({
+    queryKey: ['open-alerts-count'],
+    queryFn: () => base44.entities.InventoryAlert.filter({ status: 'OPEN', environment: 'production' }),
+    refetchInterval: 5 * 60 * 1000,
+  });
 
   const sendMessage = async () => {
     const text = input.trim();
@@ -274,14 +273,23 @@ export default function Layout({ children, currentPageName }) {
                   {item.page === 'Alerts' && (openAlerts?.length || 0) > 0 && (
                     <span
                       style={{
-                        position: 'absolute', top: 4, right: 4,
-                        background: '#E53E3E', color: '#fff', fontSize: 10,
-                        minWidth: 18, height: 18, borderRadius: 9,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        padding: '0 4px'
+                        position: 'absolute',
+                        top: 4,
+                        right: 4,
+                        backgroundColor: '#E53E3E',
+                        color: 'white',
+                        fontSize: 10,
+                        minWidth: 18,
+                        height: 18,
+                        borderRadius: 9,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '0 4px',
+                        lineHeight: '18px'
                       }}
                     >
-                      {(openAlerts.length > 99) ? '99+' : String(openAlerts.length)}
+                      {openAlerts.length > 99 ? '99+' : openAlerts.length}
                     </span>
                   )}
                 </div>
