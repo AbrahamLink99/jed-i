@@ -264,9 +264,9 @@ export default function Layout({ children, currentPageName }) {
                 title={item.name}
                 onClick={() => setSidebarOpen(false)}
                 className={cn(
-                  "relative flex items-center h-10 w-full mx-0 rounded-full transition-all",
+                  "relative flex items-center h-10 w-full mx-0 rounded-xl transition-all",
                   isSidebarHovered ? "px-3 justify-start" : "px-0 justify-center",
-                  isActive ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"
+                  isActive ? "bg-[#F3F4F6] text-slate-900" : "text-slate-500 hover:bg-slate-50"
                 )}
               >
                                {isActive && (
