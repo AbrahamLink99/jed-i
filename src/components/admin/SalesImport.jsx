@@ -327,6 +327,9 @@ export default function SalesImport() {
                 </Table>
               </div>
 
+              {importing && (
+                <div className="text-sm text-slate-600">Importerar rad {importProgress.current} av {importProgress.total}...</div>
+              )}
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setStep(2)}>Tillbaka</Button>
                 <Button onClick={doImport} disabled={importing || !preview.some(r => r.include && r.matched)}>
