@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
       }));
 
     const dataPayload = {
-      open_alerts,
+      open_alerts: openAlerts,
       bom_items: bomItems,
       shipments_last_30_days,
       mix_batches,
