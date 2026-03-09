@@ -1,16 +1,20 @@
 import React, { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useEnvironmentFilter } from '@/components/environment/useEnvironmentFilter';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Bell, Package, Activity, ArrowUpRight } from 'lucide-react';
 import { getStockSummary } from '@/components/inventory/StockCalculations';
 import { cn } from "@/lib/utils";
+import { createPageUrl } from '@/utils';
 
 export default function DashboardPage() {
   const envFilter = useEnvironmentFilter();
+  const isMonday = new Date().getDay() === 1;
 
   const { data: products = [] } = useQuery({
     queryKey: ['products', envFilter.environment],
@@ -79,6 +83,18 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
           <p className="text-slate-600 mt-1">Snabb översikt</p>
         </div>
+
+        {isMonday && (
+          <Card className="mb-6 p-4 flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium">Dags för veckovis försäljningsimport</div>
+              <div className="text-xs text-slate-600">Importera Shopify-försäljning för D2C eller B2B.</div>
+            </div>
+            <Link to={createPageUrl('Admin') + '?tab=sales'}>
+              <Button className="bg-slate-900 text-white">Importera nu</Button>
+            </Link>
+          </Card>
+        )}
 
         {/* Top KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

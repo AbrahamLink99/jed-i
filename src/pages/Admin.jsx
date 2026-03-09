@@ -9,6 +9,7 @@ const InventoryCount = React.lazy(() => import("../components/admin/InventoryCou
 const SystemGuide = React.lazy(() => import("../components/admin/SystemGuide"));
 const MeticsImport = React.lazy(() => import("../components/admin/MeticsImport"));
 const AuditLogViewer = React.lazy(() => import("../components/admin/AuditLogViewer"));
+const SalesImport = React.lazy(() => import("../components/admin/SalesImport"));
 
 export default function Admin() {
   const [user, setUser] = useState(null);
@@ -52,10 +53,12 @@ export default function Admin() {
     );
   }
 
+  const initialTab = new URLSearchParams(window.location.search).get('tab') || 'users';
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <h1 className="text-2xl font-semibold mb-4">Admin</h1>
-      <Tabs defaultValue="users" className="w-full">
+      <Tabs defaultValue={initialTab} className="w-full">
         <TabsList className="flex flex-wrap gap-2">
           <TabsTrigger value="users">Användare</TabsTrigger>
           <TabsTrigger value="import">Import</TabsTrigger>
@@ -63,7 +66,8 @@ export default function Admin() {
           <TabsTrigger value="guide">Guide</TabsTrigger>
           <TabsTrigger value="metics-bom">Metics BOM</TabsTrigger>
           <TabsTrigger value="audit">Audit-logg</TabsTrigger>
-        </TabsList>
+          <TabsTrigger value="sales">Försäljning</TabsTrigger>
+          </TabsList>
 
         <TabsContent value="users">
           <ErrorBoundary fallback={<div className="p-4 border rounded bg-amber-50 text-amber-800">Kunde inte ladda Användare</div>}>
@@ -104,6 +108,13 @@ export default function Admin() {
           <ErrorBoundary fallback={<div className="p-4 border rounded bg-amber-50 text-amber-800">Kunde inte ladda Audit-logg</div>}>
             <React.Suspense fallback={<div className="p-4">Laddar...</div>}>
               <AuditLogViewer />
+            </React.Suspense>
+          </ErrorBoundary>
+        </TabsContent>
+        <TabsContent value="sales">
+          <ErrorBoundary fallback={<div className="p-4 border rounded bg-amber-50 text-amber-800">Kunde inte ladda Försäljning</div>}>
+            <React.Suspense fallback={<div className="p-4">Laddar...</div>}>
+              <SalesImport />
             </React.Suspense>
           </ErrorBoundary>
         </TabsContent>
