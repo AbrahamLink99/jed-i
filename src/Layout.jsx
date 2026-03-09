@@ -244,7 +244,8 @@ export default function Layout({ children, currentPageName }) {
         onMouseEnter={() => setIsSidebarHovered(true)}
         onMouseLeave={() => setIsSidebarHovered(false)}
         className={cn(
-          "group fixed inset-y-0 left-0 z-50 w-[52px] bg-white border-r border-black/[0.06] transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:transition-[width] lg:duration-200 lg:ease-in-out",
+          "group fixed inset-y-0 left-0 z-50 w-[52px] bg-white transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:transition-[width] lg:duration-200 lg:ease-in-out",
+          "shadow-[2px_0_16px_rgba(0,0,0,0.06)]",
           isSidebarHovered ? "lg:w-[200px]" : "lg:w-[52px]",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
