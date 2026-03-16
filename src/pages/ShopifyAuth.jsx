@@ -5,9 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, AlertCircle, Loader2, ExternalLink } from 'lucide-react';
 
 const SHOP = 'brunsprofessional.myshopify.com';
-const CLIENT_ID = '46769f443a0fa5e286f3e8e9752d4477';
 const SCOPES = 'read_orders,read_products,read_inventory';
-const REDIRECT_URI = `${window.location.origin}/ShopifyAuth`;
+const REDIRECT_URI = 'https://jed-i.base44.app/ShopifyAuth';
 
 function generateNonce() {
   return Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
