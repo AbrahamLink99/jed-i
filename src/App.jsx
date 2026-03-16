@@ -7,6 +7,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import ShopifyAuthPage from './pages/ShopifyAuth';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -60,7 +61,7 @@ const AuthenticatedApp = () => {
       ))}
       <Route path="/ShopifyAuth" element={
         <LayoutWrapper currentPageName="ShopifyAuth">
-          <React.lazy(() => import('./pages/ShopifyAuth')) && <ShopifyAuthPage />}
+          <ShopifyAuthPage />
         </LayoutWrapper>
       } />
       <Route path="*" element={<PageNotFound />} />
