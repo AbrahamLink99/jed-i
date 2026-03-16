@@ -356,7 +356,7 @@ export default function Products() {
             </Select>
           </div>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="bg-[#EBEBEA] rounded-full p-1 gap-0">
+            <TabsList className="rounded-full p-1 gap-0" style={{ background: 'var(--panel-hover)', border: '1px solid var(--border)' }}>
               <TabsTrigger value="all" className="rounded-full px-4 py-1.5 text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:font-semibold">Alla</TabsTrigger>
               <TabsTrigger value="finished_good" className="rounded-full px-4 py-1.5 text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:font-semibold">Färdigvaror</TabsTrigger>
               <TabsTrigger value="raw_material" className="rounded-full px-4 py-1.5 text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:font-semibold">Råvaror</TabsTrigger>
@@ -389,8 +389,8 @@ export default function Products() {
                   <TableRow key={product.id}>
                     <TableCell>
                       <div className="flex flex-col">
-                        <span className="font-semibold">{product.name}</span>
-                        <span className="text-xs text-slate-500 font-mono">{product.sku}</span>
+                        <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>{product.name}</span>
+                        <span className="text-xs font-mono" style={{ color: 'var(--text-tertiary)' }}>{product.sku}</span>
                         <div className="mt-1 flex flex-wrap gap-1">
                           <Badge className="text-xs border-0" style={brandStyles[product.brand || 'own'] || {}}>{brandLabels[product.brand || 'own']}</Badge>
                           {(product.tag_ids || []).map((tid) => (
@@ -407,13 +407,13 @@ export default function Products() {
                     <TableCell>
                       <Badge className="rounded-full border-0" style={{ background: 'var(--text-primary)', color: 'var(--text-on-dark)' }}>{stock.onHand?.toLocaleString('sv-SE')} {product.unit}</Badge>
                     </TableCell>
-                    <TableCell className="text-slate-500">
+                    <TableCell style={{ color: 'var(--text-secondary)' }}>
                       {(stock.available ?? 0).toLocaleString('sv-SE')} {product.unit}
                     </TableCell>
-                    <TableCell className="text-slate-500">
+                    <TableCell style={{ color: 'var(--text-secondary)' }}>
                       {product.safety_stock?.toLocaleString('sv-SE') || '-'}
                     </TableCell>
-                    <TableCell className="text-slate-500">
+                    <TableCell style={{ color: 'var(--text-secondary)' }}>
                       {product.lead_time_days ? `${product.lead_time_days} dagar` : '-'}
                     </TableCell>
                     <TableCell>
