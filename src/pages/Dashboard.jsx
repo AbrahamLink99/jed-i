@@ -182,8 +182,8 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-3">
                       <div className={cn('h-2.5 w-2.5 rounded-full', positive ? 'bg-green-500' : 'bg-red-500')} />
                       <div>
-                        <div className="text-sm font-medium">{e.product_name || e.product_sku}</div>
-                        <div className="text-xs text-slate-500">{new Date(e.created_date).toLocaleString('sv-SE')}</div>
+                        <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{e.product_name || e.product_sku}</div>
+                        <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{new Date(e.created_date).toLocaleString('sv-SE')}</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">

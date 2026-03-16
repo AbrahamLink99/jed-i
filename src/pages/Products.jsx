@@ -28,10 +28,17 @@ const typeLabels = {
 };
 
 const typeColors = {
-  finished_good: 'bg-indigo-100 text-indigo-700',
-  raw_material: 'bg-amber-100 text-amber-700',
-  packaging: 'bg-cyan-100 text-cyan-700',
-  label: 'bg-pink-100 text-pink-700'
+  finished_good: 'text-[#1A2E1E]',
+  raw_material: 'text-[#C4622D]',
+  packaging: 'text-[#3D5C42]',
+  label: 'text-[#7A9C7E]'
+};
+
+const typeStyles = {
+  finished_good: { background: 'rgba(26,46,30,0.10)', color: '#1A2E1E', border: 'none' },
+  raw_material:  { background: 'rgba(196,98,45,0.10)', color: '#C4622D', border: 'none' },
+  packaging:     { background: 'rgba(61,92,66,0.12)', color: '#3D5C42', border: 'none' },
+  label:         { background: 'rgba(122,156,126,0.15)', color: '#3D5C42', border: 'none' },
 };
 
 const brandLabels = {
@@ -42,10 +49,17 @@ const brandLabels = {
 };
 
 const brandColors = {
-  own: 'bg-blue-100 text-blue-800 border-blue-300',
-  client_a: 'bg-green-100 text-green-800 border-green-300',
-  client_b: 'bg-purple-100 text-purple-800 border-purple-300',
-  other: 'bg-gray-100 text-gray-800 border-gray-300'
+  own: '',
+  client_a: '',
+  client_b: '',
+  other: ''
+};
+
+const brandStyles = {
+  own:      { background: 'rgba(26,46,30,0.08)', color: '#1A2E1E' },
+  client_a: { background: 'rgba(61,92,66,0.10)', color: '#3D5C42' },
+  client_b: { background: 'rgba(122,156,126,0.15)', color: '#3D5C42' },
+  other:    { background: 'rgba(26,46,30,0.05)', color: '#7A9C7E' },
 };
 
 export default function Products() {
