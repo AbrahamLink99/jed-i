@@ -1,7 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 const SHOP = 'brunsprofessional.myshopify.com';
-const CLIENT_ID = '46769f443a0fa5e286f3e8e9752d4477';
 
 Deno.serve(async (req) => {
   try {
