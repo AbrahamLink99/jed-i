@@ -392,7 +392,7 @@ export default function Products() {
                         <span className="font-semibold">{product.name}</span>
                         <span className="text-xs text-slate-500 font-mono">{product.sku}</span>
                         <div className="mt-1 flex flex-wrap gap-1">
-                          <Badge variant="outline" className={`text-xs ${brandColors[product.brand || 'own']}`}>{brandLabels[product.brand || 'own']}</Badge>
+                          <Badge className="text-xs border-0" style={brandStyles[product.brand || 'own'] || {}}>{brandLabels[product.brand || 'own']}</Badge>
                           {(product.tag_ids || []).map((tid) => (
                             <Badge key={tid} variant="secondary" className="text-xs">{tagsById[tid]?.name || 'Tagg'}</Badge>
                           ))}
@@ -400,7 +400,7 @@ export default function Products() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge className={cn(typeColors[product.type], "font-normal")}>
+                      <Badge className="font-normal border-0" style={typeStyles[product.type] || {}}>
                         {typeLabels[product.type]}
                       </Badge>
                     </TableCell>
