@@ -56,7 +56,8 @@ export default function ShopifyAuth() {
   function startOAuth() {
     const nonce = generateNonce();
     sessionStorage.setItem('shopify_oauth_state', nonce);
-    const url = `https://${SHOP}/admin/oauth/authorize?client_id=${CLIENT_ID}&scope=${SCOPES}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=${nonce}`;
+    const clientId = '46769f443a0fa5e286f3e8e9752d4477';
+    const url = `https://${SHOP}/admin/oauth/authorize?client_id=${clientId}&scope=${SCOPES}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=${nonce}`;
     window.location.href = url;
   }
 
