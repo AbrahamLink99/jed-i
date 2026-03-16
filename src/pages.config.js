@@ -58,6 +58,7 @@ import ProductDetail from './pages/ProductDetail';
 import Production from './pages/Production';
 import Products from './pages/Products';
 import Recipes from './pages/Recipes';
+import ShopifyAuth from './pages/ShopifyAuth';
 import __Layout from './Layout.jsx';
 
 
@@ -73,6 +74,7 @@ export const PAGES = {
     "Production": Production,
     "Products": Products,
     "Recipes": Recipes,
+    "ShopifyAuth": ShopifyAuth,
 }
 
 export const pagesConfig = {

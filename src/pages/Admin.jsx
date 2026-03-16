@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { base44 } from "@/api/base44Client";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import ErrorBoundary from "../components/common/ErrorBoundary";
 const UsersAdmin = React.lazy(() => import("../components/admin/UsersAdmin"));
 const DataImport = React.lazy(() => import("../components/admin/DataImport"));
@@ -67,6 +69,9 @@ export default function Admin() {
           <TabsTrigger value="metics-bom">Metics BOM</TabsTrigger>
           <TabsTrigger value="audit">Audit-logg</TabsTrigger>
           <TabsTrigger value="sales">Försäljning</TabsTrigger>
+          <Link to={createPageUrl('ShopifyAuth')} style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--accent)', fontWeight: 600, padding: '5px 10px', whiteSpace: 'nowrap' }}>
+            🔑 Shopify OAuth
+          </Link>
           </TabsList>
 
         <TabsContent value="users">
