@@ -272,11 +272,11 @@ export default function Products() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900">Artiklar</h1>
-            <p className="text-slate-500 mt-1">Hantera artiklar, råvaror och förpackningar</p>
-          </div>
-          <Button onClick={() => setShowForm(true)} className="bg-slate-800 hover:bg-slate-900 rounded-full px-5">
+        <div>
+          <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: '-0.04em', color: 'var(--text-primary)', margin: 0 }}>Artiklar</h1>
+          <p style={{ color: 'var(--text-tertiary)', marginTop: 4, fontFamily: "'Cormorant', serif", fontStyle: 'italic', fontSize: 16 }}>Hantera artiklar, råvaror och förpackningar</p>
+        </div>
+        <Button onClick={() => setShowForm(true)} style={{ background: 'var(--text-primary)', color: 'var(--text-on-dark)', borderRadius: 50 }} className="px-5">
             <Plus className="w-4 h-4 mr-2" />
             Ny artikel
           </Button>
@@ -284,7 +284,7 @@ export default function Products() {
 
         {/* Filters */}
         <div className="mb-6">
-          <div className="bg-white rounded-2xl px-4 py-3 shadow-sm flex items-center gap-2 overflow-x-auto mb-3">
+        <div className="rounded-2xl px-4 py-3 flex items-center gap-2 overflow-x-auto mb-3" style={{ background: 'var(--panel)', border: '1px solid var(--border)' }}>
             <div className="relative flex-1 min-w-[220px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input
@@ -405,7 +405,7 @@ export default function Products() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge className="bg-slate-900 text-white rounded-full">{stock.onHand?.toLocaleString('sv-SE')} {product.unit}</Badge>
+                      <Badge className="rounded-full border-0" style={{ background: 'var(--text-primary)', color: 'var(--text-on-dark)' }}>{stock.onHand?.toLocaleString('sv-SE')} {product.unit}</Badge>
                     </TableCell>
                     <TableCell className="text-slate-500">
                       {(stock.available ?? 0).toLocaleString('sv-SE')} {product.unit}
