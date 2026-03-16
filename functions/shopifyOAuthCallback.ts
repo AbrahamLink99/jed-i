@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        client_id: CLIENT_ID,
+        client_id: Deno.env.get('SHOPIFY_CLIENT_ID'),
         client_secret: clientSecret,
         code,
       }),
