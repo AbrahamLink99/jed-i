@@ -136,7 +136,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card className="lg:col-span-2 p-0">
             <div className="p-6">
-              <h2 className="text-lg font-semibold text-slate-900">Lägst i förhållande till säkerhetslager</h2>
+              <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>Lägst i förhållande till säkerhetslager</h2>
             </div>
             <div className="px-6 pb-6 space-y-3">
               {lowestRelative.map(({ product, onHand, safety, ratio }) => {
@@ -144,19 +144,19 @@ export default function DashboardPage() {
                 const barColor = onHand === 0 ? 'bg-red-500' : (onHand < safety ? 'bg-amber-500' : 'bg-green-500');
                 const pct = Math.max(0, Math.min(1, safety ? onHand / safety : 1));
                 return (
-                  <div key={product.id} className="bg-white rounded-[10px] p-3 border border-slate-200" style={{ borderLeftWidth: 4, borderLeftColor: statusColor }}>
+                  <div key={product.id} className="rounded-[10px] p-3" style={{ background: 'var(--panel)', border: `1px solid var(--border)`, borderLeftWidth: 4, borderLeftColor: statusColor }}>
                     <div className="flex items-center justify-between gap-4">
                       <div>
-                        <div className="font-semibold">{product.name}</div>
-                        <div className="text-xs text-slate-500 font-mono">{product.sku}</div>
+                        <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>{product.name}</div>
+                        <div className="text-xs font-mono" style={{ color: 'var(--text-tertiary)' }}>{product.sku}</div>
                       </div>
                       <div className="min-w-[160px] text-right">
-                        <div className="text-sm font-medium">{onHand?.toLocaleString('sv-SE')} {product.unit}</div>
-                        <div className="text-xs text-slate-500">Säkerhet: {safety?.toLocaleString('sv-SE')} {product.unit}</div>
+                        <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{onHand?.toLocaleString('sv-SE')} {product.unit}</div>
+                        <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Säkerhet: {safety?.toLocaleString('sv-SE')} {product.unit}</div>
                       </div>
                     </div>
                     <div className="mt-2 flex items-center gap-3">
-                      <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
                         <div className={cn('h-1.5 rounded-full', barColor)} style={{ width: `${(pct*100).toFixed(0)}%` }} />
                       </div>
                       <Badge variant="outline" className="text-xs">{(ratio).toFixed(2)}x</Badge>
@@ -172,7 +172,7 @@ export default function DashboardPage() {
 
           <Card className="p-0">
             <div className="p-6">
-              <h2 className="text-lg font-semibold text-slate-900">Senaste transaktioner</h2>
+              <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>Senaste transaktioner</h2>
             </div>
             <div className="px-6 pb-6">
               {recentLedger.map((e, i) => {
