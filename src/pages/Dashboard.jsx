@@ -80,8 +80,8 @@ export default function DashboardPage() {
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
-          <p className="text-slate-600 mt-1">Snabb översikt</p>
+          <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: '-0.04em', color: 'var(--text-primary)', margin: 0 }}>Dashboard</h1>
+          <p style={{ color: 'var(--text-tertiary)', marginTop: 4, fontFamily: "'Cormorant', serif", fontStyle: 'italic', fontSize: 16 }}>Snabb översikt</p>
         </div>
 
         {isMonday && (
@@ -98,35 +98,35 @@ export default function DashboardPage() {
 
         {/* Top KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="relative overflow-hidden p-7 bg-[#FEFCE8]" style={{ borderLeft: '4px solid #EAB308' }}>
+          <Card className="relative overflow-hidden p-7" style={{ borderLeft: '4px solid var(--accent)', background: 'var(--accent-muted)' }}>
             <div className="relative">
-              <div className="text-sm font-medium text-slate-600">Aktiva notiser</div>
-              <div className="mt-1 text-[3rem] leading-none font-extrabold text-slate-900">{activeAlerts}</div>
-              <div className="mt-2 flex items-center gap-1 text-slate-500 text-xs">
+              <div className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Aktiva notiser</div>
+              <div className="mt-1 text-[3rem] leading-none font-extrabold" style={{ color: 'var(--text-primary)' }}>{activeAlerts}</div>
+              <div className="mt-2 flex items-center gap-1 text-xs" style={{ color: 'var(--text-tertiary)' }}>
                 <ArrowUpRight className="w-3.5 h-3.5" />
-                <span>+0 sedan igår</span>
+                <span>Öppna lagernotiser</span>
               </div>
             </div>
           </Card>
 
-          <Card className="relative overflow-hidden p-7 bg-[#FFF7ED]" style={{ borderLeft: '4px solid #F97316' }}>
+          <Card className="relative overflow-hidden p-7" style={{ borderLeft: '4px solid var(--red-alert)', background: 'var(--red-muted)' }}>
             <div className="relative">
-              <div className="text-sm font-medium text-slate-600">Artiklar under säkerhetslager</div>
-              <div className="mt-1 text-[3rem] leading-none font-extrabold text-slate-900">{underSafetyCount}</div>
-              <div className="mt-2 flex items-center gap-1 text-slate-500 text-xs">
+              <div className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Under säkerhetslager</div>
+              <div className="mt-1 text-[3rem] leading-none font-extrabold" style={{ color: 'var(--text-primary)' }}>{underSafetyCount}</div>
+              <div className="mt-2 flex items-center gap-1 text-xs" style={{ color: 'var(--text-tertiary)' }}>
                 <ArrowUpRight className="w-3.5 h-3.5" />
-                <span>+0 sedan igår</span>
+                <span>Artiklar att åtgärda</span>
               </div>
             </div>
           </Card>
 
-          <Card className="relative overflow-hidden p-7 bg-[#F0F9FF]" style={{ borderLeft: '4px solid #0EA5E9' }}>
+          <Card className="relative overflow-hidden p-7" style={{ borderLeft: '4px solid var(--forest-mid)', background: 'var(--forest-muted)' }}>
             <div className="relative">
-              <div className="text-sm font-medium text-slate-600">Pågående batcher</div>
-              <div className="mt-1 text-[3rem] leading-none font-extrabold text-slate-900">{ongoingBatches}</div>
-              <div className="mt-2 flex items-center gap-1 text-slate-500 text-xs">
+              <div className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Pågående batcher</div>
+              <div className="mt-1 text-[3rem] leading-none font-extrabold" style={{ color: 'var(--text-primary)' }}>{ongoingBatches}</div>
+              <div className="mt-2 flex items-center gap-1 text-xs" style={{ color: 'var(--text-tertiary)' }}>
                 <ArrowUpRight className="w-3.5 h-3.5" />
-                <span>+0 sedan igår</span>
+                <span>Tillgängliga mix-batcher</span>
               </div>
             </div>
           </Card>
