@@ -58,6 +58,11 @@ const AuthenticatedApp = () => {
           }
         />
       ))}
+      <Route path="/ShopifyAuth" element={
+        <LayoutWrapper currentPageName="ShopifyAuth">
+          <React.lazy(() => import('./pages/ShopifyAuth')) && <ShopifyAuthPage />}
+        </LayoutWrapper>
+      } />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
