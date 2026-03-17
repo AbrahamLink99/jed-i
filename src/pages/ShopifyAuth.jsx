@@ -5,15 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, AlertCircle, Loader2, ExternalLink } from 'lucide-react';
 
 const SHOP = 'brunsprofessional.myshopify.com';
-const SCOPES = 'read_orders,read_products,read_inventory';
+const CLIENT_ID = '46769f443a0fa5e286f3e8e9752d4477';
+const SCOPES = 'read_orders,read_products,read_inventory,write_inventory';
 const REDIRECT_URI = 'https://jed-i.base44.app/ShopifyAuth';
 
-function generateNonce() {
-  return Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
-}
-
 export default function ShopifyAuth() {
-  const [status, setStatus] = useState('idle'); // idle | exchanging | success | error
+  const [status, setStatus] = useState('idle'); // idle | exchanging | saving | success | error
   const [accessToken, setAccessToken] = useState('');
   const [scope, setScope] = useState('');
   const [error, setError] = useState('');
@@ -22,17 +19,9 @@ export default function ShopifyAuth() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
-    const state = params.get('state');
-    const savedState = sessionStorage.getItem('shopify_oauth_state');
 
     if (code) {
-      if (state !== savedState) {
-        setStatus('error');
-        setError('Ogiltig state-parameter. Försök igen.');
-        return;
-      }
-      sessionStorage.removeItem('shopify_oauth_state');
-      // Clean URL
+      // Clean URL immediately
       window.history.replaceState({}, '', '/ShopifyAuth');
       exchangeCode(code);
     }
@@ -43,21 +32,41 @@ export default function ShopifyAuth() {
     try {
       const res = await base44.functions.invoke('shopifyOAuthCallback', { code });
       const data = res.data;
-      if (data.error) throw new Error(data.error);
-      setAccessToken(data.access_token);
-      setScope(data.scope);
+      if (data?.error) throw new Error(data.error);
+      
+      const token = data.access_token;
+      const scopes = data.scope || '';
+      setAccessToken(token);
+      setScope(scopes);
+
+      // Auto-save to ShopifyConnection entity
+      setStatus('saving');
+      const existing = await base44.entities.ShopifyConnection.filter({ shop_domain: SHOP });
+      const record = {
+        shop_domain: SHOP,
+        access_token: token,
+        scopes,
+        installed_at: new Date().toISOString(),
+        status: 'installed',
+      };
+      if (existing && existing.length > 0) {
+        await base44.entities.ShopifyConnection.update(existing[0].id, record);
+      } else {
+        await base44.entities.ShopifyConnection.create(record);
+      }
+
       setStatus('success');
     } catch (err) {
       setStatus('error');
-      setError(err.message);
+      setError(err.message || 'Okänt fel');
     }
   }
 
   function startOAuth() {
-    const nonce = generateNonce();
-    sessionStorage.setItem('shopify_oauth_state', nonce);
-    const clientId = '46769f443a0fa5e286f3e8e9752d4477';
-    const url = `https://${SHOP}/admin/oauth/authorize?client_id=${clientId}&scope=${SCOPES}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=${nonce}`;
+    const nonce = Math.random().toString(36).slice(2);
+    // Store state in localStorage (survives redirects better than sessionStorage)
+    localStorage.setItem('shopify_oauth_state', nonce);
+    const url = `https://${SHOP}/admin/oauth/authorize?client_id=${CLIENT_ID}&scope=${SCOPES}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=${nonce}`;
     window.location.href = url;
   }
 
@@ -74,22 +83,20 @@ export default function ShopifyAuth() {
           Shopify OAuth
         </h1>
         <p style={{ color: 'var(--text-tertiary)', marginTop: 4, fontFamily: "'Cormorant', serif", fontStyle: 'italic', fontSize: 16 }}>
-          Hämta access token för brunsprofessional.myshopify.com
+          Anslut {SHOP}
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle style={{ fontSize: 15, color: 'var(--text-primary)' }}>
-            {SHOP}
-          </CardTitle>
+          <CardTitle style={{ fontSize: 15, color: 'var(--text-primary)' }}>{SHOP}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
 
           {status === 'idle' && (
             <>
               <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>
-                Klicka nedan för att auktorisera appen i Shopify och hämta en <code style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12 }}>shpat_...</code>-token.
+                Klicka nedan för att auktorisera och hämta en access token. Tokenen sparas automatiskt.
               </p>
               <div style={{ background: 'var(--panel-hover)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--text-secondary)' }}>
                 <strong>Scopes:</strong> {SCOPES}
@@ -101,10 +108,10 @@ export default function ShopifyAuth() {
             </>
           )}
 
-          {status === 'exchanging' && (
+          {(status === 'exchanging' || status === 'saving') && (
             <div className="flex items-center gap-3 py-4" style={{ color: 'var(--text-secondary)' }}>
               <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Byter kod mot access token...</span>
+              <span>{status === 'exchanging' ? 'Byter kod mot access token...' : 'Sparar token...'}</span>
             </div>
           )}
 
@@ -112,7 +119,7 @@ export default function ShopifyAuth() {
             <div className="space-y-4">
               <div className="flex items-center gap-2" style={{ color: '#3D5C42' }}>
                 <CheckCircle className="w-5 h-5" />
-                <span className="font-semibold">Auktorisering lyckades!</span>
+                <span className="font-semibold">Klart! Token sparad automatiskt.</span>
               </div>
               <div>
                 <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginBottom: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
@@ -131,7 +138,7 @@ export default function ShopifyAuth() {
                 {copied ? '✓ Kopierad!' : 'Kopiera token'}
               </Button>
               <div style={{ background: 'rgba(196,98,45,0.08)', border: '1px solid rgba(196,98,45,0.2)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--accent)' }}>
-                <strong>Nästa steg:</strong> Gå till Base44 Dashboard → Settings → Secrets och uppdatera <code style={{ fontFamily: "'IBM Plex Mono', monospace" }}>SHOPIFY_ACCESS_TOKEN</code> med värdet ovan.
+                Uppdatera även <code style={{ fontFamily: "'IBM Plex Mono', monospace" }}>SHOPIFY_ACCESS_TOKEN</code> i Base44 Dashboard → Settings → Secrets om du använder den i backend-funktioner.
               </div>
             </div>
           )}
@@ -142,10 +149,10 @@ export default function ShopifyAuth() {
                 <AlertCircle className="w-5 h-5" />
                 <span className="font-semibold">Fel uppstod</span>
               </div>
-              <div style={{ background: 'var(--red-muted)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--red-alert)' }}>
+              <div style={{ background: 'var(--red-muted)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--red-alert)', fontFamily: "'IBM Plex Mono', monospace" }}>
                 {error}
               </div>
-              <Button onClick={() => setStatus('idle')} variant="outline" className="rounded-full">
+              <Button onClick={() => { setStatus('idle'); setError(''); }} variant="outline" className="rounded-full">
                 Försök igen
               </Button>
             </div>
