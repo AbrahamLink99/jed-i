@@ -29,13 +29,12 @@ Deno.serve(async (req) => {
     }
 
     console.log('=== SHOPIFY TOKEN EXCHANGE DEBUG ===');
-    console.log('SHOP:', SHOP);
+    console.log('shopDomain:', shopDomain);
     console.log('client_id:', clientId);
     console.log('client_secret length:', clientSecret?.length, '| first 4 chars:', clientSecret?.slice(0, 4));
-    console.log('code:', code);
     console.log('code length:', code?.length);
 
-    const tokenRes = await fetch(`https://${SHOP}/admin/oauth/access_token`, {
+    const tokenRes = await fetch(`https://${shopDomain}/admin/oauth/access_token`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ client_id: clientId, client_secret: clientSecret, code }),
