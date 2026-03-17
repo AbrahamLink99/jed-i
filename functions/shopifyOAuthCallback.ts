@@ -24,6 +24,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'SHOPIFY_CLIENT_ID or SHOPIFY_CLIENT_SECRET not set' }, { status: 500 });
     }
 
+    console.log('=== SHOPIFY TOKEN EXCHANGE DEBUG ===');
+    console.log('SHOP:', SHOP);
+    console.log('client_id:', clientId);
+    console.log('client_secret length:', clientSecret?.length, '| first 4 chars:', clientSecret?.slice(0, 4));
+    console.log('code:', code);
+    console.log('code length:', code?.length);
+
     const tokenRes = await fetch(`https://${SHOP}/admin/oauth/access_token`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
