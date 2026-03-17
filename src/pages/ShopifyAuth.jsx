@@ -28,10 +28,10 @@ export default function ShopifyAuth() {
     }
   }, []);
 
-  async function exchangeCode(code) {
+  async function exchangeCode(code, shop) {
     setStatus('exchanging');
     try {
-      const res = await base44.functions.invoke('shopifyOAuthCallback', { code });
+      const res = await base44.functions.invoke('shopifyOAuthCallback', { code, shop });
       const data = res.data;
       if (data?.error) throw new Error(data.error);
       
