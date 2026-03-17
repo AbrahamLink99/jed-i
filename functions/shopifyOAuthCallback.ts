@@ -11,11 +11,15 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { code } = body;
+    const { code, shop } = body;
 
     if (!code) {
       return Response.json({ error: 'Missing code' }, { status: 400 });
     }
+
+    // Use shop from callback if provided, otherwise fall back to hardcoded
+    const shopDomain = shop || SHOP;
+    console.log('Using shop domain:', shopDomain);
 
     const clientId = Deno.env.get('SHOPIFY_CLIENT_ID');
     const clientSecret = Deno.env.get('SHOPIFY_CLIENT_SECRET');
