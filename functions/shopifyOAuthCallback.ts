@@ -17,30 +17,40 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing code' }, { status: 400 });
     }
 
+    const clientId = Deno.env.get('SHOPIFY_CLIENT_ID');
     const clientSecret = Deno.env.get('SHOPIFY_CLIENT_SECRET');
-    if (!clientSecret) {
-      return Response.json({ error: 'SHOPIFY_CLIENT_SECRET not set' }, { status: 500 });
+
+    if (!clientId || !clientSecret) {
+      return Response.json({ error: 'SHOPIFY_CLIENT_ID or SHOPIFY_CLIENT_SECRET not set' }, { status: 500 });
     }
 
-    // Exchange code for access token
     const tokenRes = await fetch(`https://${SHOP}/admin/oauth/access_token`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        client_id: Deno.env.get('SHOPIFY_CLIENT_ID'),
-        client_secret: clientSecret,
-        code,
-      }),
+      body: JSON.stringify({ client_id: clientId, client_secret: clientSecret, code }),
     });
 
+    const responseText = await tokenRes.text();
+
     if (!tokenRes.ok) {
-      const text = await tokenRes.text();
-      return Response.json({ error: `Token exchange failed: ${text}` }, { status: 400 });
+      return Response.json({ error: `Token exchange failed (${tokenRes.status}): ${responseText}` }, { status: 400 });
     }
 
-    const { access_token, scope } = await tokenRes.json();
+    let tokenData;
+    try {
+      tokenData = JSON.parse(responseText);
+    } catch {
+      return Response.json({ error: `Invalid JSON from Shopify: ${responseText}` }, { status: 500 });
+    }
 
-    return Response.json({ access_token, scope });
+    if (tokenData.error) {
+      return Response.json({ error: tokenData.error_description || tokenData.error }, { status: 400 });
+    }
+
+    return Response.json({
+      access_token: tokenData.access_token,
+      scope: tokenData.scope,
+    });
 
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
