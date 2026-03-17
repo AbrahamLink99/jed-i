@@ -38,23 +38,6 @@ export default function Admin() {
     );
   }
 
-  const allowed = user?.role === "admin" || user?.role === "purchasing";
-
-  if (!allowed) {
-    return (
-      <div className="p-6 max-w-4xl mx-auto">
-        <Card>
-          <CardHeader>
-            <CardTitle>Åtkomst nekad</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>Du måste ha rollen Admin eller Purchasing för att komma åt Admin.</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   const initialTab = new URLSearchParams(window.location.search).get('tab') || 'users';
 
   return (
