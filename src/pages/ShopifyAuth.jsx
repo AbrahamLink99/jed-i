@@ -19,11 +19,12 @@ export default function ShopifyAuth() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
+    const shop = params.get('shop') || SHOP;
 
     if (code) {
       // Clean URL immediately
       window.history.replaceState({}, '', '/ShopifyAuth');
-      exchangeCode(code);
+      exchangeCode(code, shop);
     }
   }, []);
 
