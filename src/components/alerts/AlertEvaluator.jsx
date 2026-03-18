@@ -7,7 +7,7 @@ import { getStockSummary } from '@/components/inventory/StockCalculations';
  */
 export async function evaluateInventoryAlerts() {
   const products = await base44.entities.Product.filter({ environment: 'production' }, '-name', 5000);
-  const ledgerEntries = await base44.entities.InventoryLedger.filter({ environment: 'production' }, '-created_date', 50000);
+  const ledgerEntries = await base44.entities.InventoryLedger.list('created_date', 5000);
   const batches = await base44.entities.Batch.filter({ environment: 'production' }, '-created_date', 5000);
   const existingAlerts = await base44.entities.InventoryAlert.filter({
     status: { $in: ['OPEN', 'ORDERED_ACKNOWLEDGED'] },
