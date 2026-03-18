@@ -31,7 +31,7 @@ export default function InventoryCount() {
 
   const { data: ledger = [] } = useQuery({
     queryKey: ['ledger'],
-    queryFn: () => base44.entities.InventoryLedger.list('-created_date', 1000)
+    queryFn: () => base44.entities.InventoryLedger.list('created_date', 5000)
   });
 
   const { data: batches = [] } = useQuery({
