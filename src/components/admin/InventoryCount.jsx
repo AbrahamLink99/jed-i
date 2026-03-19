@@ -244,14 +244,61 @@ export default function InventoryCount() {
                   Ladda ner en CSV-fil med alla {cat.label.toLowerCase()} och nuvarande lagerstatus
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <Button onClick={() => handleExport(cat.value)} className="w-full sm:w-auto">
-                  <Download className="w-4 h-4 mr-2" />
-                  Ladda ner {cat.label} (CSV)
-                </Button>
-                <p className="text-sm text-slate-500 mt-3">
-                  {products.filter(p => p.type === cat.value).length} artiklar i denna kategori
-                </p>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Button onClick={() => handleExport(cat.value)} className="w-full sm:w-auto">
+                    <Download className="w-4 h-4 mr-2" />
+                    Ladda ner {cat.label} (CSV)
+                  </Button>
+                  {ledgerLoading && <span className="text-sm text-slate-500">Laddar saldon...</span>}
+                </div>
+
+                {/* Preview table */}
+                <div className="rounded-lg border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Status</TableHead>
+                        <TableHead>SKU</TableHead>
+                        <TableHead>Namn</TableHead>
+                        <TableHead>Typ</TableHead>
+                        <TableHead>Enhet</TableHead>
+                        <TableHead className="text-right">Saldo</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {products.filter(p => p.type === cat.value).map(product => {
+                        const stock = stockByProductId[product.id] || { onHand: 0 };
+                        const onHand = stock.onHand ?? 0;
+                        const safety = product.safety_stock || 0;
+                        const isOk = onHand > safety;
+                        return (
+                          <TableRow key={product.id}>
+                            <TableCell>
+                              {isOk
+                                ? <CheckCircle className="w-4 h-4 text-green-500" />
+                                : <AlertCircle className="w-4 h-4 text-amber-500" />}
+                            </TableCell>
+                            <TableCell className="font-mono text-sm">{product.sku}</TableCell>
+                            <TableCell>{product.name}</TableCell>
+                            <TableCell className="text-slate-500">{product.type}</TableCell>
+                            <TableCell className="text-slate-500">{product.unit}</TableCell>
+                            <TableCell className="text-right font-semibold">
+                              <Badge variant={onHand > 0 ? 'secondary' : 'destructive'}>
+                                {onHand.toLocaleString('sv-SE')}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                      {products.filter(p => p.type === cat.value).length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center text-slate-400 py-6">Inga artiklar i denna kategori</TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
 
