@@ -31,8 +31,8 @@ export default function InventoryCount() {
     queryFn: () => base44.entities.Product.list()
   });
 
-  const { data: ledger = [] } = useQuery({
-    queryKey: ['ledger'],
+  const { data: ledger = [], isLoading: ledgerLoading } = useQuery({
+    queryKey: ['inv-count-ledger'],
     queryFn: () => base44.entities.InventoryLedger.list('created_date', 5000),
     staleTime: 0
   });
@@ -41,6 +41,15 @@ export default function InventoryCount() {
     queryKey: ['batches'],
     queryFn: () => base44.entities.Batch.list()
   });
+
+  const stockByProductId = useMemo(() => {
+    const map = {};
+    products.forEach(p => {
+      const productLedger = ledger.filter(e => e.product_id === p.id);
+      map[p.id] = getStockSummary(p, productLedger, batches);
+    });
+    return map;
+  }, [products, ledger, batches]);
 
   const importMutation = useMutation({
     mutationFn: async (adjustments) => {
