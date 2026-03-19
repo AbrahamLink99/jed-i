@@ -10,6 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Download, Upload, FileSpreadsheet, CheckCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { getStockSummary } from '@/components/inventory/StockCalculations';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
 const PRODUCT_CATEGORIES = [
   { value: 'raw_material', label: 'Råvaror' },
