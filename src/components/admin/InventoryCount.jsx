@@ -90,6 +90,7 @@ export default function InventoryCount() {
       return {
         SKU: product.sku,
         Namn: product.name,
+        Leverantör: product.supplier || '',
         Typ: product.type,
         Enhet: product.unit,
         'I system': stock.onHand || 0,
