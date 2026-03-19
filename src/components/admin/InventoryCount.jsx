@@ -85,9 +85,8 @@ export default function InventoryCount() {
   // Export current inventory to CSV for specific category
   const handleExport = (category) => {
     const filteredProducts = products.filter(p => p.type === category);
-    const prodLedger = ledger.filter(e => !e.environment || e.environment === 'production');
     const stockData = filteredProducts.map(product => {
-      const stock = getStockSummary(product, prodLedger, batches);
+      const stock = stockByProductId[product.id] || { onHand: 0 };
       return {
         SKU: product.sku,
         Namn: product.name,
