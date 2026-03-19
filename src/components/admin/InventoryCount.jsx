@@ -283,6 +283,7 @@ export default function InventoryCount() {
                             </TableCell>
                             <TableCell className="font-mono text-sm">{product.sku}</TableCell>
                             <TableCell>{product.name}</TableCell>
+                            <TableCell className="text-slate-500">{product.supplier || '—'}</TableCell>
                             <TableCell className="text-slate-500">{product.type}</TableCell>
                             <TableCell className="text-slate-500">{product.unit}</TableCell>
                             <TableCell className="text-right font-semibold">
