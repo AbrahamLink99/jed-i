@@ -296,7 +296,7 @@ export default function InventoryCount() {
                       })}
                       {products.filter(p => p.type === cat.value).length === 0 && (
                         <TableRow>
-                          <TableCell colSpan={6} className="text-center text-slate-400 py-6">Inga artiklar i denna kategori</TableCell>
+                          <TableCell colSpan={7} className="text-center text-slate-400 py-6">Inga artiklar i denna kategori</TableCell>
                         </TableRow>
                       )}
                     </TableBody>
