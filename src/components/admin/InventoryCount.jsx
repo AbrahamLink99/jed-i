@@ -272,7 +272,8 @@ export default function InventoryCount() {
                         <TableHead>SKU</TableHead>
                         <TableHead>Namn</TableHead>
                         <TableHead>Leverantör</TableHead>
-                        <TableHead>Typ</TableHead>
+                        <TableHead>Säkerhetslager</TableHead>
+                        <TableHead>Kostnad/enhet</TableHead>
                         <TableHead>Enhet</TableHead>
                         <TableHead className="text-right">Saldo</TableHead>
                       </TableRow>
