@@ -92,10 +92,19 @@ export default function InventoryCount() {
         Namn: product.name,
         Leverantör: product.supplier || '',
         Typ: product.type,
+        Varumärke: product.brand || '',
         Enhet: product.unit,
         'I system': stock.onHand || 0,
+        'Säkerhetslager': product.safety_stock ?? '',
+        'Ledtid (dagar)': product.lead_time_days ?? '',
+        MOQ: product.moq ?? '',
+        'Ordermultipel': product.order_multiple ?? '',
+        'Kostnad/enhet': product.cost_per_unit ?? '',
+        'Shopify-buffert': product.shopify_buffer ?? '',
+        Aktiv: product.active === false ? 'Nej' : 'Ja',
+        Anteckningar: product.notes || '',
         'Räknat': '', // Empty for user to fill in
-        Anteckningar: ''
+        'Inventeringsanteckning': ''
       };
     });
 
