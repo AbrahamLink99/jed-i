@@ -1,0 +1,36 @@
+{
+  "name": "BOMItem",
+  "type": "object",
+  "properties": {
+    "environment": {
+      "type": "string",
+      "enum": [
+        "production",
+        "sandbox"
+      ],
+      "default": "production",
+      "description": "Environment: production or sandbox"
+    },
+    "finished_product_id": {
+      "type": "string",
+      "description": "ID of the finished product"
+    },
+    "component_id": {
+      "type": "string",
+      "description": "ID of the component product"
+    },
+    "quantity_per_unit": {
+      "type": "number",
+      "description": "Quantity of component per 1 unit (kg) of finished product"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about this BOM line"
+    }
+  },
+  "required": [
+    "finished_product_id",
+    "component_id",
+    "quantity_per_unit"
+  ]
+}

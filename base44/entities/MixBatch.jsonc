@@ -1,0 +1,58 @@
+{
+  "name": "MixBatch",
+  "type": "object",
+  "properties": {
+    "environment": {
+      "type": "string",
+      "enum": [
+        "production",
+        "sandbox"
+      ],
+      "default": "production",
+      "description": "Environment: production or sandbox"
+    },
+    "mix_sku": {
+      "type": "string",
+      "description": "SKU of the mix/blend product"
+    },
+    "batch_no": {
+      "type": "string",
+      "description": "Unique batch number"
+    },
+    "produced_kg": {
+      "type": "number",
+      "description": "Total produced quantity in kg"
+    },
+    "remaining_kg": {
+      "type": "number",
+      "description": "Remaining quantity in kg"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "depleted",
+        "quarantined",
+        "closed"
+      ],
+      "default": "available",
+      "description": "Batch status"
+    },
+    "produced_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When batch was produced"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes"
+    }
+  },
+  "required": [
+    "mix_sku",
+    "batch_no",
+    "produced_kg",
+    "remaining_kg",
+    "status"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "Tag",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Taggnamn"
+    },
+    "color": {
+      "type": "string",
+      "description": "Valfri f\u00e4rgkod eller klass"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Om taggen \u00e4r aktiv"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

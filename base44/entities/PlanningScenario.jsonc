@@ -1,0 +1,80 @@
+{
+  "name": "PlanningScenario",
+  "type": "object",
+  "properties": {
+    "environment": {
+      "type": "string",
+      "enum": [
+        "production",
+        "sandbox"
+      ],
+      "default": "production",
+      "description": "Environment: production or sandbox"
+    },
+    "name": {
+      "type": "string",
+      "description": "Scenario name"
+    },
+    "product_id": {
+      "type": "string",
+      "description": "Product to simulate production for"
+    },
+    "product_sku": {
+      "type": "string",
+      "description": "SKU for reference"
+    },
+    "planned_quantity": {
+      "type": "number",
+      "description": "Quantity to simulate"
+    },
+    "planned_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Planned production date"
+    },
+    "component_impacts": {
+      "type": "array",
+      "description": "Calculated impact on components",
+      "items": {
+        "type": "object",
+        "properties": {
+          "component_id": {
+            "type": "string"
+          },
+          "component_sku": {
+            "type": "string"
+          },
+          "required_quantity": {
+            "type": "number"
+          },
+          "current_stock": {
+            "type": "number"
+          },
+          "resulting_stock": {
+            "type": "number"
+          },
+          "warning": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "feasible",
+        "not_feasible"
+      ],
+      "description": "Scenario status"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "product_id",
+    "planned_quantity"
+  ]
+}

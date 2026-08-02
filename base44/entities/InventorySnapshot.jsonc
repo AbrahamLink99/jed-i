@@ -1,0 +1,18 @@
+{
+  "name": "InventorySnapshot",
+  "type": "object",
+  "properties": {
+    "sku": {
+      "type": "string",
+      "description": "Product SKU (unique)"
+    },
+    "quantity_available": {
+      "type": "number",
+      "description": "Available quantity for sale"
+    }
+  },
+  "required": [
+    "sku",
+    "quantity_available"
+  ]
+}

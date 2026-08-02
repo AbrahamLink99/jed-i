@@ -1,0 +1,67 @@
+{
+  "name": "BatchLot",
+  "type": "object",
+  "properties": {
+    "environment": {
+      "type": "string",
+      "enum": [
+        "production",
+        "sandbox"
+      ],
+      "default": "production",
+      "description": "Environment: production or sandbox"
+    },
+    "batch_number": {
+      "type": "string",
+      "description": "Immutable unique batch identifier"
+    },
+    "finished_sku": {
+      "type": "string",
+      "description": "SKU of finished product"
+    },
+    "product_id": {
+      "type": "string",
+      "description": "Product ID"
+    },
+    "product_name": {
+      "type": "string",
+      "description": "Product name for reference"
+    },
+    "initial_qty_pcs": {
+      "type": "number",
+      "description": "Initial quantity in pieces"
+    },
+    "production_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of production"
+    },
+    "expiry_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Best before date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "quarantined",
+        "blocked",
+        "depleted"
+      ],
+      "default": "available",
+      "description": "Batch status"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Production notes"
+    }
+  },
+  "required": [
+    "batch_number",
+    "finished_sku",
+    "product_id",
+    "initial_qty_pcs",
+    "status"
+  ]
+}

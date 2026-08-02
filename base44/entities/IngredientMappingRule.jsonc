@@ -1,0 +1,93 @@
+{
+  "name": "IngredientMappingRule",
+  "type": "object",
+  "properties": {
+    "source_system": {
+      "type": "string",
+      "enum": [
+        "Metics",
+        "Manual"
+      ],
+      "default": "Metics",
+      "description": "Source system for mapping"
+    },
+    "source_name_raw": {
+      "type": "string",
+      "description": "Original ingredient name from source"
+    },
+    "source_name_normalized": {
+      "type": "string",
+      "description": "Normalized version of source name for matching"
+    },
+    "mapped_product_id": {
+      "type": "string",
+      "description": "ID of mapped Product in our system"
+    },
+    "mapped_sku": {
+      "type": "string",
+      "description": "SKU for quick reference"
+    },
+    "match_type": {
+      "type": "string",
+      "enum": [
+        "exact_raw",
+        "normalized",
+        "alias",
+        "contains",
+        "manual"
+      ],
+      "description": "How this mapping was determined"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "default": "high",
+      "description": "Confidence level of mapping"
+    },
+    "requires_review": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether mapping needs manual review"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "User who created this mapping"
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "User who reviewed this mapping"
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When mapping was reviewed"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this mapping is active"
+    },
+    "version": {
+      "type": "number",
+      "default": 1,
+      "description": "Version number for mapping rule"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about this mapping"
+    }
+  },
+  "required": [
+    "source_system",
+    "source_name_raw",
+    "source_name_normalized",
+    "mapped_product_id",
+    "mapped_sku",
+    "match_type",
+    "confidence"
+  ]
+}

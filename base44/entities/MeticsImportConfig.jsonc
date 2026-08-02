@@ -1,0 +1,54 @@
+{
+  "name": "MeticsImportConfig",
+  "type": "object",
+  "properties": {
+    "config_name": {
+      "type": "string",
+      "description": "Name of this configuration",
+      "default": "default"
+    },
+    "strict_mode": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable strict validation mode"
+    },
+    "recipe_total_lower_bound": {
+      "type": "number",
+      "default": 0.98,
+      "description": "Minimum allowed recipe total (kg)"
+    },
+    "recipe_total_upper_bound": {
+      "type": "number",
+      "default": 1.02,
+      "description": "Maximum allowed recipe total (kg)"
+    },
+    "small_component_threshold_kg": {
+      "type": "number",
+      "default": 0.0001,
+      "description": "Threshold for small component warnings"
+    },
+    "allow_non_production_approved": {
+      "type": "boolean",
+      "default": false,
+      "description": "Allow import of recipes not approved for production"
+    },
+    "allow_phase_missing": {
+      "type": "boolean",
+      "default": true,
+      "description": "Allow recipes with missing phase information"
+    },
+    "auto_create_missing_ingredients": {
+      "type": "boolean",
+      "default": false,
+      "description": "Automatically create missing ingredients"
+    },
+    "updated_by": {
+      "type": "string",
+      "description": "User who last updated config"
+    }
+  },
+  "required": [
+    "config_name",
+    "strict_mode"
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "name": "Product",
+  "type": "object",
+  "properties": {
+    "environment": {
+      "type": "string",
+      "enum": [
+        "production",
+        "sandbox"
+      ],
+      "default": "production",
+      "description": "Environment: production or sandbox"
+    },
+    "sku": {
+      "type": "string",
+      "description": "Unique product identifier"
+    },
+    "name": {
+      "type": "string",
+      "description": "Product name"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "finished_good",
+        "raw_material",
+        "packaging",
+        "label"
+      ],
+      "description": "Product type"
+    },
+    "brand": {
+      "type": "string",
+      "enum": [
+        "own",
+        "client_a",
+        "client_b",
+        "other"
+      ],
+      "default": "own",
+      "description": "Brand or client this product belongs to"
+    },
+    "unit": {
+      "type": "string",
+      "enum": [
+        "kg",
+        "liter",
+        "pcs",
+        "roll"
+      ],
+      "description": "Unit of measure"
+    },
+    "safety_stock": {
+      "type": "number",
+      "description": "Minimum stock level before warning"
+    },
+    "lead_time_days": {
+      "type": "number",
+      "description": "Days from order to delivery"
+    },
+    "moq": {
+      "type": "number",
+      "description": "Minimum order quantity"
+    },
+    "order_multiple": {
+      "type": "number",
+      "description": "Order must be multiple of this"
+    },
+    "supplier": {
+      "type": "string",
+      "description": "Primary supplier name"
+    },
+    "cost_per_unit": {
+      "type": "number",
+      "description": "Cost per unit for value calculations"
+    },
+    "shopify_buffer": {
+      "type": "number",
+      "description": "Per-SKU buffer to subtract from available"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes"
+    },
+    "active": {
+      "type": "boolean",
+      "description": "Whether product is active"
+    },
+    "tag_ids": {
+      "type": "array",
+      "description": "IDs p\u00e5 taggar kopplade till produkten",
+      "items": {
+        "type": "string"
+      }
+    },
+    "unlimited_stock": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, product has unlimited availability (excluded from stock alerts/calculations)"
+    }
+  },
+  "required": [
+    "sku",
+    "name",
+    "type",
+    "unit"
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "name": "BatchOrderLink",
+  "type": "object",
+  "properties": {
+    "batch_lot_id": {
+      "type": "string",
+      "description": "ID of BatchLot"
+    },
+    "batch_number": {
+      "type": "string",
+      "description": "Batch number for reference"
+    },
+    "store_id": {
+      "type": "string",
+      "enum": [
+        "b2c",
+        "b2b"
+      ],
+      "description": "Which store"
+    },
+    "shopify_order_id": {
+      "type": "string",
+      "description": "Shopify order ID"
+    },
+    "shopify_order_number": {
+      "type": "string",
+      "description": "Order number for reference"
+    },
+    "sku": {
+      "type": "string",
+      "description": "Product SKU"
+    },
+    "qty_from_batch": {
+      "type": "number",
+      "description": "Quantity picked from this batch"
+    },
+    "linked_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When linked"
+    },
+    "linked_by": {
+      "type": "string",
+      "description": "User who linked"
+    }
+  },
+  "required": [
+    "batch_lot_id",
+    "batch_number",
+    "store_id",
+    "shopify_order_id",
+    "shopify_order_number",
+    "sku",
+    "qty_from_batch"
+  ]
+}

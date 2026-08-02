@@ -1,0 +1,101 @@
+{
+  "name": "FillingReport",
+  "type": "object",
+  "properties": {
+    "environment": {
+      "type": "string",
+      "enum": [
+        "production",
+        "sandbox"
+      ],
+      "default": "production",
+      "description": "Environment: production or sandbox"
+    },
+    "mix_batch_id": {
+      "type": "string",
+      "description": "ID of MixBatch used"
+    },
+    "mix_sku": {
+      "type": "string",
+      "description": "SKU for reference"
+    },
+    "batch_no": {
+      "type": "string",
+      "description": "Batch number for reference"
+    },
+    "lines": {
+      "type": "array",
+      "description": "Production lines",
+      "items": {
+        "type": "object",
+        "properties": {
+          "finished_sku": {
+            "type": "string"
+          },
+          "finished_name": {
+            "type": "string"
+          },
+          "produced_units": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "waste": {
+      "type": "array",
+      "description": "Waste/spillage",
+      "items": {
+        "type": "object",
+        "properties": {
+          "component_sku": {
+            "type": "string"
+          },
+          "component_name": {
+            "type": "string"
+          },
+          "waste_qty": {
+            "type": "number"
+          },
+          "finished_sku": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "bulk_waste_kg": {
+      "type": "number",
+      "default": 0,
+      "description": "Bulk waste in kg"
+    },
+    "bulk_used_kg": {
+      "type": "number",
+      "description": "Total bulk consumed"
+    },
+    "components_used": {
+      "type": "array",
+      "description": "Components consumed",
+      "items": {
+        "type": "object",
+        "properties": {
+          "component_sku": {
+            "type": "string"
+          },
+          "component_name": {
+            "type": "string"
+          },
+          "qty_used": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "remaining_kg_after": {
+      "type": "number",
+      "description": "Remaining kg in batch after filling"
+    }
+  },
+  "required": [
+    "mix_batch_id",
+    "lines"
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "name": "InventoryAlertRule",
+  "type": "object",
+  "properties": {
+    "product_sku": {
+      "type": "string",
+      "description": "Product SKU this rule applies to (null for category rules)"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "finished_good",
+        "raw_material",
+        "packaging",
+        "label"
+      ],
+      "description": "Product category if rule applies to category"
+    },
+    "reorder_point": {
+      "type": "number",
+      "description": "Quantity threshold to trigger reorder alert"
+    },
+    "safety_stock": {
+      "type": "number",
+      "description": "Minimum safety stock level"
+    },
+    "lead_time_days": {
+      "type": "number",
+      "description": "Lead time in days for ordering"
+    },
+    "buffer_qty": {
+      "type": "number",
+      "description": "Additional buffer quantity",
+      "default": 0
+    },
+    "planning_horizon_days": {
+      "type": "number",
+      "description": "Days to look ahead for stockout risk",
+      "default": 30
+    },
+    "enabled": {
+      "type": "boolean",
+      "description": "Whether this rule is active",
+      "default": true
+    }
+  },
+  "required": [
+    "reorder_point",
+    "enabled"
+  ]
+}

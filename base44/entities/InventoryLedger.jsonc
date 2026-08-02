@@ -1,0 +1,85 @@
+{
+  "name": "InventoryLedger",
+  "type": "object",
+  "properties": {
+    "environment": {
+      "type": "string",
+      "enum": [
+        "production",
+        "sandbox"
+      ],
+      "default": "production",
+      "description": "Environment: production or sandbox"
+    },
+    "product_id": {
+      "type": "string",
+      "description": "ID of the product"
+    },
+    "product_sku": {
+      "type": "string",
+      "description": "SKU for quick reference"
+    },
+    "product_name": {
+      "type": "string",
+      "description": "Product name for quick reference"
+    },
+    "batch_lot_id": {
+      "type": "string",
+      "description": "BatchLot ID if applicable"
+    },
+    "batch_number": {
+      "type": "string",
+      "description": "Batch number for reference"
+    },
+    "transaction_type": {
+      "type": "string",
+      "enum": [
+        "inbound",
+        "production",
+        "backflush",
+        "adjustment",
+        "scrap",
+        "reservation",
+        "release_reservation",
+        "pick",
+        "shipment"
+      ],
+      "description": "Type of inventory transaction"
+    },
+    "quantity": {
+      "type": "number",
+      "description": "Quantity change (positive or negative)"
+    },
+    "reference_type": {
+      "type": "string",
+      "enum": [
+        "shopify_order",
+        "production_run",
+        "manual",
+        "other"
+      ],
+      "description": "Type of reference"
+    },
+    "reference_id": {
+      "type": "string",
+      "description": "ID of the reference entity"
+    },
+    "store_id": {
+      "type": "string",
+      "enum": [
+        "b2c",
+        "b2b"
+      ],
+      "description": "Store ID if applicable"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about this transaction"
+    }
+  },
+  "required": [
+    "product_id",
+    "transaction_type",
+    "quantity"
+  ]
+}

@@ -1,0 +1,147 @@
+{
+  "name": "InventoryAlert",
+  "type": "object",
+  "properties": {
+    "environment": {
+      "type": "string",
+      "enum": [
+        "production",
+        "sandbox"
+      ],
+      "default": "production",
+      "description": "Environment: production or sandbox"
+    },
+    "product_id": {
+      "type": "string",
+      "description": "Product ID this alert is for"
+    },
+    "product_sku": {
+      "type": "string",
+      "description": "Product SKU for quick reference"
+    },
+    "product_name": {
+      "type": "string",
+      "description": "Product name for quick reference"
+    },
+    "product_type": {
+      "type": "string",
+      "enum": [
+        "finished_good",
+        "raw_material",
+        "packaging",
+        "label"
+      ],
+      "description": "Product type"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "critical"
+      ],
+      "description": "Alert severity level"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "LOW_STOCK",
+        "STOCKOUT_RISK",
+        "BELOW_SAFETY",
+        "MRP_PURCHASE_REQUIRED"
+      ],
+      "description": "Alert type"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "OPEN",
+        "ORDERED_ACKNOWLEDGED",
+        "DEPRIORITIZED",
+        "CLOSED"
+      ],
+      "description": "Alert status",
+      "default": "OPEN"
+    },
+    "last_evaluated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last time this alert was evaluated"
+    },
+    "message": {
+      "type": "string",
+      "description": "Human readable alert message"
+    },
+    "current_available_qty": {
+      "type": "number",
+      "description": "Current available quantity"
+    },
+    "reorder_point": {
+      "type": "number",
+      "description": "Reorder point threshold"
+    },
+    "safety_stock": {
+      "type": "number",
+      "description": "Safety stock level"
+    },
+    "suggested_order_qty": {
+      "type": "number",
+      "description": "Suggested order quantity"
+    },
+    "need_by_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date when stock is needed"
+    },
+    "order_by_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Latest date to place order"
+    },
+    "ordered_qty": {
+      "type": "number",
+      "description": "Quantity ordered when acknowledged"
+    },
+    "supplier": {
+      "type": "string",
+      "description": "Supplier name when acknowledged"
+    },
+    "order_reference": {
+      "type": "string",
+      "description": "Purchase order reference (required for acknowledgement)"
+    },
+    "ordered_by": {
+      "type": "string",
+      "description": "User who acknowledged the order"
+    },
+    "ordered_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When order was acknowledged"
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When alert was resolved"
+    },
+    "resolved_by": {
+      "type": "string",
+      "description": "User who resolved the alert"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes"
+    },
+    "deprioritized_reason": {
+      "type": "string",
+      "description": "Optional reason provided when marking alert as deprioritized"
+    }
+  },
+  "required": [
+    "product_id",
+    "product_sku",
+    "severity",
+    "type",
+    "status"
+  ]
+}

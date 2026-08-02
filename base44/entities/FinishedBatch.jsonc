@@ -1,0 +1,58 @@
+{
+  "name": "FinishedBatch",
+  "type": "object",
+  "properties": {
+    "environment": {
+      "type": "string",
+      "enum": [
+        "production",
+        "sandbox"
+      ],
+      "default": "production",
+      "description": "Environment: production or sandbox"
+    },
+    "finished_sku": {
+      "type": "string",
+      "description": "SKU f\u00f6r f\u00e4rdig produkt"
+    },
+    "batch_no": {
+      "type": "string",
+      "description": "Batchnummer f\u00f6r f\u00e4rdig produkt"
+    },
+    "quantity": {
+      "type": "number",
+      "description": "Antal producerade enheter (actual units)"
+    },
+    "source_mix_batch_id": {
+      "type": "string",
+      "description": "ID f\u00f6r MixBatch som denna batch tappats fr\u00e5n"
+    },
+    "produced_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "N\u00e4r batchen producerades"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "quarantined",
+        "blocked",
+        "depleted"
+      ],
+      "default": "available",
+      "description": "Batchstatus"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Valfria anteckningar"
+    }
+  },
+  "required": [
+    "finished_sku",
+    "batch_no",
+    "quantity",
+    "source_mix_batch_id",
+    "status"
+  ]
+}

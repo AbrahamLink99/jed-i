@@ -1,0 +1,75 @@
+{
+  "name": "BOMVersion",
+  "type": "object",
+  "properties": {
+    "product_id": {
+      "type": "string",
+      "description": "ID of the finished product"
+    },
+    "product_sku": {
+      "type": "string",
+      "description": "SKU for reference"
+    },
+    "version_number": {
+      "type": "number",
+      "description": "Sequential version number"
+    },
+    "effective_from": {
+      "type": "string",
+      "format": "date",
+      "description": "When this version became effective"
+    },
+    "effective_until": {
+      "type": "string",
+      "format": "date",
+      "description": "When this version was superseded (null if current)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "superseded",
+        "archived"
+      ],
+      "default": "active",
+      "description": "Version status"
+    },
+    "components": {
+      "type": "array",
+      "description": "BOM components for this version",
+      "items": {
+        "type": "object",
+        "properties": {
+          "component_id": {
+            "type": "string"
+          },
+          "component_sku": {
+            "type": "string"
+          },
+          "component_name": {
+            "type": "string"
+          },
+          "quantity_per_unit": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "change_reason": {
+      "type": "string",
+      "description": "Why this version was created"
+    },
+    "changed_by": {
+      "type": "string",
+      "description": "Email of user who created this version"
+    }
+  },
+  "required": [
+    "product_id",
+    "version_number",
+    "effective_from",
+    "status",
+    "components"
+  ]
+}

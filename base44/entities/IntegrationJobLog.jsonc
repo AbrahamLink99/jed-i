@@ -1,0 +1,45 @@
+{
+  "name": "IntegrationJobLog",
+  "type": "object",
+  "properties": {
+    "job_type": {
+      "type": "string",
+      "enum": [
+        "SYNC_VARIANTS",
+        "PUSH_INVENTORY",
+        "FETCH_LOCATIONS"
+      ],
+      "description": "Type of integration job"
+    },
+    "store_id": {
+      "type": "string",
+      "enum": [
+        "b2c",
+        "b2b"
+      ],
+      "description": "Store identifier"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "error",
+        "partial"
+      ],
+      "description": "Job execution status"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Human-readable summary"
+    },
+    "details_json": {
+      "type": "string",
+      "description": "Detailed results as JSON string"
+    }
+  },
+  "required": [
+    "job_type",
+    "store_id",
+    "status"
+  ]
+}

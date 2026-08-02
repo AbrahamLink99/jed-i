@@ -1,0 +1,61 @@
+{
+  "name": "PackagingRecipe",
+  "type": "object",
+  "properties": {
+    "environment": {
+      "type": "string",
+      "enum": [
+        "production",
+        "sandbox"
+      ],
+      "default": "production",
+      "description": "Environment: production or sandbox"
+    },
+    "mix_sku": {
+      "type": "string",
+      "description": "SKU of the mix/blend"
+    },
+    "finished_sku": {
+      "type": "string",
+      "description": "SKU of finished product variant"
+    },
+    "finished_name": {
+      "type": "string",
+      "description": "Name of finished product for display"
+    },
+    "fill_ml_per_unit": {
+      "type": "number",
+      "description": "Fill volume in ml per unit"
+    },
+    "components": {
+      "type": "array",
+      "description": "Packaging components needed",
+      "items": {
+        "type": "object",
+        "properties": {
+          "component_sku": {
+            "type": "string"
+          },
+          "component_name": {
+            "type": "string"
+          },
+          "qty_per_unit": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this recipe is active"
+    }
+  },
+  "required": [
+    "mix_sku",
+    "finished_sku",
+    "fill_ml_per_unit",
+    "components",
+    "active"
+  ]
+}

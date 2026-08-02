@@ -1,0 +1,46 @@
+{
+  "name": "IngredientAlias",
+  "type": "object",
+  "properties": {
+    "alias_normalized": {
+      "type": "string",
+      "description": "Normalized alias name"
+    },
+    "mapped_sku": {
+      "type": "string",
+      "description": "SKU this alias maps to"
+    },
+    "mapped_product_id": {
+      "type": "string",
+      "description": "Product ID this alias maps to"
+    },
+    "source_system": {
+      "type": "string",
+      "enum": [
+        "Metics",
+        "Manual"
+      ],
+      "default": "Metics",
+      "description": "Source system"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "User who created this alias"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this alias is active"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes"
+    }
+  },
+  "required": [
+    "alias_normalized",
+    "mapped_sku",
+    "mapped_product_id",
+    "source_system"
+  ]
+}

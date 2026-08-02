@@ -1,0 +1,107 @@
+{
+  "name": "AuditLogEntry",
+  "type": "object",
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the action occurred"
+    },
+    "actor_user_id": {
+      "type": "string",
+      "description": "ID of user who performed the action"
+    },
+    "actor_email": {
+      "type": "string",
+      "description": "Email of user who performed the action"
+    },
+    "actor_role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "production",
+        "warehouse",
+        "purchasing",
+        "readonly"
+      ],
+      "description": "Role of the user at time of action"
+    },
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "CREATE",
+        "UPDATE",
+        "STATUS_CHANGE",
+        "VOID",
+        "REVERSAL",
+        "LOGIN",
+        "LOGOUT",
+        "INTEGRATION_CALL",
+        "ACKNOWLEDGE"
+      ],
+      "description": "Type of action performed"
+    },
+    "entity_type": {
+      "type": "string",
+      "description": "Type of entity affected (Product, Batch, InventoryLedger, etc.)"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "ID of the affected entity"
+    },
+    "summary_message": {
+      "type": "string",
+      "description": "Human readable description of the action"
+    },
+    "before_snapshot": {
+      "type": "object",
+      "description": "State before the change (JSON)"
+    },
+    "after_snapshot": {
+      "type": "object",
+      "description": "State after the change (JSON)"
+    },
+    "changed_fields": {
+      "type": "array",
+      "description": "List of changed fields with old/new values",
+      "items": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "old_value": {
+            "type": "string"
+          },
+          "new_value": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "page_context": {
+      "type": "string",
+      "description": "Page/screen where action was performed"
+    },
+    "correlation_id": {
+      "type": "string",
+      "description": "Link related actions together"
+    },
+    "prev_hash": {
+      "type": "string",
+      "description": "Hash of previous log entry for tamper detection"
+    },
+    "entry_hash": {
+      "type": "string",
+      "description": "Hash of this entry for tamper detection"
+    }
+  },
+  "required": [
+    "timestamp",
+    "actor_email",
+    "actor_role",
+    "action_type",
+    "entity_type",
+    "summary_message"
+  ]
+}

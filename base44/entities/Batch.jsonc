@@ -1,0 +1,69 @@
+{
+  "name": "Batch",
+  "type": "object",
+  "properties": {
+    "environment": {
+      "type": "string",
+      "enum": [
+        "production",
+        "sandbox"
+      ],
+      "default": "production",
+      "description": "Environment: production or sandbox"
+    },
+    "batch_number": {
+      "type": "string",
+      "description": "Unique batch identifier"
+    },
+    "product_id": {
+      "type": "string",
+      "description": "ID of the finished product"
+    },
+    "product_sku": {
+      "type": "string",
+      "description": "SKU for quick reference"
+    },
+    "product_name": {
+      "type": "string",
+      "description": "Product name for quick reference"
+    },
+    "produced_quantity": {
+      "type": "number",
+      "description": "Original quantity produced"
+    },
+    "current_quantity": {
+      "type": "number",
+      "description": "Current remaining quantity"
+    },
+    "production_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of production"
+    },
+    "expiry_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Best before date if applicable"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "quarantined",
+        "blocked",
+        "depleted"
+      ],
+      "description": "Batch status"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Production notes"
+    }
+  },
+  "required": [
+    "batch_number",
+    "product_id",
+    "produced_quantity",
+    "status"
+  ]
+}

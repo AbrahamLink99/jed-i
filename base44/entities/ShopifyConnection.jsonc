@@ -1,0 +1,45 @@
+{
+  "name": "ShopifyConnection",
+  "type": "object",
+  "properties": {
+    "shop_domain": {
+      "type": "string",
+      "description": "Shopify store domain (e.g., store.myshopify.com)"
+    },
+    "access_token": {
+      "type": "string",
+      "description": "OAuth access token (encrypted)"
+    },
+    "scopes": {
+      "type": "string",
+      "description": "Granted OAuth scopes"
+    },
+    "installed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the app was installed"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "installed",
+        "error",
+        "revoked"
+      ],
+      "default": "installed",
+      "description": "Connection status"
+    },
+    "last_sync_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last inventory sync timestamp"
+    }
+  },
+  "required": [
+    "shop_domain",
+    "access_token",
+    "scopes",
+    "installed_at",
+    "status"
+  ]
+}

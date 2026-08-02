@@ -1,0 +1,107 @@
+{
+  "name": "ShopifyOrder",
+  "type": "object",
+  "properties": {
+    "environment": {
+      "type": "string",
+      "enum": [
+        "production",
+        "sandbox"
+      ],
+      "default": "production"
+    },
+    "shopify_order_id": {
+      "type": "string",
+      "description": "Shopify order ID (unique)"
+    },
+    "order_number": {
+      "type": "string",
+      "description": "Human-readable order number, e.g. #1234"
+    },
+    "store_id": {
+      "type": "string",
+      "enum": [
+        "b2c",
+        "b2b"
+      ],
+      "default": "b2c"
+    },
+    "status": {
+      "type": "string",
+      "description": "Financial status (paid, pending, refunded, etc.)"
+    },
+    "fulfillment_status": {
+      "type": "string",
+      "description": "Fulfillment status"
+    },
+    "total_price": {
+      "type": "number",
+      "description": "Total order value incl. tax"
+    },
+    "subtotal_price": {
+      "type": "number",
+      "description": "Subtotal excl. shipping"
+    },
+    "total_tax": {
+      "type": "number",
+      "description": "Total tax amount"
+    },
+    "currency": {
+      "type": "string",
+      "default": "SEK"
+    },
+    "customer_email": {
+      "type": "string"
+    },
+    "customer_name": {
+      "type": "string"
+    },
+    "line_items": {
+      "type": "array",
+      "description": "Order lines with SKU, qty and price",
+      "items": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string"
+          },
+          "variant_id": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "price": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "created_at_shopify": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the order was created in Shopify"
+    },
+    "processed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "tags": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "shopify_order_id",
+    "order_number",
+    "store_id"
+  ]
+}
